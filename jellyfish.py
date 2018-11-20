@@ -1,0 +1,81 @@
+import subprocess
+
+
+from .file_conversion import fq_to_fa
+
+
+def __call(cmd):
+    print('CMD: ' + cmd)
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except Exception as inst:
+        print(inst)
+
+
+def jellyfish_count(file, k, output, min_count=1, hash_size='100M', threads=4, canonical=True):
+    """
+    A wrapper function for the jellyfish k-mer count commands.
+
+    From a high-level it takes an input fastq or fastq <file>, and eventually
+        exports an <output> fasta file of k-mer counts.
+
+    All the intermediate files are deleted.
+
+    Args:
+        file: str, path-like
+            The input fasta or fastq file, also accepts .gz compressed format
+
+        k: int
+            The size of the k-mer
+
+        output: str, path-like
+            The output fasta file, which cannot be the same as the input <file>
+
+        min_count: uint
+            K-mers with counts < min_count will be excluded
+
+        hash_size: str,
+            e.g. '100M' for 100 million; '1G' for 1 billion
+
+        threads: int (uint32)
+
+        canonical: bool
+            If True, 'AAAC' will be the same as 'GTTT'
+    """
+    # The <output> fasta should NOT be identical to the input fasta <file>
+    if output == file:
+        return
+
+    input_name = file  # The original input name
+
+    # Unzip
+    if file.endswith('.gz'):
+        __gzip(file, keep=True)
+        file = file[:-3]
+
+    # Convert fastq to fasta
+    if file.endswith('.fastq') or file.endswith('.fq'):
+        fq_to_fa(file, keep=True)
+        # If the input <file> is not equal to the original input name, then don't keep it
+        if not file == input_name:
+            __call('rm {}'.format(file))
+
+    if file.endswith('.fastq'): file = file[:-6] + '.fa'
+    elif file.endswith('.fq'): file = file[:-3] + '.fa'
+
+    # Count k-mers in the input fastq or fasta file
+    canonical = ['', '-C '][canonical]
+    cmd = f"jellyfish count -m {k} -s {hash_size} -t {threads} -o temp.jf {canonical}{file}"
+    __call(cmd)
+
+    # Remove the counted file if it's not the original input file
+    if not file == input_name:
+        __call('rm {}'.format(file))
+
+    # Dump the .jf file into a .fa file
+    cmd = f"jellyfish dump -L {min_count} --output {output} temp.jf"
+    __call(cmd)
+
+    # The .jf file is not needed, so remove it.
+    __call('rm temp.jf'.format(file))
+
