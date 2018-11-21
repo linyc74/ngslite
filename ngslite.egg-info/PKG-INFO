@@ -1,6 +1,6 @@
-Metadata-Version: 1.0
+Metadata-Version: 1.2
 Name: ngslite
-Version: 0.0
+Version: 0.2
 Summary: Light-weight functions for next-generation sequencing (NGS) data analysis
 Home-page: https://github.com/linyc74/ngslite
 Author: Yu-Cheng Lin
@@ -8,3 +8,4 @@ Author-email: yclin.python@gmail.com
 License: MIT
 Description: UNKNOWN
 Platform: UNKNOWN
+Requires-Python: >3.6

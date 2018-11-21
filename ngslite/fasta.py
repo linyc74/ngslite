@@ -94,3 +94,32 @@ def read_fasta(file):
                 seq = seq + line
     return ret_list
 
+
+def fasta_replace_blank_with(file, s, output):
+    """
+    Replace blank spaces with <s> in the headers of the input fasta file.
+
+    Args:
+        file: str, path-like
+            The input fasta file
+
+        s: str
+            The string used to replace blank spaces in the headers
+
+        output:
+            The output fasta file
+    """
+    parser = FastaParser(file)
+    writer = FastaWriter(output)
+
+    while True:
+        head, seq = parser.next()
+        if head is None:
+            break
+
+        head = s.join(head.split(' '))
+        writer.write(head, seq)
+
+    parser.close()
+    writer.close()
+

@@ -1,8 +1,10 @@
+README.md
 setup.py
 ngslite/__init__.py
 ngslite/arrfunc.py
 ngslite/bedtools.py
 ngslite/bowtie2.py
+ngslite/bwa.py
 ngslite/cmdtools.py
 ngslite/count.py
 ngslite/dnatools.py
@@ -12,6 +14,7 @@ ngslite/file_conversion.py
 ngslite/filetools.py
 ngslite/gtftools.py
 ngslite/hmmer.py
+ngslite/hmmer_parse.py
 ngslite/jellyfish.py
 ngslite/kmertools.py
 ngslite/metaspades.py
@@ -25,3 +28,5 @@ ngslite.egg-info/dependency_links.txt
 ngslite.egg-info/not-zip-safe
 ngslite.egg-info/requires.txt
 ngslite.egg-info/top_level.txt
+test/test_arrfunc.py
+test/test_dnatools.py

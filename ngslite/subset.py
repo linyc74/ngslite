@@ -255,9 +255,3 @@ def __subset_fq_pair(file1, file2, fraction):
     fh_out1.close()
     fh_out2.close()
 
-
-# ToDo:
-# Subset fasta by regexp of the header
-# Subset sam by chromosome region
-# Subset gtf by regexp of the seqname (chromosome name)
-

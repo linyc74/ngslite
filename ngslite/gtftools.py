@@ -60,3 +60,64 @@ class GtfWriter:
     def close(self):
         self.__gtf.close()
 
+
+def subset_gtf(file, seqname, output):
+    """
+    Args:
+        file: str, path-like
+            The input gtf file
+
+        seqname: str
+            The seqname (chromosome name) to be included
+
+        output: str, path-like
+            The output gtf file
+    """
+    parser = GtfParser(file)
+    writer = GtfWriter(output)
+
+    while True:
+        item = parser.next()
+        if item[0] is None:
+            break
+
+        if item[0] == seqname:
+            writer.write(item)
+
+    parser.close()
+    writer.close()
+
+
+def gtf_replace_blank_with(file, s, output):
+    """
+    Replace blank spaces with <s> in the input GTF file.
+    Check the fields that are strings: <seqname>, <source>, <feature>, <attribute>
+
+    Args:
+        file: str, path-like
+            The input GTF file
+
+        s: str
+            The string used to replace blank space
+
+        output:
+            The output GTF file
+    """
+    parser = GtfParser(file)
+    writer = GtfWriter(output)
+
+    while True:
+        seqname, source, feature, start, end, score, strand, frame, attribute = parser.next()
+        if seqname is None:
+            break
+
+        seqname = s.join(seqname.split(' '))
+        source = s.join(source.split(' '))
+        feature = s.join(feature.split(' '))
+        attribute = s.join(attribute.split(' '))
+
+        writer.write((seqname, source, feature, start, end, score, strand, frame, attribute))
+
+    parser.close()
+    writer.close()
+
