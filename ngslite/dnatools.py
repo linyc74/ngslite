@@ -60,6 +60,9 @@ def base_content(seq, base):
 
     Returns: float
     """
+    seq = seq.upper()
+    base = base.upper()
+
     ret = 0
     for b in set(base):
         ret += seq.count(b) / len(seq)

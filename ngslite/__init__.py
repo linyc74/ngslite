@@ -6,12 +6,13 @@ Python functions for manipulating NGS-related files
 """
 
 
-__version__ = 0.0
+__version__ = 0.1
 
 
 from .arrfunc import *
 from .bedtools import *
 from .bowtie2 import *
+from .bwa import *
 from .cmdtools import *
 from .count import *
 from .dnatools import *

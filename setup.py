@@ -8,5 +8,6 @@ setup(name='ngslite',
       author_email='yclin.python@gmail.com',
       license='MIT',
       packages=['ngslite'],
+      python_requires='>3.6',
       install_requires=['numpy'],
       zip_safe=False)
