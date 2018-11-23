@@ -17,7 +17,7 @@ def __call(cmd):
 
 def __gzip(file, keep=True):
     """
-    Call the gzip command to zip or unzip files
+    Call the "gzip" command to zip or unzip files.
 
     Args:
         file: str, path-like

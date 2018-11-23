@@ -11,6 +11,8 @@ def __call(cmd):
 
 def bwa_mapping(ref, fq1, sam, fq2=None, threads=4, score=30):
     """
+    Wrapper function of BWA mapping.
+
     Args:
         ref: str, path-like object
             The reference fasta

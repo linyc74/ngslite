@@ -8,6 +8,8 @@ def __call(cmd):
 
 def metaspades(fq1, fq2, output, threads=16, memory=250):
     """
+    Wrapper function of the command "spades.py --meta".
+
     Args:
         fq1: str, path-like, the read-1 fastq file
 

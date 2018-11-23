@@ -19,6 +19,9 @@ def replace_zero_with(np_array, value):
 
 def jitter(array, value):
     """
+    Add the input <array> with some random numbers.
+    The random numbers are uniformly distributed between -<value> to +<value>.
+
     Args:
         array: an array of numbers, could be list, np.ndarray with int or float data types
 

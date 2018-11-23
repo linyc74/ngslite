@@ -1,4 +1,6 @@
 import subprocess
+import os
+import itertools
 
 
 def __call(cmd):
@@ -30,16 +32,23 @@ def zip_broadcast(*lists):
     return list(zip(*list_of_lists))
 
 
-def get_files(endswith='', startswith='', source='.'):
+def get_files(startswith='', endswith='', source='.', isfullpath=False):
     """
-    Get all files endswith a certain extension in the source folder
+    Get all files that start with or end with some strings in the source folder.
 
     Args:
+        startswith: str
+
         endswith: str
-        source: str
+
+        source: str, path-like
+            The source directory.
+
+        isfullpath: bool,
+            If True, return the full file paths in the list.
 
     Returns:
-        A list of file names. Just file names, not the full path.
+        A list of file names, or file paths.
         If no files found, return an empty list [].
     """
     ret = []
@@ -47,6 +56,10 @@ def get_files(endswith='', startswith='', source='.'):
     for path, dirs, files in os.walk(source):
         if path == source:
             ret = [f for f in files if (f.startswith(s) and f.endswith(e))]
+
+    if isfullpath:
+        ret = [os.path.join(source, f) for f in ret]
+
     if ret:
         # Sort the file list so that the order will be
         #     consistent across different OS platforms
@@ -109,4 +122,18 @@ def concat(files, output):
     files = ' '.join(files)
     cmd = 'cat {} > {}'.format(files, output)
     __call(cmd)
+
+
+def gzip(file, keep=True):
+    """
+    Call the "gzip" command to zip or unzip files.
+
+    Args:
+        file: str, path-like
+
+        keep: bool, keep the input file or not
+    """
+    keep = ['', '-k '][keep]
+    decomp = ['', '-d '][file.endswith('.gz')]
+    __call(f"gzip {decomp}{keep}{file}")
 

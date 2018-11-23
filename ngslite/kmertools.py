@@ -515,9 +515,10 @@ def kmers_base_content(kmers, base):
 def fastq_to_saved_kmer_2D_points(fq1, fq2, k, output, min_count=1, hash_size='100M', threads=4, description=''):
     """
     The full implementation of the pipeline:
-        Two fastq files
-            -> k-mer counts of each fastq file
-                -> tab-separated file of k-mer 2D points
+        (1) Input two fastq files
+        (2) Count k-mers in each fastq file
+        (3) Merge (outer join) the k-mer counts of the two files
+        (3) Write a tab-separated file (.tsv) of k-mer 2D points
 
     Args:
         fq1: str, path-like

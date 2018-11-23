@@ -11,6 +11,8 @@ def __call(cmd):
 
 def bowtie2_mapping(ref, fq1, sam, fq2=None):
     """
+    Wrapper function of bowtie2 mapping.
+
     Args:
         ref: str, path-like object
             The reference fasta

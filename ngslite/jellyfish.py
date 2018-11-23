@@ -14,7 +14,7 @@ def __call(cmd):
 
 def jellyfish_count(file, k, output, min_count=1, hash_size='100M', threads=4, canonical=True):
     """
-    A wrapper function for the jellyfish k-mer count commands.
+    Wrapper function for the jellyfish k-mer count commands.
 
     From a high-level it takes an input fastq or fastq <file>, and eventually
         exports an <output> fasta file of k-mer counts.

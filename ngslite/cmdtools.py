@@ -46,9 +46,50 @@ def __call(cmd, stderr=None):
         stderr.close()
 
 
-def single_call(cmd):
+def __check_input_format(cmd, inputs):
     """
-    Directly call a cmd with shell=True. Stderr will be printed out in the console.
+    This is a subprocess of the the method batch_call().
+    Check the format of 'IN's in the <cmd> str and <inputs> (file names).
+    """
+    # num_IN: number of 'IN's in the cmd string
+    num_IN = cmd.split(' ').count('IN')
+
+    # If each input is a str, then there should only be one 'IN' in the cmd str
+    if type(inputs[0]) == str:
+        if num_IN != 1:
+            print("[Error] There are {} 'IN's in the cmd but only 1 file for each input"
+                  .format(num_IN)
+                  )
+            return False
+
+    # If each input is a tuple, then len(each_input) should equal to number of 'IN's in the cmd str
+    if type(inputs[0]) == tuple:
+        if num_IN != len(inputs[0]):
+            print("[Error] There are {} 'IN's in the cmd but {} files for each input".
+                  format(num_IN, len(inputs[0])
+                         )
+                  )
+            return False
+
+    return True
+
+
+def __check_output_format(cmd, outputs):
+    """
+    This is a subprocess of the method batch_call().
+    Check the format of 'OUT' in the cmd string and outputs (file names)
+    """
+    # If cmd contains 'OUT' then the <output> arguments cannot be None
+    if 'OUT' in cmd and outputs is None:
+        print("[Error] <cmd> contains 'OUT' but <outputs> not specified.")
+        return False
+    return True
+
+
+def call(cmd):
+    """
+    A simple wrapper of subprocess.check_call(<cmd>, shell=True).
+    Stderr will be printed out in the console.
 
     Args:
         cmd: str
@@ -63,9 +104,10 @@ def single_call(cmd):
 
 def batch_call(cmd, inputs, source='.', outputs=None, stderr=None):
     """
-    A wrapper method of call() to process an array of input files and output files.
+    A wrapper function of __call() to process an array of input files and output files.
 
     Input files could be in a specified <source> folder; output files is always in the current folder.
+
     An example of <inputs> and <outputs>:
         ['in_1.txt' , 'in_2.txt' , 'in_3.txt' ]
         ['out_1.txt', 'out_2.txt', 'out_3.txt']
@@ -139,7 +181,7 @@ def batch_call(cmd, inputs, source='.', outputs=None, stderr=None):
 
 def iter_call(cmd, input_type, source='.', output_type=None, stderr=None):
     """
-    A wrapper method of call() to process all files in a folder with the same file extension <input_type>.
+    A wrapper function of __call() to process all files in a folder with the same file extension <input_type>.
     The output files has the same filename as the input file, except with a new file extension <output_type>.
 
     Args:
@@ -179,49 +221,9 @@ def iter_call(cmd, input_type, source='.', output_type=None, stderr=None):
         __call(' '.join(args), stderr=stderr)
 
 
-def __check_input_format(cmd, inputs):
-    """
-    This is a subprocess of the the method batch_call().
-    Check the format of 'IN's in the <cmd> str and <inputs> (file names).
-    """
-    # num_IN: number of 'IN's in the cmd string
-    num_IN = cmd.split(' ').count('IN')
-
-    # If each input is a str, then there should only be one 'IN' in the cmd str
-    if type(inputs[0]) == str:
-        if num_IN != 1:
-            print("[Error] There are {} 'IN's in the cmd but only 1 file for each input"
-                  .format(num_IN)
-                  )
-            return False
-
-    # If each input is a tuple, then len(each_input) should equal to number of 'IN's in the cmd str
-    if type(inputs[0]) == tuple:
-        if num_IN != len(inputs[0]):
-            print("[Error] There are {} 'IN's in the cmd but {} files for each input".
-                  format(num_IN, len(inputs[0])
-                         )
-                  )
-            return False
-
-    return True
-
-
-def __check_output_format(cmd, outputs):
-    """
-    This is a subprocess of the method batch_call().
-    Check the format of 'OUT' in the cmd string and outputs (file names)
-    """
-    # If cmd contains 'OUT' then the <output> arguments cannot be None
-    if 'OUT' in cmd and outputs is None:
-        print("[Error] <cmd> contains 'OUT' but <outputs> not specified.")
-        return False
-    return True
-
-
 def build_cmd(base_cmd, options, file_in=None, file_out=None):
     """
-    Linux commands usually follow the format"
+    Linux commands usually follow the format:
         <base_cmd> [options] [file_in] [> file_out]
 
         '<>' = required

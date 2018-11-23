@@ -52,6 +52,8 @@ def translate(dna):
 
 def base_content(seq, base):
     """
+    Compute the fraction of <base> in the <seq>.
+
     Args
         seq: str
 

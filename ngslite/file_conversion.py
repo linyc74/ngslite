@@ -11,6 +11,8 @@ def __call(cmd):
 
 def sam_to_bam(file, keep=True):
     """
+    Wrapper function of "samtools view" to convert sam into bam.
+
     Args:
         file: str, path-like
 
@@ -28,6 +30,8 @@ def sam_to_bam(file, keep=True):
 
 def bam_to_sam(file, keep=True):
     """
+    Wrapper function of "samtools view" to convert bam into sam.
+
     Args:
         file: str, path-like
 
@@ -43,6 +47,8 @@ def bam_to_sam(file, keep=True):
 
 def fq_to_fa(file, keep=True):
     """
+    Wrapper function of "seqtk" to convert fastq into fasta.
+
     Args:
         file: str, path-like
 

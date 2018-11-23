@@ -1,5 +1,7 @@
 def count_reads(file):
     """
+    Count the reads in a fasta or fastq file.
+
     Args:
         file: str
             The file of the fasta or fastq file: ('.fq', '.fastq', '.fa', '.fasta')

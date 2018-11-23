@@ -1,3 +1,11 @@
+"""
+The result text file output by hmmsearch is highly unstructured.
+
+Parsing the text file is a mess; thus the functions in this module
+    should be considered as "scripts" rather than library functions.
+"""
+
+
 from .dnatools import translate
 from .dnatools import rev_comp
 from .fasta import read_fasta

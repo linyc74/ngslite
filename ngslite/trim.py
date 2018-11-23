@@ -11,6 +11,11 @@ def __call(cmd):
 
 def trim_galore(fq1, fq2, quality=20, gzip=True, length=20):
     """
+    Wrapper function of "trim_galore".
+
+    Use the default settings of "trim_galore",
+        e.g. Illumina P5 and P7 adapter sequences are used to trim reads.
+
     Args:
         fq1: str, path-like
             The read-1 fastq file
