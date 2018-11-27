@@ -75,6 +75,7 @@ def subset_gtf(file, seqname, output):
     """
     if isinstance(seqname, str):
         seqname = [seqname]
+
     parser = GtfParser(file)
     writer = GtfWriter(output)
 

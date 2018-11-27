@@ -29,12 +29,13 @@ def bowtie2_mapping(ref, fq1, sam, fq2=None):
     # Build the .bt2 index files
     __call(f"bowtie2-build {ref} ref > bowtie2_build_{ref}.log")
 
+    log = sam[:-4]+'.log'
     if fq2 is None:
-        # Unpaired
-        cmd = f"bowtie2 -x ref -U {fq1} -S {sam} 2> {sam[:-4]+'.log'}"
+        # Unpaired mapping
+        cmd = f"bowtie2 -x ref -U {fq1} -S {sam} 2> {log}"
     else:
-        # Paired-end
-        cmd = f"bowtie2 -x ref -1 {fq1} -2 {fq2} -S {sam} 2> {sam[:-4]+'.log'}"
+        # Paired-end mapping
+        cmd = f"bowtie2 -x ref -1 {fq1} -2 {fq2} -S {sam} 2> {log}"
     __call(cmd)
 
     # Remove the .bt2 index files

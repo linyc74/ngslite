@@ -119,9 +119,7 @@ def concat(files, output):
 
         output: str, path-like
     """
-    files = ' '.join(files)
-    cmd = 'cat {} > {}'.format(files, output)
-    __call(cmd)
+    __call(f"cat {' '.join(files)} > {output}")
 
 
 def gzip(file, keep=True):
