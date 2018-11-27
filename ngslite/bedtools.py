@@ -46,3 +46,4 @@ def bedtools_multicov(bed, bams, output):
         if bed.endswith('.gtf'):
             fh.write(f"seqname\tsource\tfeature\tstart\tend\tscore\tstrand\tframe\tattribute\t{bams}\n")
         fh.write(data)
+

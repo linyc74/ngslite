@@ -1,83 +1,28 @@
 import subprocess
 import random
+import os
 
 
-def random_subset(file, fraction, file2=None):
-    """
-    Write a file containing a random subset of the input file(s).
-    The output file adds a prefix 'subset_' to the input file(s).
-    Supports paired-end reads.
-
-    Args:
-        file: str, path-like object
-            The input fasta or fastq file
-
-        fraction: float
-            Fraction of reads or sequences to be randomly sampled
-
-        file2: str, path-like object
-            The filename of the second fastq file for paired-end
-    """
-    # Unzip the input file (keep original)
-    is_file_gz = False
-    if file.endswith('.gz'):
-        __gzip(file)
-        file = file[:-3]  # Remove '.gz' suffix
-        is_file_gz = True
-
-    # Unzip input file2 (keep original), if files is not None and endswith '.gz'
-    is_file2_gz = False
-    if not file2 is None:
-        if file2.endswith('.gz'):
-            __gzip(file2)
-            file2 = file2[:-3]  # Remove '.gz' suffix
-            is_file2_gz = True
-
-    # Simply file extensions
-    if file.endswith('.fasta'):
-        file = file[:-6] + '.fa'
-    elif file.endswith('.fastq'):
-        file = file[:-6] + '.fq'
-    if not file2 is None:
-        if file2.endswith('.fastq'):
-            file2 = file2[:-6] + '.fq'
-
-    # There could only be three cases
-    # 1) Single fasta
-    if file.endswith('.fa'):
-        __subset_fa(file, fraction)
-    # 2) Single fastq
-    elif file.endswith('.fq') and file2 is None:
-        __subset_fq(file, fraction)
-    # #) Paired fastq
-    elif file.endswith('.fq') and file2.endswith('.fq'):
-        __subset_fq_pair(file, file2, fraction)
-
-    # Remove the temporary unzipped file
-    if is_file_gz:
-        os.remove(file)
-    if is_file2_gz:
-        os.remove(file2)
+def __call(cmd):
+    print('CMD: ' + cmd)
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except Exception as inst:
+        print(inst)
 
 
 def __gzip(file, keep=True):
     """
-    Call the gzip command to zip or unzip files
+    Call the "gzip" command to zip or unzip files.
 
     Args:
         file: str, path-like
 
         keep: bool, keep the input file or not
     """
-    if keep:
-        keep = '-k '
-    else:
-        keep = ''
-
-    if file.endswith('.gz'):
-        subprocess.check_call('gzip -d {}{}'.format(keep, file), shell=True)
-    else:
-        subprocess.check_call('gzip {}{}'.format(keep, file), shell=True)
+    decomp = ['', '-d '][file.endswith('.gz')]
+    keep = ['', '-k '][keep]
+    __call(f"gzip {decomp}{keep}{file}")
 
 
 def __subset_fq(file, fraction):
@@ -129,7 +74,7 @@ def __subset_fq(file, fraction):
     fh_out.close()
 
 
-def random_subset_fasta(file, fraction):
+def __subset_fa(file, fraction):
     """
     Args:
         file: str, path-like
@@ -193,10 +138,6 @@ def random_subset_fasta(file, fraction):
     fh_out.close()
 
 
-def random_subset_fastq(file1, fraction, file2=None):
-    return
-
-
 def __subset_fq_pair(file1, file2, fraction):
     """
     A low-level method for the public method random_subset()
@@ -254,4 +195,62 @@ def __subset_fq_pair(file1, file2, fraction):
     fh_in2.close()
     fh_out1.close()
     fh_out2.close()
+
+
+def random_subset(file, fraction, file2=None):
+    """
+    Write a file containing a random subset of the input file(s).
+    The output file adds a prefix 'subset_' to the input file(s).
+    Supports paired-end reads.
+
+    Args:
+        file: str, path-like object
+            The input fasta or fastq file
+
+        fraction: float
+            Fraction of reads or sequences to be randomly sampled
+
+        file2: str, path-like object
+            The filename of the second fastq file for paired-end
+    """
+    # Unzip the input file (keep original)
+    is_file_gz = False
+    if file.endswith('.gz'):
+        __gzip(file)
+        file = file[:-3]  # Remove '.gz' suffix
+        is_file_gz = True
+
+    # Unzip input file2 (keep original), if files is not None and endswith '.gz'
+    is_file2_gz = False
+    if not file2 is None:
+        if file2.endswith('.gz'):
+            __gzip(file2)
+            file2 = file2[:-3]  # Remove '.gz' suffix
+            is_file2_gz = True
+
+    # Simply file extensions
+    if file.endswith('.fasta'):
+        file = file[:-6] + '.fa'
+    elif file.endswith('.fastq'):
+        file = file[:-6] + '.fq'
+    if not file2 is None:
+        if file2.endswith('.fastq'):
+            file2 = file2[:-6] + '.fq'
+
+    # There could only be three cases
+    # 1) Single fasta
+    if file.endswith('.fa'):
+        __subset_fa(file, fraction)
+    # 2) Single fastq
+    elif file.endswith('.fq') and file2 is None:
+        __subset_fq(file, fraction)
+    # #) Paired fastq
+    elif file.endswith('.fq') and file2.endswith('.fq'):
+        __subset_fq_pair(file, file2, fraction)
+
+    # Remove the temporary unzipped file
+    if is_file_gz:
+        os.remove(file)
+    if is_file2_gz:
+        os.remove(file2)
 

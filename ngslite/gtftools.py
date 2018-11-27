@@ -67,12 +67,14 @@ def subset_gtf(file, seqname, output):
         file: str, path-like
             The input gtf file
 
-        seqname: str
-            The seqname (chromosome name) to be included
+        seqname: str, or list of str
+            Each str is a seqname (chromosome name) to be included
 
         output: str, path-like
             The output gtf file
     """
+    if isinstance(seqname, str):
+        seqname = [seqname]
     parser = GtfParser(file)
     writer = GtfWriter(output)
 
@@ -81,7 +83,7 @@ def subset_gtf(file, seqname, output):
         if item[0] is None:
             break
 
-        if item[0] == seqname:
+        if item[0] in seqname:
             writer.write(item)
 
     parser.close()

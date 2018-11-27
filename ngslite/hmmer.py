@@ -24,8 +24,8 @@ def __gzip(file, keep=True):
 
         keep: bool, keep the input file or not
     """
-    keep = ['', '-k '][keep]
     decomp = ['', '-d '][file.endswith('.gz')]
+    keep = ['', '-k '][keep]
     __call(f"gzip {decomp}{keep}{file}")
 
 

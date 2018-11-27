@@ -9,7 +9,7 @@ def __call(cmd):
         print(inst)
 
 
-def trim_galore(fq1, fq2, quality=20, gzip=True, length=20):
+def trim_galore(fq1, fq2, quality=20, gzip=True, length=20, log='trim_galore.log'):
     """
     Wrapper function of "trim_galore".
 
@@ -31,7 +31,10 @@ def trim_galore(fq1, fq2, quality=20, gzip=True, length=20):
 
         length: int
             The minimal length (bp) of reads to be retained
+
+        log: str, path-like
+            Append the stderr of trim_galore to the <log> file
     """
     gzip = ['', '--gzip '][gzip]
-    __call(f"trim_galore --paired --quality {quality} --phred33 --illumina {gzip}--length {length} --max_n 0 --trim-n --retain_unpaired {fq1} {fq2}")
+    __call(f"trim_galore --paired --quality {quality} --phred33 --illumina {gzip}--length {length} --max_n 0 --trim-n --retain_unpaired {fq1} {fq2} 2>> {log}")
 

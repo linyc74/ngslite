@@ -2,11 +2,11 @@
 Light-weight functions for next-generation sequencing (NGS) data analysis
 
 Python API for NGS-related command line tools
-Python functions for manipulating NGS-related files
+Python functions for manipulating NGS-related data and files
 """
 
 
-__version__ = '0.3'
+__version__ = '0.4'
 
 
 from .arrfunc import *

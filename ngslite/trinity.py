@@ -25,7 +25,7 @@ def trinity(fq1, fq2, output, threads=16, memory=128, min_contig_length=1000, no
             # of Gb of RAM
 
         min_contig_length: int
-            Minimum contig length in bp
+            Minimum (inclusive) contig length in bp
 
         normalize_reads: bool
             Normalize the read coverage by setting the max cov to 200 (default of Trinity),

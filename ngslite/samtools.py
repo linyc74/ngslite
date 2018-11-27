@@ -1,6 +1,9 @@
 import subprocess
 
 
+from .file_conversion import *
+
+
 def __call(cmd):
     print('CMD: ' + cmd)
     try:
@@ -32,6 +35,21 @@ def index_bam(file):
     """
     cmd = 'samtools index {}'.format(file)
     __call(cmd)
+
+
+def sam_to_indexed_bam(file, keep=True):
+    """
+    Args:
+        file: str, path-like
+            The input sam file
+
+        keep: bool
+            Keep the input file or not
+    """
+    sam_to_bam(file, keep=keep)
+    bam = file[:-4] + '.bam'
+    sort_bam(bam, keep=False)
+    index_bam(bam)
 
 
 def subset_bam_regions(file, regions, output=None, keep=True):

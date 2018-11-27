@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 def replace_zero_with(np_array, value):

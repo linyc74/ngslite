@@ -12,6 +12,20 @@ def __call(cmd):
         print(inst)
 
 
+def __gzip(file, keep=True):
+    """
+    Call the "gzip" command to zip or unzip files.
+
+    Args:
+        file: str, path-like
+
+        keep: bool, keep the input file or not
+    """
+    keep = ['', '-k '][keep]
+    decomp = ['', '-d '][file.endswith('.gz')]
+    __call(f"gzip {decomp}{keep}{file}")
+
+
 def jellyfish_count(file, k, output, min_count=1, hash_size='100M', threads=4, canonical=True):
     """
     Wrapper function for the jellyfish k-mer count commands.

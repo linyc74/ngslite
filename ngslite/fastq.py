@@ -85,4 +85,3 @@ def interleave(fq1, fq2, fq_out):
     fq2.close()
     fq_out.close()
 
-

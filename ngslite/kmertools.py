@@ -487,8 +487,11 @@ def get_kmer_2D_points(seq, kmer_dict):
         elif kmer_dict.get(rc_kmr, None):
             seq_kmer_dict.setdefault(rc_kmr, kmer_dict[rc_kmr])
 
-    kmers, xy = zip(*seq_kmer_dict.items())
-    x, y = zip(*xy)
+    if seq_kmer_dict:
+        kmers, xy = zip(*seq_kmer_dict.items())
+        x, y = zip(*xy)
+    else:
+        kmers, x, y = [], [], []
 
     return kmers, np.array(x), np.array(y)
 
@@ -518,7 +521,7 @@ def fastq_to_saved_kmer_2D_points(fq1, fq2, k, output, min_count=1, hash_size='1
         (1) Input two fastq files
         (2) Count k-mers in each fastq file
         (3) Merge (outer join) the k-mer counts of the two files
-        (3) Write a tab-separated file (.tsv) of k-mer 2D points
+        (4) Write a tab-separated file (.tsv) of k-mer 2D points
 
     Args:
         fq1: str, path-like
