@@ -36,5 +36,5 @@ def trim_galore(fq1, fq2, quality=20, gzip=True, length=20, log='trim_galore.log
             Append the stderr of trim_galore to the <log> file
     """
     gzip = ['', '--gzip '][gzip]
-    __call(f"trim_galore --paired --quality {quality} --phred33 --illumina {gzip}--length {length} --max_n 0 --trim-n --retain_unpaired {fq1} {fq2} 2>> {log}")
+    __call(f"trim_galore --paired --quality {quality} --phred33 --fastqc --illumina {gzip}--length {length} --max_n 0 --trim-n --retain_unpaired {fq1} {fq2} 2>> {log}")
 

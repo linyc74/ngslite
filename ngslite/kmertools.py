@@ -180,7 +180,7 @@ def save_kmer_2D_points(kmers, x, y, file, x_name='x', y_name='y', description='
             fh.write('{}\t{}\t{}\n'.format(kmers[i], x[i], y[i]))
 
 
-def read_kmer_2D_points(file, dtype=np.uint32):
+def read_kmer_2D_points(file, dtype=np.uint32, fraction=1.):
     """
     This function reads the tab-delimited file written by the method <save_kmer_2D_points>.
 
@@ -203,6 +203,10 @@ def read_kmer_2D_points(file, dtype=np.uint32):
 
         dtype: numpy data types
             Number data types for x and y coordinates; np.uint32 is the default
+
+        fraction: float
+            The fraction of k-mers to be randomly retrieved from the file
+            Default = 1., i.e. all k-mers
 
     Returns:
         three arrays:
@@ -233,11 +237,12 @@ def read_kmer_2D_points(file, dtype=np.uint32):
         description = fh.readline().rstrip()
         _, x_name, y_name = fh.readline().rstrip().split('\t')
         for line in fh:
-            data.append(
-                tuple(
-                    line.rstrip().split('\t') # 'kmer\tx\ty' => (kmer, x, y)
+            if random.uniform(0, 1) <= fraction:
+                data.append(
+                    tuple(
+                        line.rstrip().split('\t') # 'kmer\tx\ty' => (kmer, x, y)
+                    )
                 )
-            )
 
     kmers, x, y = zip(*data) # Unzip into three lists
 

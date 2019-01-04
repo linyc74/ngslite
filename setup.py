@@ -11,3 +11,6 @@ setup(name='ngslite',
       python_requires='>3.6',
       install_requires=['numpy'],
       zip_safe=False)
+
+# In command line type in: "python setup.py sdist"
+
