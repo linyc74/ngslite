@@ -9,6 +9,13 @@ class FastqParser:
         """
         self.__fastq = open(file, 'r')
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return
+
     def next(self):
         """
         Returns: tuple
@@ -39,6 +46,13 @@ class FastqWriter:
             mode: str, 'w' for write or 'a' for append
         """
         self.__fastq = open(file, mode)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return
 
     def write(self, read):
         """

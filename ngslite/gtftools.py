@@ -6,6 +6,13 @@ class GtfParser:
         """
         self.__gtf = open(file, 'r')
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return
+
     def next(self):
         """
         Each line of the GTF file has 9 fields````
@@ -48,6 +55,13 @@ class GtfWriter:
             mode: str, 'w' or 'a'
         """
         self.__gtf = open(file, mode)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return
 
     def write(self, feature):
         """

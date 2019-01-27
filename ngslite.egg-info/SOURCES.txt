@@ -19,7 +19,7 @@ ngslite/jellyfish.py
 ngslite/kmertools.py
 ngslite/metaspades.py
 ngslite/samtools.py
-ngslite/subset.py
+ngslite/subsample.py
 ngslite/trim.py
 ngslite/trinity.py
 ngslite.egg-info/PKG-INFO

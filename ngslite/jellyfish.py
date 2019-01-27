@@ -57,8 +57,7 @@ def jellyfish_count(file, k, output, min_count=1, hash_size='100M', threads=4, c
             If True, 'AAAC' will be the same as 'GTTT'
     """
     # The <output> fasta should NOT be identical to the input fasta <file>
-    if output == file:
-        return
+    if output == file: return
 
     input_name = file  # The original input name
 
@@ -71,8 +70,7 @@ def jellyfish_count(file, k, output, min_count=1, hash_size='100M', threads=4, c
     if file.endswith('.fastq') or file.endswith('.fq'):
         fq_to_fa(file, keep=True)
         # If the input <file> is not equal to the original input name, then don't keep it
-        if not file == input_name:
-            __call('rm {}'.format(file))
+        if not file == input_name: __call(f"rm {file}")
 
     if file.endswith('.fastq'): file = file[:-6] + '.fa'
     elif file.endswith('.fq'): file = file[:-3] + '.fa'
@@ -83,8 +81,7 @@ def jellyfish_count(file, k, output, min_count=1, hash_size='100M', threads=4, c
     __call(cmd)
 
     # Remove the counted file if it's not the original input file
-    if not file == input_name:
-        __call('rm {}'.format(file))
+    if not file == input_name: __call(f"rm {file}")
 
     # Dump the .jf file into a .fa file
     cmd = f"jellyfish dump -L {min_count} --output {output} temp.jf"

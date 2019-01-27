@@ -25,17 +25,21 @@ def __gzip(file, keep=True):
     __call(f"gzip {decomp}{keep}{file}")
 
 
-def __subset_fq(file, fraction):
+def __subsample_fq(file, fraction, output):
     """
-    A low-level method for the public method random_subset()
+    Randomly subsample the input fastq file
 
     Args:
         file: str, path-like
+            The input fastq file
 
         fraction: float, fraction of reads or sequences to be retrieved
+
+        output: str, path-like
+            The output file name
     """
     fh_in = open(file, 'r')
-    fh_out = open('subset_'+file.split('/')[-1], 'w')
+    fh_out = open(output, 'w')
 
     # Count the total number of lines in the fastq file
     i = 0
@@ -74,16 +78,21 @@ def __subset_fq(file, fraction):
     fh_out.close()
 
 
-def __subset_fa(file, fraction):
+def __subsample_fa(file, fraction, output):
     """
+    Randomly subsample the input fasta file
+
     Args:
         file: str, path-like
             The input fasta file
 
         fraction: float, fraction of reads or sequences to be retrieved
+
+        output: str, path-like
+            The output file name
     """
     fh_in = open(file, 'r')
-    fh_out = open('subset_'+file.split('/')[-1], 'w')
+    fh_out = open(output, 'w')
 
     # All line positions of the header line '>'
     all_entry_pos = []
@@ -138,22 +147,30 @@ def __subset_fa(file, fraction):
     fh_out.close()
 
 
-def __subset_fq_pair(file1, file2, fraction):
+def __subsample_fq_pair(file1, file2, fraction, output1, output2):
     """
-    A low-level method for the public method random_subset()
+    Randomly subsample the input fastq file pair
 
     Args:
         file1: str, path-like
+            The input fastq file 1
 
         file2: str, path-like
+            The input fastq file 2
 
         fraction: float, fraction of reads or sequences to be retrieved
+
+        output1: str, path-like
+            The output fastq file 1
+
+        output2: str, path-like
+            The output fastq file 2
     """
 
     fh_in1 = open(file1, 'r')
     fh_in2 = open(file2, 'r')
-    fh_out1 = open('subset_'+file1.split('/')[-1], 'w')
-    fh_out2 = open('subset_'+file2.split('/')[-1], 'w')
+    fh_out1 = open(output1, 'w')
+    fh_out2 = open(output2, 'w')
 
     # Count the total number of lines in the fastq file
     i = 0
@@ -197,60 +214,99 @@ def __subset_fq_pair(file1, file2, fraction):
     fh_out2.close()
 
 
-def random_subset(file, fraction, file2=None):
+def __subsample_sam(file, fraction, output):
     """
-    Write a file containing a random subset of the input file(s).
-    The output file adds a prefix 'subset_' to the input file(s).
-    Supports paired-end reads.
+    Randomly subsample the input SAM or BAM file
 
     Args:
-        file: str, path-like object
-            The input fasta or fastq file
+        file: str, path-like
+            The input SAM or BAM file
+
+        fraction: float, fraction of reads or sequences to be retrieved
+
+        output: str, path-like
+            The output file name
+    """
+
+    # The output file format (SAM or BAM) depends on the input format
+    if file.endswith('.sam'): output_bam = ''
+    elif file.endswith('.bam'): output_bam = '-b '
+
+    __call(f"samtools view -s {fraction} {output_bam}{file} > {output}")
+
+
+def subsample(file, fraction, file2='', output='', output2=''):
+    """
+    Randomly subsample the reads in the input <file>, and write them into the <output> file
+
+    Supported file formats:
+        Fastq (single or paired end)
+        Fasta
+        SAM/BAM
+
+    The input file could be from other folder,
+        but the output file is always written in the current folder.
+
+    Supports compressed input files (automatically detects .gz file name).
+
+    Args:
+        file: str, path-like
+            The input file (fastq, fasta, sam, bam)
 
         fraction: float
             Fraction of reads or sequences to be randomly sampled
 
-        file2: str, path-like object
+        file2: str, path-like
             The filename of the second fastq file for paired-end
+
+        output: str, path-like
+            The output file name
+            If '', then add the input <file> with prefix 'subset_' as the <output> file name
+
+        output2: str, path-like
+            The output file name for <file2> of paired-end fastq
+            If '', then add the input <file2> with prefix 'subset_' as the <output2> file name
     """
-    # Unzip the input file (keep original)
-    is_file_gz = False
+    # Unzip the input file if endswith '.gz'
     if file.endswith('.gz'):
-        __gzip(file)
+        __gzip(file, keep=True)
         file = file[:-3]  # Remove '.gz' suffix
-        is_file_gz = True
+        is_gz = True
+    else:
+        is_gz = False
 
-    # Unzip input file2 (keep original), if files is not None and endswith '.gz'
-    is_file2_gz = False
-    if not file2 is None:
-        if file2.endswith('.gz'):
-            __gzip(file2)
-            file2 = file2[:-3]  # Remove '.gz' suffix
-            is_file2_gz = True
+    if file2.endswith('.gz'):
+        __gzip(file2, keep=True)
+        file2 = file2[:-3]  # Remove '.gz' suffix
+        is_gz2 = True
+    else:
+        is_gz2 = False
 
-    # Simply file extensions
-    if file.endswith('.fasta'):
-        file = file[:-6] + '.fa'
-    elif file.endswith('.fastq'):
-        file = file[:-6] + '.fq'
-    if not file2 is None:
-        if file2.endswith('.fastq'):
-            file2 = file2[:-6] + '.fq'
-
-    # There could only be three cases
-    # 1) Single fasta
+    # Determine file type
     if file.endswith('.fa'):
-        __subset_fa(file, fraction)
-    # 2) Single fastq
-    elif file.endswith('.fq') and file2 is None:
-        __subset_fq(file, fraction)
-    # #) Paired fastq
-    elif file.endswith('.fq') and file2.endswith('.fq'):
-        __subset_fq_pair(file, file2, fraction)
+        ftype = 'fa'
+    elif (file.endswith('.fq') or file.endswith('.fastq'))\
+            and file2 == '':
+        ftype = 'fq'
+    elif (file.endswith('.fq') or file.endswith('.fastq'))\
+            and (file2.endswith('.fq') or file2.endswith('.fastq')):
+        ftype = 'fq_paired'
+    elif file.endswith('.sam') or file.endswith('.bam'):
+        ftype = 'sam'
+    else:
+        ftype = ''
+
+    if output == '':
+        output = 'subset_' + file.split('/')[-1]  # Remove preceding folder path
+    if output2 == '' and ftype == 'fq_paired':
+        output2 = 'subset_' + file2.split('/')[-1]
+
+    if ftype == 'fa': __subsample_fa(file, fraction, output)
+    elif ftype == 'fq': __subsample_fq(file, fraction, output)
+    elif ftype == 'fq_paired': __subsample_fq_pair(file, file2, fraction, output, output2)
+    elif ftype == 'sam': __subsample_sam(file, fraction, output)
 
     # Remove the temporary unzipped file
-    if is_file_gz:
-        os.remove(file)
-    if is_file2_gz:
-        os.remove(file2)
+    if is_gz: os.remove(file)
+    if is_gz2: os.remove(file2)
 

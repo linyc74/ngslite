@@ -1,7 +1,8 @@
-import subprocess
-
-
 from .file_conversion import *
+
+
+# Override the subprosee imported from .file_conversion
+import subprocess
 
 
 def __call(cmd):
@@ -88,6 +89,32 @@ def subset_bam_regions(file, regions, output=None, keep=True):
         __call('mv {} {}'.format(output, file))
 
 
+def remove_unmapped(file, keep=True):
+    """
+    Remove unmapped reads from an input sam/bam file
+        by using the option '-F 4' of 'samtools view' command
+
+    Args:
+        file: str, path-like
+            The input sam/bam file
+
+        keep: bool
+            Keep the input file or not
+    """
+    bam = ['', '-b '][file.endswith('.bam')]  # Output file is bam or not
+    file_out = '{}_remove_unmapped.{}'.format(file[:-4], file[-3:])
+
+    # -b: output is a bam
+    # -h: include header section
+    # -F 4: NOT including the flag 'read unmapped'
+    cmd = f"samtools view -h -F 4 {bam}{file} > {file_out}"
+    __call(cmd)
+
+    if not keep:
+        __call(f"rm {file}")
+        __call(f"mv {file_out} {file}")
+
+
 class SamParser:
     """
     A SAM file parser
@@ -116,6 +143,13 @@ class SamParser:
                 break
         # Store the header string
         self.__header = header
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return
 
     def next(self):
         """
@@ -173,6 +207,13 @@ class SamWriter:
         if not header == '':
             self.__sam.write(header.rstrip() + '\n')
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return
+
     def write(self, alignment):
         """
         Args:
@@ -185,7 +226,6 @@ class SamWriter:
         self.__sam.close()
 
 
-# global variable for decode_flag()
 FLAGS_PROPERTIES = ('read paired',  # 0
                     'read mapped in proper pair',  # 1
                     'read unmapped',  # 2
@@ -198,6 +238,8 @@ FLAGS_PROPERTIES = ('read paired',  # 0
                     'read fails platform/vendor quality checks',  # 9
                     'read is PCR or optical duplicate',  # 10
                     'supplementary alignment')  # 11
+
+
 def decode_flag(flag, return_tuple=False):
     """
     The flag in SAM files is a decimal integer of 12 bits for 12 properties.
@@ -241,6 +283,39 @@ def decode_flag(flag, return_tuple=False):
         return bin_tuple
     # Make {PROPERTY: True/False} pairs and return the dictionary
     return {key: val for key, val in zip(FLAGS_PROPERTIES, bin_tuple)}
+
+
+def encode_flag(flag_dict, return_str=False):
+    """
+    Encode a dictionary of flags into an int, which represents the 12-bit binary string
+
+    Args:
+        flag_dict: dict
+            For example:
+
+            {'first in pair': True,
+             'read reverse strand': False},
+
+            Flags not specified are defaulted False
+
+        return_str: bool
+            If True, returns a 12-bit str
+
+    Returns: int or str
+    """
+
+    bits = ['0'] * 12
+    for key, val in flag_dict.items():
+        # This flag is True, set the corresponding bit to '1'
+        if val:
+            which = FLAGS_PROPERTIES.index(key)
+            bits[which] = '1'
+    # First flag is on the right (last element), so reverse the list <bits>
+    bits = bits[::-1]
+    bits = ''.join(bits)
+    if return_str:
+        return bits
+    return int(bits, 2)  # Binary string -> int
 
 
 def filter_sam_by_flag(file_in, file_out, flag_sets):
@@ -304,4 +379,35 @@ def filter_sam_by_flag(file_in, file_out, flag_sets):
 
     parser.close()
     writer.close()
+
+
+def print_flag(flag=None):
+    """
+    Decode (int -> dict) or encode (dict -> int) a flag and then print it
+
+    Args: None or int or dict
+        If None:
+            Print an example dictionary of flags
+
+        If int:
+            Print decoded (int -> dict) flag
+
+        If dict:
+            print encode (dict -> int) flag
+    """
+    if type(flag) == dict:
+        print(encode_flag(flag))
+        return
+
+    elif flag is None:
+        D = {key: True for key in FLAGS_PROPERTIES}
+
+    elif type(flag) == int:
+        D = decode_flag(flag)
+
+    t = ''
+    for key, val in D.items():
+        t = t + f"'{key}': {val},\n "
+    t = '{' + t[:-3] + '}'
+    print(t)
 
