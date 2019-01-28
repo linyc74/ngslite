@@ -16,6 +16,16 @@ class FastaParser:
         self.close()
         return
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        r = self.next()
+        if r[1] is None:
+            raise StopIteration
+        else:
+            return r
+
     def next(self):
         """
         Returns: tuple

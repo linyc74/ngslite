@@ -151,6 +151,16 @@ class SamParser:
         self.close()
         return
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        r = self.next()
+        if r[1] is None:
+            raise StopIteration
+        else:
+            return r
+
     def next(self):
         """
         Each line of the SAM file has at least 11 fields
