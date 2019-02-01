@@ -165,7 +165,7 @@ class SamParser:
         """
         Each line of the SAM file has at least 11 fields
 
-            Col	Field   Type    Brief Description
+        #   Col	Field   Type    Description
         0   1   QNAME   String  Query template NAME
         1   2   FLAG    Int     bitwise FLAG
         2   3   RNAME   String  References sequence NAME
@@ -420,4 +420,38 @@ def print_flag(flag=None):
         t = t + f"'{key}': {val},\n "
     t = '{' + t[:-3] + '}'
     print(t)
+
+
+def print_sam(read=None):
+    """
+    Pretty print a read (tuple) from sam file
+
+    Args:
+        read: tuple or list of str or int
+            Containing (at least) 11 fields of a read from sam file
+    """
+    if read is None:
+        text = """\
+#   Col	Field   Type    Description
+0   1   QNAME   String  Query template NAME
+1   2   FLAG    Int     bitwise FLAG
+2   3   RNAME   String  References sequence NAME
+3   4   POS     Int     1-based leftmost mapping POSition
+4   5   MAPQ    Int     MAPping Quality
+5   6   CIGAR   String  CIGAR String
+6   7   RNEXT   String  Ref. name of the mate/NEXT read
+7   8   PNEXT   Int     Position of the mate/NEXT read
+8   9   TLEN    Int     observed Template LENgth
+9   10  SEQ     String  segment SEQuence
+10  11  QUAL    String  ASCII of Phred-scaled base QUALity+33"""
+        print(text)
+
+    elif type(read) is tuple or type(read) is list:
+        fields = ['QNAME', 'FLAG ', 'RNAME', 'POS  ', 'MAPQ ',
+                  'CIGAR', 'RNEXT', 'PNEXT', 'TLEN ', 'SEQ  ', 'QUAL ']
+        for i in range(11):
+            print(f"{i}\t{fields[i]}\t{read[i]}")
+        if len(read) > 11:
+            for i in range(11, len(read)):
+                print(f"{i}\t     \t{read[i]}")
 

@@ -22,6 +22,7 @@ ngslite/samtools.py
 ngslite/subsample.py
 ngslite/trim.py
 ngslite/trinity.py
+ngslite/vcftools.py
 ngslite.egg-info/PKG-INFO
 ngslite.egg-info/SOURCES.txt
 ngslite.egg-info/dependency_links.txt

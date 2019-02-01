@@ -30,3 +30,4 @@ from .samtools import *
 from .subsample import *
 from .trim import *
 from .trinity import *
+from .vcftools import *
