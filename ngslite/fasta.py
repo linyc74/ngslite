@@ -21,10 +21,11 @@ class FastaParser:
 
     def __next__(self):
         r = self.next()
-        if r[1] is None:
-            raise StopIteration
-        else:
+        if r:
             return r
+        else:  # r is None
+            self.__fasta.close()
+            raise StopIteration
 
     def next(self):
         """
@@ -34,7 +35,7 @@ class FastaParser:
         """
         header = self.__fasta.readline().rstrip()[1:]
         if header == '':
-            return (None, ) * 2
+            return None
 
         seq = ''
         while True:

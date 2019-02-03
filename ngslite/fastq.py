@@ -21,10 +21,11 @@ class FastqParser:
 
     def __next__(self):
         r = self.next()
-        if r[1] is None:
+        if r:
+             return r
+        else:  # r is None:
+            self.__fastq.close()
             raise StopIteration
-        else:
-            return r
 
     def next(self):
         """
@@ -36,10 +37,10 @@ class FastqParser:
         line2 = self.__fastq.readline().rstrip()
         line3 = self.__fastq.readline().rstrip()
         line4 = self.__fastq.readline().rstrip()
-        if line1 == '':
-            return (None, ) * 4
-        else:
+        if line1:
             return line1, line2, line3, line4
+        else:  # line1 == ''
+            return None
 
     def close(self):
         self.__fastq.close()

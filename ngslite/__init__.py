@@ -20,6 +20,7 @@ from .fasta import *
 from .fastq import *
 from .file_conversion import *
 from .filetools import *
+from .genbank import *
 from .gtftools import *
 from .hmmer import *
 from .hmmer_parse import *

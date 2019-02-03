@@ -18,16 +18,17 @@ class GtfParser:
 
     def __next__(self):
         r = self.next()
-        if r[1] is None:
-            raise StopIteration
-        else:
+        if r:
             return r
+        else:  # r is None
+            self.__gtf.close()
+            raise StopIteration
 
     def next(self):
         """
-        Each line of the GTF file has 9 fields````
+        Each line of the GTF file has 9 fields
 
-            Col	Field       Type
+        #   Col	Field       Type
         0   1   seqname     string
         1   2   source      string
         2   3   feature     string
@@ -42,9 +43,7 @@ class GtfParser:
             9 fields of a feature (i.e. a line)
         """
         line = self.__gtf.readline().rstrip()
-        if line == '':
-            return (None, ) * 9
-        else:
+        if line:
             fields = line.split('\t')
             for i in (3, 4, 7):
                 if fields[i] != '.':
@@ -52,6 +51,8 @@ class GtfParser:
             if fields[5] != '.':
                 fields[5] = float(fields[5])
             return tuple(fields)
+        else:  # line == ''
+            return None
 
     def close(self):
         self.__gtf.close()
@@ -147,4 +148,35 @@ def gtf_replace_blank_with(file, s, output):
 
     parser.close()
     writer.close()
+
+
+def print_gtf(feature=None):
+    """
+    Pretty print a feature (tuple) from GTF or GFF file
+
+    Args:
+        feature: tuple or list
+            Containing 9 fields of a feature from GTF or GFF file
+    """
+    if feature is None:
+        text = """\
+#   Col	Field       Type
+0   1   seqname     string
+1   2   source      string
+2   3   feature     string
+3   4   start       int
+4   5   end         int
+5   6   score       float
+6   7   strand      string ('+', '-')
+7   8   frame       int (0, 1, 2)
+8   9   attribute   string"""
+        print(text)
+
+    elif type(feature) is tuple or type(feature) is list:
+        fields = ['seqname  ', 'source   ', 'feature  ', 'start    ', 'end      ',
+                  'score    ', 'strand   ', 'frame    ', 'attribute']
+        for i in range(9):
+            print(f"{i}\t{fields[i]}\t{feature[i]}")
+
+
 

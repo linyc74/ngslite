@@ -156,10 +156,11 @@ class SamParser:
 
     def __next__(self):
         r = self.next()
-        if r[1] is None:
-            raise StopIteration
-        else:
+        if r:
             return r
+        else:  # r is None
+            self.__sam.close()
+            raise StopIteration
 
     def next(self):
         """
@@ -184,13 +185,13 @@ class SamParser:
               depending of the presence of additional optional fields
         """
         line = self.__sam.readline().rstrip()
-        if line == '':
-            return (None, ) * 11
-        else:
+        if line:
             fields = line.split('\t')
             for i in (1, 3, 4, 7, 8):
                 fields[i] = int(fields[i])
             return tuple(fields)
+        else:  # line == ''
+            return None
 
     def get_header(self):
         """Returns the header section (str) of SAM file"""

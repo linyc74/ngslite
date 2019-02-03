@@ -41,7 +41,8 @@ class VcfParser:
         r = self.next()
         if r:
             return r
-        else:
+        else:  # r is None
+            self.__vcf.close()
             raise StopIteration
 
     def next(self):
@@ -69,7 +70,7 @@ class VcfParser:
             for i in (1, 5):
                 fields[i] = int(fields[i])
             return tuple(fields)
-        else:
+        else:  # line == ''
             return None
 
     def get_header(self):
