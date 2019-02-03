@@ -12,6 +12,7 @@ ngslite/fasta.py
 ngslite/fastq.py
 ngslite/file_conversion.py
 ngslite/filetools.py
+ngslite/genbank.py
 ngslite/gtftools.py
 ngslite/hmmer.py
 ngslite/hmmer_parse.py
