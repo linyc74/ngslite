@@ -24,7 +24,6 @@ class FastaParser:
         if r:
             return r
         else:  # r is None
-            self.__fasta.close()
             raise StopIteration
 
     def next(self):

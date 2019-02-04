@@ -1,6 +1,6 @@
-from gtftools import *
-from fasta import *
-from dnatools import translate, rev_comp
+from .gtftools import GtfParser
+from .fasta import FastaParser
+from .dnatools import translate, rev_comp
 
 
 from datetime import date
@@ -96,6 +96,7 @@ def __read_gtf_attribute(feature):
     """
     D = {}
     for attr in feature[-1].split(';'):
+        attr = attr.strip()
         # Use the first empty space to separate key and "value"
         pos = attr.find(' ')
         key, val = attr[:pos], attr[pos+1:]
@@ -273,8 +274,47 @@ def __format_ref_seq(seq):
 
 
 # The master public function
-def make_genbank(fasta, gtf, output, shape='linear', definition='.',
-                 keywords='.', source='.', organism='.', division='ENV'):
+def make_genbank(fasta, gtf, output, shape='linear', DEFINITION='.',
+                 KEYWORDS='.', SOURCE='.', ORGANISM='.', genbank_division='ENV'):
+    """
+    Merge a fasta file and a GTF file into a genbank file, in which
+        the fasta file provides the genome sequence and
+        the GTF file provides annotation (e.g. CDS).
+
+    The fasta file can contain more than one sequence. Headers in the fasta file
+        is used as the ACCESSION in the genbank file.
+
+    GFF and GTF formats are both supported.
+
+    Args:
+        fasta: str, path-like
+            The input fasta file
+
+        gtf: str, path-like
+            The input GTF (or GFF) file
+
+        output: str, path-like
+            The output genbank file
+
+        shape: str
+            The shape of DNA or RNA, either 'linear' or 'circular'
+
+        DEFINITION: str
+            The "DEFINITION" field in the genbank file
+
+        KEYWORDS: str
+            The "KEYWORDS" field in the genbank file
+
+        SOURCE: str
+            The "SOURCE" field in the genbank file
+
+        ORGANISM: str
+            The "ORGANISM" field in the genbank file
+
+        genbank_division: str,
+            The three-letter tag for one of the 18 divisions in the GenBank database.
+            Default 'ENV' for environmental sampling sequences
+    """
 
     # Group the features in the GTF file in a dictionary
     # {'seqname': [list of features]}
@@ -293,32 +333,36 @@ def make_genbank(fasta, gtf, output, shape='linear', definition='.',
                              length = len(genome_seq),
                              shape = shape,
                              ACCESSION = genome_id,
-                             DEFINITION = definition,
-                             KEYWORDS = keywords,
-                             SOURCE = source,
-                             ORGANISM = organism,
-                             division=division)
+                             DEFINITION = DEFINITION,
+                             KEYWORDS = KEYWORDS,
+                             SOURCE = SOURCE,
+                             ORGANISM = ORGANISM,
+                             division=genbank_division)
         gbk.write(text)
 
         # --- FEATURE --- #
         text = __init_feature(length=len(genome_seq),
-                              organism=organism)
+                              organism=ORGANISM.split('\n')[0])
         gbk.write(text)
 
         # Get the features belonging to the current genome
         features = feature_dict.get(genome_id, [])
         for ftr in features:
-            ftr_type, start, end, strand = ftr[2], ftr[3], ftr[4], ftr[6]
+            ftr_type, start, end, strand, frame = ftr[2], ftr[3], ftr[4], ftr[6], ftr[7]
+
             # Read the attributes of the feature as a dictionary
             attr_dict = __read_gtf_attribute(ftr)
 
-            # If the feature is a CDS, we need to add the protein sequence
+            # If the feature is a CDS, we need to add:
+            #   protein sequence (tranlation)
+            #   frame (codon start)
             if ftr_type == 'CDS':
-                cds = genome_seq[start-1:end]
                 if strand == '+':
-                    attr_dict['translation'] = translate(cds)
+                    cds = genome_seq[start - 1:end]
                 else:  # strand == '-'
-                    attr_dict['translation'] = translate(rev_comp(cds))
+                    cds = rev_comp(genome_seq[start - 1:end])
+                attr_dict['translation'] = translate(cds)
+                attr_dict['codon_start'] = frame + 1  # codon start is 1-based
 
             text = __add_feature(key=ftr_type,
                                  start=start,
@@ -335,30 +379,4 @@ def make_genbank(fasta, gtf, output, shape='linear', definition='.',
         gbk.write('//\n')
 
     gbk.close()
-    
-
-def test():
-    organism = '''Saccharomyces cerevisiae 
-    Eukaryota; Fungi; Ascomycota; Saccharomycotina; Saccharomycetes; 
-    Saccharomycetales; Saccharomycetaceae; Saccharomyces.'''
-
-    H = \
-        __make_header(molecule='DNA',
-                         length=1000,
-                         shape='linear',
-                         division='PHG',
-                         ACCESSION='NEBs1',
-                         DEFINITION='NEBs1',
-                         KEYWORDS='.',
-                         SOURCE='NEB sewage treatment plant',
-                         ORGANISM=organism)
-    print(H)
-
-    make_genbank(fasta='contigs.fa', gtf='annotation.gtf', output='output.gb')
-
-
-if __name__ == '__main__':
-    test()
-
-
 

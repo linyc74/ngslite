@@ -159,7 +159,6 @@ class SamParser:
         if r:
             return r
         else:  # r is None
-            self.__sam.close()
             raise StopIteration
 
     def next(self):

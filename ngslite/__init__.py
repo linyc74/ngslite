@@ -6,7 +6,7 @@ Python functions for manipulating NGS-related data and files
 """
 
 
-__version__ = '0.5'
+__version__ = '0.6.1'
 
 
 from .arrfunc import *
@@ -23,7 +23,6 @@ from .filetools import *
 from .genbank import *
 from .gtftools import *
 from .hmmer import *
-from .hmmer_parse import *
 from .jellyfish import *
 from .kmertools import *
 from .metaspades import *

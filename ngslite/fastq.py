@@ -24,7 +24,6 @@ class FastqParser:
         if r:
              return r
         else:  # r is None:
-            self.__fastq.close()
             raise StopIteration
 
     def next(self):

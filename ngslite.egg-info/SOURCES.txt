@@ -15,7 +15,6 @@ ngslite/filetools.py
 ngslite/genbank.py
 ngslite/gtftools.py
 ngslite/hmmer.py
-ngslite/hmmer_parse.py
 ngslite/jellyfish.py
 ngslite/kmertools.py
 ngslite/metaspades.py

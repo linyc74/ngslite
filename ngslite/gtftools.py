@@ -21,7 +21,6 @@ class GtfParser:
         if r:
             return r
         else:  # r is None
-            self.__gtf.close()
             raise StopIteration
 
     def next(self):
