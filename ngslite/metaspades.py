@@ -33,15 +33,11 @@ def metaspades(fq1, fq2, output, min_contig_length=1000, threads=16, memory=250)
     """
     __call(f"spades.py --meta -1 {fq1} -2 {fq2} -o {output} --threads {threads} --memory {memory} > {output}.log")
 
-    print(f"Retrieve contigs (>= {min_contig_length} bp) from {output}/contigs.fasta -> {output}.fa")
-    parser = FastaParser(f"{output}/contigs.fasta")
-    writer = FastaWriter(f"{output}.fa")
-    while True:
-        head, seq = parser.next()
-        if head is None:
-            break
-        if len(seq) >= min_contig_length:
-            writer.write(head, seq)
-    parser.close()
-    writer.close()
+    print(f"Retrieve contigs (>= {min_contig_length} bp) from {output}/contigs.fasta -> {output}.fa",
+          flush=True)
 
+    with FastaParser(f"{output}/contigs.fasta") as parser:
+        with FastaWriter(f"{output}.fa") as writer:
+            for head, seq in parser:
+                if len(seq) >= min_contig_length:
+                    writer.write(head, seq)

@@ -31,13 +31,12 @@ def __is_dna(fasta):
     """
     Returns 'True' if the first sequence of the <fasta> file is a DNA
     """
-    parser = FastaParser(fasta)
-    is_dna = True
-    for char in set(parser.next()[1]):
-        if not char in ('A', 'C', 'G', 'T'):
-            is_dna = False
-            break
-    parser.close()
+    with FastaParser(fasta) as parser:
+        is_dna = True
+        for char in set(parser.next()[1]):
+            if not char in ('A', 'C', 'G', 'T'):
+                is_dna = False
+                break
     return is_dna
 
 
@@ -56,23 +55,19 @@ def __translate_dna_database(fasta):
     if fasta.endswith('.fa'): output = fasta[:-3] + '_translated.fa'
     elif fasta.endswith('.fasta'): output = fasta[:-6] + '_translated.fa'
 
-    parser = FastaParser(fasta)
-    writer = FastaWriter(output, 'w')
-    while True:
-        head, seq = parser.next()
-        if head is None or seq is None:
-            break
+    with FastaParser(fasta) as parser:
+        with FastaWriter(output, 'w') as writer:
+            for head, seq in parser:
+                for frame in (1, 2, 3):
+                    new_head = f"{head};frame={frame}"
+                    aa_seq = translate(seq[frame-1:])
+                    writer.write(new_head, aa_seq)
 
-        for frame in (1, 2, 3):
-            new_head = f"{head};frame={frame}"
-            aa_seq = translate(seq[frame-1:])
-            writer.write(new_head, aa_seq)
-
-        for frame in (-1, -2, -3):
-            new_head = f"{head};frame={frame}"
-            rc_seq = rev_comp(seq)
-            aa_seq = translate(rc_seq[-frame-1:])
-            writer.write(new_head, aa_seq)
+                for frame in (-1, -2, -3):
+                    new_head = f"{head};frame={frame}"
+                    rc_seq = rev_comp(seq)
+                    aa_seq = translate(rc_seq[-frame-1:])
+                    writer.write(new_head, aa_seq)
 
     return output
 

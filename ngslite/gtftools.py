@@ -100,19 +100,11 @@ def subset_gtf(file, seqname, output):
     if isinstance(seqname, str):
         seqname = [seqname]
 
-    parser = GtfParser(file)
-    writer = GtfWriter(output)
-
-    while True:
-        item = parser.next()
-        if item[0] is None:
-            break
-
-        if item[0] in seqname:
-            writer.write(item)
-
-    parser.close()
-    writer.close()
+    with GtfParser(file) as parser:
+        with GtfWriter(output) as writer:
+            for feature in parser:
+                if feature[0] in seqname:
+                    writer.write(feature)
 
 
 def gtf_replace_blank_with(file, s, output):
