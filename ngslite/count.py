@@ -1,4 +1,6 @@
 import subprocess
+from functools import partial
+printf = partial(print, flush=True)
 
 
 def count_reads(file, mapped=True):
@@ -28,7 +30,7 @@ def count_reads(file, mapped=True):
             while fh.readline() != '':
                 i += 1
             if i % 4 != 0:
-                print('Warning: Number of lines in the fastq file is not multiple of 4.')
+                printf('Warning: Number of lines in the fastq file is not multiple of 4.')
             count = int(i / 4)
 
         # FASTA: Use '>' to count the reads in fasta file

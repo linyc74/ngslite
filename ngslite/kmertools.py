@@ -1,6 +1,8 @@
 import numpy as np
 import random
 import subprocess
+from functools import partial
+printf = partial(print, flush=True)
 
 
 from .fasta import read_fasta
@@ -159,10 +161,10 @@ def save_kmer_2D_points(kmers, x, y, file, x_name='x', y_name='y', description='
     Returns: None
     """
     if len(kmers) != len(x):
-        print("The number of 'kmers' is not equal to that of 'x'")
+        printf("The number of 'kmers' is not equal to that of 'x'")
         return
     if len(kmers) != len(y):
-        print("The number of 'kmers' is not equal to that of 'y'")
+        printf("The number of 'kmers' is not equal to that of 'y'")
         return
 
     if not file.endswith('.tsv'):

@@ -1,3 +1,7 @@
+from functools import partial
+printf = partial(print, flush=True)
+
+
 class GtfParser:
     def __init__(self, file):
         """
@@ -110,7 +114,7 @@ def subset_gtf(file, seqname, output):
 def gtf_replace_blank_with(file, s, output):
     """
     Replace blank spaces with <s> in the input GTF file.
-    Check the fields that are strings: <seqname>, <source>, <feature>, <attribute>
+    Only check the fields that are string: <seqname>, <source>, <feature>, <attribute>
 
     Args:
         file: str, path-like
@@ -122,23 +126,17 @@ def gtf_replace_blank_with(file, s, output):
         output:
             The output GTF file
     """
-    parser = GtfParser(file)
-    writer = GtfWriter(output)
+    with GtfParser(file) as parser:
+        with GtfWriter(output) as writer:
+            for entry in parser:
+                seqname, source, feature, start, end, score, strand, frame, attribute = entry
 
-    while True:
-        seqname, source, feature, start, end, score, strand, frame, attribute = parser.next()
-        if seqname is None:
-            break
+                seqname = seqname.replace(' ', s)
+                source = source.replace(' ', s)
+                feature = feature.replace(' ', s)
+                attribute = attribute.replace(' ', s)
 
-        seqname = s.join(seqname.split(' '))
-        source = s.join(source.split(' '))
-        feature = s.join(feature.split(' '))
-        attribute = s.join(attribute.split(' '))
-
-        writer.write((seqname, source, feature, start, end, score, strand, frame, attribute))
-
-    parser.close()
-    writer.close()
+                writer.write((seqname, source, feature, start, end, score, strand, frame, attribute))
 
 
 def print_gtf(feature=None):
@@ -161,13 +159,13 @@ def print_gtf(feature=None):
 6   7   strand      string ('+', '-')
 7   8   frame       int (0, 1, 2)
 8   9   attribute   string"""
-        print(text)
+        printf(text)
 
     elif type(feature) is tuple or type(feature) is list:
         fields = ['seqname  ', 'source   ', 'feature  ', 'start    ', 'end      ',
                   'score    ', 'strand   ', 'frame    ', 'attribute']
         for i in range(9):
-            print(f"{i}\t{fields[i]}\t{feature[i]}")
+            printf(f"{i}\t{fields[i]}\t{feature[i]}")
 
 
 

@@ -1,4 +1,6 @@
 from .file_conversion import *
+from functools import partial
+printf = partial(print, flush=True)
 
 
 # Override the subprosee imported from .file_conversion
@@ -6,11 +8,11 @@ import subprocess
 
 
 def __call(cmd):
-    print('CMD: ' + cmd)
+    printf('CMD: ' + cmd)
     try:
         subprocess.check_call(cmd, shell=True)
     except Exception as inst:
-        print(inst)
+        printf(inst)
 
 
 def sort_bam(file, keep=False):
@@ -362,18 +364,14 @@ def filter_sam_by_flag(file_in, file_out, flag_sets):
     parser = SamParser(file_in)
     writer = SamWriter(file_out, header=parser.get_header())
 
-    while True:
-        A = parser.next()
-        if A[0] is None:  # The end of input file, so break
-            break
-
-        flag = decode_flag(A[1])  # FLAG is the second field of each line
+    for A in parser:
+        decoded_flag = decode_flag(A[1])  # FLAG is the second field of each line
         for each_set in flag_sets:
             # each_set is a dict
 
             passed = True
             for key in each_set.keys():
-                if not flag[key] == each_set[key]:
+                if each_set[key] != decoded_flag[key]:
                     # If any flag among the set is not satisfied,
                     #   break from the loop of the dictionary <each_set>
                     passed = False
@@ -406,7 +404,7 @@ def print_flag(flag=None):
             print encode (dict -> int) flag
     """
     if type(flag) == dict:
-        print(encode_flag(flag))
+        printf(encode_flag(flag))
         return
 
     elif flag is None:
@@ -419,7 +417,7 @@ def print_flag(flag=None):
     for key, val in D.items():
         t = t + f"'{key}': {val},\n "
     t = '{' + t[:-3] + '}'
-    print(t)
+    printf(t)
 
 
 def print_sam(read=None):
@@ -444,14 +442,14 @@ def print_sam(read=None):
 8   9   TLEN    Int     observed Template LENgth
 9   10  SEQ     String  segment SEQuence
 10  11  QUAL    String  ASCII of Phred-scaled base QUALity+33"""
-        print(text)
+        printf(text)
 
     elif type(read) is tuple or type(read) is list:
         fields = ['QNAME', 'FLAG ', 'RNAME', 'POS  ', 'MAPQ ',
                   'CIGAR', 'RNEXT', 'PNEXT', 'TLEN ', 'SEQ  ', 'QUAL ']
         for i in range(11):
-            print(f"{i}\t{fields[i]}\t{read[i]}")
+            printf(f"{i}\t{fields[i]}\t{read[i]}")
         if len(read) > 11:
             for i in range(11, len(read)):
-                print(f"{i}\t     \t{read[i]}")
+                printf(f"{i}\t     \t{read[i]}")
 

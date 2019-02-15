@@ -1,15 +1,17 @@
 import subprocess
+from functools import partial
+printf = partial(print, flush=True)
 
 
 from .file_conversion import fq_to_fa
 
 
 def __call(cmd):
-    print('CMD: ' + cmd)
+    printf('CMD: ' + cmd)
     try:
         subprocess.check_call(cmd, shell=True)
     except Exception as inst:
-        print(inst)
+        printf(inst)
 
 
 def __gzip(file, keep=True):

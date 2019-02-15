@@ -133,17 +133,7 @@ def fasta_replace_blank_with(file, s, output):
         output:
             The output fasta file
     """
-    parser = FastaParser(file)
-    writer = FastaWriter(output)
-
-    while True:
-        head, seq = parser.next()
-        if head is None:
-            break
-
-        head = s.join(head.split(' '))
-        writer.write(head, seq)
-
-    parser.close()
-    writer.close()
-
+    with FastaParser(file) as parser:
+        with FastaWriter(output) as writer:
+            for head, seq in parser:
+                writer.write(head.replace(' ', s), seq)

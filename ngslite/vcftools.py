@@ -1,3 +1,7 @@
+from functools import partial
+printf = partial(print, flush=True)
+
+
 class VcfParser:
     """
     A VCF file parser for VCFv4.3
@@ -101,16 +105,16 @@ def print_vcf(var=None):
 6   7   FILTER  String  A flag indicating which of a given set of filters the variation has passed
 7   8   INFO    String  An extensible list of key-value pairs (fields) describing the variation, for example, NS=2;DP=10;AF=0.333,0.667;AA=T;DB
 8   9                   Optional fields..."""
-        print(text)
+        printf(text)
 
     elif type(var) is tuple or type(var) is list:
         fields = ['CHROM ', 'POS   ', 'ID    ', 'REF   ', 'ALT   ',
                   'QUAL  ', 'FILTER', 'INFO  ']
         for i in range(8):
-            print(f"{i}\t{fields[i]}\t{var[i]}")
+            printf(f"{i}\t{fields[i]}\t{var[i]}")
         if len(var) > 8:
             for i in range(8, len(var)):
-                print(f"{i}\t     \t{var[i]}")
+                printf(f"{i}\t     \t{var[i]}")
 
 
 def get_info(var):

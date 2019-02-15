@@ -1,4 +1,6 @@
 import subprocess
+from functools import partial
+printf = partial(print, flush=True)
 
 
 from .fasta import FastaParser, FastaWriter, read_fasta
@@ -6,11 +8,11 @@ from .dnatools import translate, rev_comp
 
 
 def __call(cmd):
-    print('CMD: ' + cmd)
+    printf('CMD: ' + cmd)
     try:
         subprocess.check_call(cmd, shell=True)
     except Exception as inst:
-        print(inst)
+        printf(inst)
 
 
 def __gzip(file, keep=True):
@@ -266,7 +268,7 @@ def parse_hmmsearch_result(file, output):
                     gtf_line_count += 1
 
     gtf.close()
-    print('There are totally {} hits exported into the GTF file "{}".'.format(gtf_line_count, output))
+    printf('There are totally {} hits exported into the GTF file "{}".'.format(gtf_line_count, output))
 
 
 def validate_hmm_parse_result(gtf, dna_database, output):

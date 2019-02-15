@@ -1,14 +1,16 @@
 import subprocess
 import os
 import itertools
+from functools import partial
+printf = partial(print, flush=True)
 
 
 def __call(cmd):
-    print('CMD: ' + cmd)
+    printf('CMD: ' + cmd)
     try:
         subprocess.check_call(cmd, shell=True)
     except Exception as inst:
-        print(inst)
+        printf(inst)
 
 
 def zip_broadcast(*lists):
