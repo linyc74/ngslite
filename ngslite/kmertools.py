@@ -13,8 +13,8 @@ from .jellyfish import jellyfish_count
 def read_kmers(jf_fa, min_count=1):
     """
     Args:
-        jf_fa: str
-            Name of fasta exported by jellyfish
+        jf_fa: str, path-like
+            The fasta exported by jellyfish
 
         min_count: int
             Kmers >= min_count will be included
@@ -45,11 +45,11 @@ def read_kmers(jf_fa, min_count=1):
 def kmer_2D_points(jf_fa_1, jf_fa_2, min_count=1):
     """
     Args:
-        jf_fa_1: str
-            Name of fasta exported by jellyfish
+        jf_fa_1: str, path-like
+            The fasta exported by jellyfish
 
-        jf_fa_2: str
-            Name of fasta exported by jellyfish
+        jf_fa_2: str, path-like
+            The fasta exported by jellyfish
 
         min_count: int
             Kmers >= min_count will be included from the jellyfish fasta
@@ -121,7 +121,7 @@ def save_kmer_2D_points(kmers, x, y, file, x_name='x', y_name='y', description='
     """
     This method writes a tab-delimited file to store 2D points of kmers.
 
-    The first line is the comment/description text.
+    The first line is the description text.
 
     The second line is the header line:
         'k-mer' \t <x_name> \t <y_name>
@@ -130,7 +130,7 @@ def save_kmer_2D_points(kmers, x, y, file, x_name='x', y_name='y', description='
         <kmer_seq> \t <x_coordinate> \t <y_coordinate>
 
     Here's an example:
-               \t <x_name> \t <y_name>
+        k-mer  \t <x_name> \t <y_name>
         AAAAAA \t 10       \t 10
         AAAAAC \t 1        \t 1
 
@@ -177,7 +177,7 @@ def save_kmer_2D_points(kmers, x, y, file, x_name='x', y_name='y', description='
 
     with open(file, 'w') as fh:
         fh.write(description + '\n')
-        fh.write('\t{}\t{}\n'.format(x_name, y_name))
+        fh.write('k-mer\t{}\t{}\n'.format(x_name, y_name))
         for i in range(len(kmers)):
             fh.write('{}\t{}\t{}\n'.format(kmers[i], x[i], y[i]))
 
@@ -195,7 +195,7 @@ def read_kmer_2D_points(file, dtype=np.uint32, fraction=1.):
         <kmer_seq> \t <x_coordinate> \t <y_coordinate>
 
     Here's an example:
-               \t <x_name> \t <y_name>
+        k-mer  \t <x_name> \t <y_name>
         AAAAAA \t 10       \t 10
         AAAAAC \t 1        \t 1
 

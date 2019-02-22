@@ -18,6 +18,7 @@ ngslite/hmmer.py
 ngslite/jellyfish.py
 ngslite/kmertools.py
 ngslite/metaspades.py
+ngslite/orf_finder.py
 ngslite/samtools.py
 ngslite/subsample.py
 ngslite/trim.py

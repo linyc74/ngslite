@@ -90,33 +90,11 @@ def read_fasta(file):
 
     Returns: list of tuples
         [(header_1, sequence_1), (header_2, sequence_2), ...]
+
+        If no sequences from the fasta, return an empty list
     """
-    with open(file, 'r') as fh:
-        ret_list = []
-        seq = ''
-        # Get the first header
-        head = fh.readline().rstrip()[1:]
-        while True:
-            line = fh.readline().rstrip()
-
-            # If the line is a new header
-            if line.startswith('>'):
-                # Append the old header and the sequence accumulated so far
-                ret_list.append((head, seq))
-                # Reset the new header and clear the sequence (to be accumulated again)
-                head = line[1:]
-                seq = ''
-
-            # If the end of the file
-            elif line == '':
-                # Append the last header and the sequence of the fasta
-                ret_list.append((head, seq))
-                break
-
-            # Not a header, so just concatenate (i.e. accumulate) the sequence
-            else:
-                seq = seq + line
-    return ret_list
+    with FastaParser(file) as parser:
+        return [(head, seq) for head, seq in parser]
 
 
 def fasta_replace_blank_with(file, s, output):
@@ -137,3 +115,4 @@ def fasta_replace_blank_with(file, s, output):
         with FastaWriter(output) as writer:
             for head, seq in parser:
                 writer.write(head.replace(' ', s), seq)
+
