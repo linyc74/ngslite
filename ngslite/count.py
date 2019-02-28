@@ -1,17 +1,20 @@
 import subprocess
+import os
 from functools import partial
 printf = partial(print, flush=True)
 
 
+from .filetools import gzip
+
+
 def count_reads(file, mapped=True):
     """
-    Count the reads in a file (fasta, fastq or sam/bam).
+    Count the reads in a file
+
+    Supported format: fasta, fastq and sam/bam, compressed gz is also supported
 
     Args:
         file: str, path-like
-            The input file
-            Should have one of the following extension:
-                '.fq', '.fastq', '.fa', '.fasta', '.sam', '.bam'
 
         mapped: bool
             If True, only count reads that are mapped in a sam or bam file
@@ -20,6 +23,12 @@ def count_reads(file, mapped=True):
     Returns: int
         The number of reads or sequences contained in the input file
     """
+    is_gz = False
+    if file.endswith('.gz'):
+        gzip(file, keep=True)
+        file = file[:-3]
+        is_gz = True
+
     ftypes = ['fq', 'fastq', 'fa', 'fasta', 'sam', 'bam']
     assert file.split('.')[-1] in ftypes, 'Invalid input file extention.'
 
@@ -48,6 +57,9 @@ def count_reads(file, mapped=True):
             mapped = ['', '-F 4 '][mapped]
             cmd = f"samtools view -c {mapped}{file}"
             count = int(subprocess.check_output(cmd, shell=True))
+
+    if is_gz:
+        os.remove(file)
 
     return count
 

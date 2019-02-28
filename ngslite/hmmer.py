@@ -74,6 +74,24 @@ def __translate_dna_database(fasta):
     return output
 
 
+def __check_fasta_header(fasta):
+    """
+    Fasta headers should NOT contain ' '. This function checks if it's correct.
+
+    Args:
+        fasta: str, path-like
+
+    Returns: bool
+    """
+    is_correct = True
+    with FastaParser(fasta) as parser:
+        for head, seq in parser:
+            if ' ' in head:
+                is_correct = False
+                break
+    return is_correct
+
+
 def hmmsearch(hmm, database, output):
     """
     Args:
@@ -106,6 +124,10 @@ def hmmsearch(hmm, database, output):
         database = __translate_dna_database(database)
         db_is_dna = True
 
+    if not __check_fasta_header(database):
+        printf(f"Because the database '{database}' contains blank space in headers, hmmsearch is aborted")
+        return
+
     # Run hmmsearch
     __call(f"hmmsearch {hmm} {database} > {output}")
 
@@ -131,7 +153,7 @@ def hmmbuild(seed, hmm):
     __call(f"hmmbuild -o {summary} {hmm} {seed}")
 
 
-def parse_hmmsearch_result(file, output):
+def parse_hmmsearch_result(file, output, database=None):
     """
     Parse the result reported by HMMER, to create a GTF file.
 
@@ -164,12 +186,26 @@ def parse_hmmsearch_result(file, output):
 
         output: str, path-like
             The output GTF file
-    """
-    gtf = open(output, 'w')
-    gtf_line_count = 0
 
+        database: str, path-like
+            The fasta database used for hmmsearch
+            This is used to get the contig length.
+            If None, then use the contig name in the input <file> to get contig length
+    """
+    # Read the hmmsearch result
     with open(file, 'r') as fh:
         text = fh.read()
+
+    # Set up a dictionary of contig lengths
+    if database:
+        with FastaParser(database) as parser:
+            contig_length_dict = {head: len(seq) for head, seq in parser}
+    else:
+        contig_length_dict = {}
+
+    # The output GTF file
+    gtf = open(output, 'w')
+    gtf_line_count = 0
 
     # Remove the document header
     text = text[text.find('\n\n') + 2:]
@@ -210,12 +246,10 @@ def parse_hmmsearch_result(file, output):
             line1 = table.splitlines()[0]
             contig_id, frame = line1.split(';frame=')
             frame = int(frame)
-            contig_length_bp = int(contig_id.split('len=')[1])
-
-            # The HMMER program might have caused an idiosyncratic problem in the contig_id
-            # Fix the idiosyncratic problem in the contig_id, in which there is an extra space ' ' before 'len='
-            # The contig_id has to match exactly to the orifinal fasta database
-            contig_id = 'len='.join(contig_id.split(' len='))
+            if contig_length_dict:
+                contig_length_bp = contig_length_dict[contig_id]
+            else:
+                contig_length_bp = int(contig_id.split('len=')[1])
 
             # From the 4th line, each line is a hit
             hits = table.splitlines()[3:]
