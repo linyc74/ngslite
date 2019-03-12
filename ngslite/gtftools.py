@@ -111,34 +111,6 @@ def subset_gtf(file, seqname, output):
                     writer.write(feature)
 
 
-def gtf_replace_blank_with(file, s, output):
-    """
-    Replace blank spaces with <s> in the input GTF file.
-    Only check the fields that are string: <seqname>, <source>, <feature>, <attribute>
-
-    Args:
-        file: str, path-like
-            The input GTF file
-
-        s: str
-            The string used to replace blank space
-
-        output:
-            The output GTF file
-    """
-    with GtfParser(file) as parser:
-        with GtfWriter(output) as writer:
-            for entry in parser:
-                seqname, source, feature, start, end, score, strand, frame, attribute = entry
-
-                seqname = seqname.replace(' ', s)
-                source = source.replace(' ', s)
-                feature = feature.replace(' ', s)
-                attribute = attribute.replace(' ', s)
-
-                writer.write((seqname, source, feature, start, end, score, strand, frame, attribute))
-
-
 def print_gtf(feature=None):
     """
     Pretty print a feature (tuple) from GTF or GFF file
@@ -166,6 +138,4 @@ def print_gtf(feature=None):
                   'score    ', 'strand   ', 'frame    ', 'attribute']
         for i in range(9):
             printf(f"{i}\t{fields[i]}\t{feature[i]}")
-
-
 
