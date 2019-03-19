@@ -8,11 +8,14 @@ ngslite/bwa.py
 ngslite/cmdtools.py
 ngslite/count.py
 ngslite/dnatools.py
+ngslite/enrichment.py
 ngslite/fasta.py
 ngslite/fastq.py
 ngslite/file_conversion.py
 ngslite/filetools.py
 ngslite/genbank.py
+ngslite/glimmer.py
+ngslite/glimmer_copy.py
 ngslite/gtftools.py
 ngslite/hmmer.py
 ngslite/jellyfish.py

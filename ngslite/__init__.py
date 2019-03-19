@@ -6,7 +6,7 @@ Python functions for manipulating NGS-related data and files
 """
 
 
-__version__ = '0.6.6'
+__version__ = '0.6.7'
 
 
 from .arrfunc import *
@@ -16,11 +16,13 @@ from .bwa import *
 from .cmdtools import *
 from .count import *
 from .dnatools import *
+from .enrichment import *
 from .fasta import *
 from .fastq import *
 from .file_conversion import *
 from .filetools import *
 from .genbank import *
+from .glimmer import *
 from .gtftools import *
 from .hmmer import *
 from .jellyfish import *
