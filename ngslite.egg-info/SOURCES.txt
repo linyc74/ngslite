@@ -5,7 +5,6 @@ ngslite/arrfunc.py
 ngslite/bedtools.py
 ngslite/bowtie2.py
 ngslite/bwa.py
-ngslite/cmdtools.py
 ngslite/count.py
 ngslite/dnatools.py
 ngslite/enrichment.py
@@ -15,13 +14,13 @@ ngslite/file_conversion.py
 ngslite/filetools.py
 ngslite/genbank.py
 ngslite/glimmer.py
-ngslite/glimmer_copy.py
 ngslite/gtftools.py
 ngslite/hmmer.py
 ngslite/jellyfish.py
 ngslite/kmertools.py
 ngslite/metaspades.py
 ngslite/orf_finder.py
+ngslite/prokka.py
 ngslite/samtools.py
 ngslite/subsample.py
 ngslite/trim.py

@@ -137,3 +137,13 @@ def gzip(file, keep=True):
     decomp = ['', '-d '][file.endswith('.gz')]
     __call(f"gzip {decomp}{keep}{file}")
 
+
+def call(cmd):
+    """
+    A simple wrapper of subprocess.check_call(<cmd>, shell=True)
+
+    Args:
+        cmd: str
+            The command to be executed
+    """
+    __call(cmd)

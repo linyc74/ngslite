@@ -92,7 +92,7 @@ def __check_fasta_header(fasta):
     return is_correct
 
 
-def hmmsearch(hmm, database, output):
+def hmmsearch(hmm, database, output, cpu=2):
     """
     Args:
         hmm: str, path-like
@@ -106,6 +106,9 @@ def hmmsearch(hmm, database, output):
 
         output: str, path-like
             The output text file reported by the command "hmmsearch"
+
+        cpu: int,
+            Number of CPUs, 2 is the default in hmmsearch
     """
     db_is_gz = False
     if database.endswith('.gz'):
@@ -129,7 +132,7 @@ def hmmsearch(hmm, database, output):
         return
 
     # Run hmmsearch
-    __call(f"hmmsearch {hmm} {database} > {output}")
+    __call(f"hmmsearch --cpu {cpu} {hmm} {database} > {output}")
 
     if db_is_gz or db_is_dna:
         __call(f"rm {database}")

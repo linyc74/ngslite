@@ -6,14 +6,13 @@ Python functions for manipulating NGS-related data and files
 """
 
 
-__version__ = '0.6.7'
+__version__ = '0.6.8'
 
 
 from .arrfunc import *
 from .bedtools import *
 from .bowtie2 import *
 from .bwa import *
-from .cmdtools import *
 from .count import *
 from .dnatools import *
 from .enrichment import *
@@ -29,6 +28,7 @@ from .jellyfish import *
 from .kmertools import *
 from .metaspades import *
 from .orf_finder import *
+from .prokka import *
 from .samtools import *
 from .subsample import *
 from .trim import *
