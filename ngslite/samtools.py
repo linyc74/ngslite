@@ -23,12 +23,11 @@ def sort_bam(file, keep=False):
         keep: bool
             Keep the input file or not
     """
-    file_out = '{}_sorted.{}'.format(file[:-4], file[-3:])
-    cmd = 'samtools sort {} > {}'.format(file, file_out)
-    __call(cmd)
+    file_out = f"{file[:-4]}_sorted.{file[-3:]}"
+    __call(f"samtools sort {file} > {file_out}")
     if not keep:
-        __call('rm {}'.format(file))
-        __call('mv {} {}'.format(file_out, file))
+        __call(f"rm {file}")
+        __call(f"mv {file_out} {file}")
 
 
 def index_bam(file):
@@ -36,7 +35,7 @@ def index_bam(file):
     Args:
         file: str, path-like
     """
-    cmd = 'samtools index {}'.format(file)
+    cmd = f"samtools index {file}"
     __call(cmd)
 
 
@@ -72,28 +71,27 @@ def subset_bam_regions(file, regions, output=None, keep=True):
 
         keep: bool
             If False, delete the input <file> and rename the output as the input <file>
+            Overrides the <output> file name
     """
     # Convert regions list into a string
-    # ['chr1', 'chr2'] -> '"chr1" "chr2"'
-    add_quote = lambda x: '"{}"'.format(x)
-    regions = ' '.join(map(add_quote, regions))
+    # ['chr1', 'chr2:1001-2000'] -> ' chr1 chr2:1001-2000'
+    regions = ' ' + ' '.join(regions)  # space-separated regions
 
     if output is None:
         output = file[:-len('.bam')] + '_subset.bam'
 
     # -b: output is a bam
     # -h: include header section
-    cmd = 'samtools view -b -h {} {} > {}'.format(file, regions, output)
-    __call(cmd)
+    __call(f"samtools view -b -h {file}{regions} > {output}")
 
     if not keep:
-        __call('rm {}'.format(file))
-        __call('mv {} {}'.format(output, file))
+        __call(f"rm {file}")
+        __call(f"mv {output} {file}")
 
 
 def remove_unmapped(file, keep=True):
     """
-    Remove unmapped reads from an input sam/bam file
+    Remove unmapped reads from an input SAM/BAM file
         by using the option '-F 4' of 'samtools view' command
 
     Args:
@@ -103,14 +101,13 @@ def remove_unmapped(file, keep=True):
         keep: bool
             Keep the input file or not
     """
-    bam = ['', '-b '][file.endswith('.bam')]  # Output file is bam or not
-    file_out = '{}_remove_unmapped.{}'.format(file[:-4], file[-3:])
+    b = ['', '-b '][file.endswith('.bam')]  # Output file is bam or not
+    file_out = f"{file[:-4]}_remove_unmapped.{file[-3:]}"
 
     # -b: output is a bam
     # -h: include header section
     # -F 4: NOT including the flag 'read unmapped'
-    cmd = f"samtools view -h -F 4 {bam}{file} > {file_out}"
-    __call(cmd)
+    __call(f"samtools view -h -F 4 {b}{file} > {file_out}")
 
     if not keep:
         __call(f"rm {file}")

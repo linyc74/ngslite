@@ -1,5 +1,93 @@
+import subprocess
 from functools import partial
 printf = partial(print, flush=True)
+
+
+def __call(cmd):
+    printf('CMD: ' + cmd)
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except Exception as inst:
+        printf(inst)
+
+
+def bcftools_variant_call(ref, bam, output=None):
+    """
+    Wrapper function of "bcftools mpileup" -> BCF (genotype likelihood) -> "bcftools call" -> BCF (variants)
+    BCF stands for binary VCF file
+
+    Args:
+        ref: str, path-like
+            The reference fasta file
+
+        bam: str, path-like
+            The alignment BAM file
+
+        output: str, path-like
+            The output BCF file
+    """
+    # -Ou: output uncompressed bcf
+    # -m: use the default calling method
+    # -v: output only variant sites
+    # -o <file_out>
+    # -f <ref_fasta>
+    if output is None:
+        output = bam[:-4] + '.bcf'
+    __call(f"bcftools mpileup -Ou -f {ref} {bam} | bcftools call -Ou -m -v -o {output}")
+
+
+def sort_bcf(file, keep=False):
+    """
+    Wrapper function of "bcftools sort" to sort BCF and outputs a BCF file.
+
+    Args:
+        file: str, path-like
+
+        keep: bool
+            Keep the input file or not
+    """
+    file_out = f"{file[:-4]}_sorted.{file[-3:]}"
+    # -Ou: output uncompressed bcf
+    # -o <file_out>
+    __call(f"bcftools sort -Ou -o {file_out} {file}")
+    if not keep:
+        __call(f"rm {file}")
+        __call(f"mv {file_out} {file}")
+
+
+def subset_bcf_regions(file, regions, output=None, keep=True):
+    """
+    Args:
+        file: str, path-like
+            The input BCF file
+
+        regions: list of str
+            Each str is a region of the reference genome, e.g.
+                chr1            chromosome 1
+                chr3:1000-2000  chromosome 3 from 1000th (inclusive) to 2000th (inclusive) base
+
+        output: str, path-like
+            The output BCF file
+            If None, add subscript '_subset' to the input <file>
+
+        keep: bool
+            If False, delete the input <file> and rename the output as the input <file>
+            Overrides the <output> file name
+    """
+    # Convert regions list into a string
+    # ['chr1', 'chr2:1001-2000'] -> ' chr1,chr2:1001-2000'
+    regions = ' ' + ','.join(regions)  # comma-separated regions
+
+    if output is None:
+        output = file[:-4] + '_subset.bcf'
+
+    # -Ou: output uncompressed bcf
+    # -o <file_out>
+    __call(f"bcftools view -Ou -o {output} {file}{regions}")
+
+    if not keep:
+        __call(f"rm {file}")
+        __call(f"mv {output} {file}")
 
 
 class VcfParser:
@@ -78,11 +166,47 @@ class VcfParser:
             return None
 
     def get_header(self):
-        """Returns the header section (str) of SAM file"""
+        """Returns the header section (str) of VCF file"""
         return self.__header
 
     def close(self):
         self.__vcf.close()
+
+
+class VcfWriter:
+    def __init__(self, file, header, mode='w'):
+        """
+        The header section should be written in upon instantiation.
+
+        Args:
+            file: str, path-like object
+
+            header: str
+                The header section
+
+            mode: str, 'w' or 'a'
+        """
+        self.__sam = open(file, mode)
+        if not header == '':
+            self.__sam.write(header.rstrip() + '\n')
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return
+
+    def write(self, alignment):
+        """
+        Args:
+            alignment: tuple of str or int
+                Containing 11 (at least) fields of a line of SAM file
+        """
+        self.__sam.write('\t'.join(map(str, alignment)) + '\n')
+
+    def close(self):
+        self.__sam.close()
 
 
 def print_vcf(var=None):
@@ -117,7 +241,7 @@ def print_vcf(var=None):
                 printf(f"{i}\t     \t{var[i]}")
 
 
-def get_info(var):
+def unpack_vcf_info(var):
     """
     Args:
         var: tuple or list of str or int
