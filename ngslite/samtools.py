@@ -1,18 +1,7 @@
-from .file_conversion import *
+from .lowlevel import __call
+from .file_conversion import sam_to_bam
 from functools import partial
 printf = partial(print, flush=True)
-
-
-# Override the subprosee imported from .file_conversion
-import subprocess
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def sort_bam(file, keep=False):

@@ -1,7 +1,6 @@
 from .fasta import FastaParser
 from .bedtools import bedtools_multicov
-
-
+from .lowlevel import __temp
 import os
 import pandas as pd
 
@@ -45,28 +44,34 @@ def compute_enrichment(contig_fasta, bamC, bamE, totalC, totalE,
         output_csv: str, path-like
             The output csv file containing data of all contigs
     """
+    # Generate temp file names
+    bed = __temp('temp', '.bed')
+    multicov = __temp('multicov', '.tsv')
+
     # Generate a BED file from all contigs
-    with open('temp.bed', 'w') as bed:
+    with open(bed, 'w') as fh:
         with FastaParser(contig_fasta) as parser:
             for head, seq in parser:
-                bed.write(f"{head}\t{0}\t{len(seq)}\n")
+                fh.write(f"{head}\t{0}\t{len(seq)}\n")
 
     # Count reads mapped to each contig with "bedtools multicov"
     bedtools_multicov(
-        bed='temp.bed',
+        bed=bed,
         bams=[bamC, bamE],
-        output='multicov.tsv'
+        output=multicov
     )
 
     # Read multicov results as a dataframe
-    df = pd.read_csv('multicov.tsv', sep='\t')
+    df = pd.read_csv(multicov, sep='\t')
     df = df.rename(
         columns={'chrom': 'contig_id',
                  bamC: nameC,
                  bamE: nameE}
     )
-    os.remove('multicov.tsv')
-    os.remove('temp.bed')
+
+    # Remove temp files
+    os.remove(multicov)
+    os.remove(bed)
 
     # Compute RPKM
     df[nameC] = df[nameC] / (df['end']/1e3) / (totalC/1e6)

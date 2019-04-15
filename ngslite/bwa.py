@@ -1,14 +1,6 @@
-import subprocess
+from .lowlevel import __call
 from functools import partial
 printf = partial(print, flush=True)
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def bwa_mapping(ref, fq1, sam, fq2=None, threads=4, score=30):

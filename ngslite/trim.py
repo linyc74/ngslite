@@ -1,14 +1,6 @@
-import subprocess
+from .lowlevel import __call
 from functools import partial
 printf = partial(print, flush=True)
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def trim_galore(fq1, fq2, quality=20, gzip=True, length=20, log='trim_galore.log'):

@@ -1,17 +1,7 @@
-import subprocess
+from .lowlevel import __call, __temp
+from .file_conversion import fq_to_fa
 from functools import partial
 printf = partial(print, flush=True)
-
-
-from .file_conversion import fq_to_fa
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def __gzip(file, keep=True):
@@ -79,16 +69,14 @@ def jellyfish_count(file, k, output, min_count=1, hash_size='100M', threads=4, c
 
     # Count k-mers in the input fastq or fasta file
     canonical = ['', '-C '][canonical]
-    cmd = f"jellyfish count -m {k} -s {hash_size} -t {threads} -o temp.jf {canonical}{file}"
-    __call(cmd)
+    temp_jf = __temp('temp', '.jf')  # for example, temp000.jf
+    __call(f"jellyfish count -m {k} -s {hash_size} -t {threads} -o {temp_jf} {canonical}{file}")
 
     # Remove the counted file if it's not the original input file
     if not file == input_name: __call(f"rm {file}")
 
     # Dump the .jf file into a .fa file
-    cmd = f"jellyfish dump -L {min_count} --output {output} temp.jf"
-    __call(cmd)
+    __call(f"jellyfish dump -L {min_count} --output {output} {temp_jf}")
 
     # The .jf file is not needed, so remove it.
-    __call('rm temp.jf'.format(file))
-
+    __call(f"rm {temp_jf}")

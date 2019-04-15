@@ -1,13 +1,11 @@
+from .fasta import read_fasta
+from .dnatools import rev_comp
+from .jellyfish import jellyfish_count
 import numpy as np
 import random
 import subprocess
 from functools import partial
 printf = partial(print, flush=True)
-
-
-from .fasta import read_fasta
-from .dnatools import rev_comp
-from .jellyfish import jellyfish_count
 
 
 def read_kmers(jf_fa, min_count=1):

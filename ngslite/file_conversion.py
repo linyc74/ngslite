@@ -1,14 +1,6 @@
-import subprocess
+from .lowlevel import __call
 from functools import partial
 printf = partial(print, flush=True)
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def sam_to_bam(file, keep=True):

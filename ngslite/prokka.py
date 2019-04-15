@@ -1,18 +1,8 @@
 from .fasta import FastaParser, FastaWriter
-
-
+from .lowlevel import __call, __temp
 import os
-import subprocess
 from functools import partial
 printf = partial(print, flush=True)
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def __rename_contig_id(genbank, contig_dict):
@@ -24,8 +14,9 @@ def __rename_contig_id(genbank, contig_dict):
             For example: {'contig_1_52671bp': 'assembly=control_contigs;id=NODE_400_length_52671_cov_411.055515;len=52671'}
                            (short header)        (original header)
     """
+    temp_gb = __temp('temp', '.gb')  # for example, temp000.gb
     with open(genbank) as reader:
-        with open('temp.gb', 'w') as writer:
+        with open(temp_gb, 'w') as writer:
             for line in reader:
                 if line.startswith('LOCUS       '):
                     key = line.split()[1]
@@ -35,7 +26,7 @@ def __rename_contig_id(genbank, contig_dict):
                 else:
                     writer.write(line)
     os.remove(genbank)
-    os.rename('temp.gb', genbank)
+    os.rename(temp_gb, genbank)
 
 
 def prokka(fasta, outdir, kingdom, locus_tag='LOCUS', proteins='',
@@ -73,12 +64,12 @@ def prokka(fasta, outdir, kingdom, locus_tag='LOCUS', proteins='',
         keep: bool
             Whether or not to keep all data in the <outdir>
     """
-    # Create a temp fasta file to shorten the header
-    #   because prokka does not take long headers
+    # Create a temp fasta file to shorten the header because prokka does not take long headers
     # Also create a dictionary to index the shortened header
+    temp_fa = __temp('temp', '.fa')  # for example, temp000.fa
     contig_dict = dict()
     with FastaParser(fasta) as parser:
-        with FastaWriter('temp.fa') as writer:
+        with FastaWriter(temp_fa) as writer:
             i = 0
             for head, seq in parser:
                 new_head = f"contig_{i}_{len(seq)}bp"
@@ -95,9 +86,12 @@ def prokka(fasta, outdir, kingdom, locus_tag='LOCUS', proteins='',
         log = f" 2> {log}"
     else:
         log = f" 2> {outdir}.log"
-    cmd = f"prokka --outdir {outdir} --prefix {outdir} --locustag {locus_tag} --kingdom {kingdom} --evalue {evalue} --cpus {threads} {proteins}{meta}temp.fa{log}"
+
+    cmd = f"prokka --outdir {outdir} --prefix {outdir} --locustag {locus_tag} \
+--kingdom {kingdom} --evalue {evalue} --cpus {threads} {proteins}{meta}{temp_fa}{log}"
+
     __call(cmd)
-    os.remove('temp.fa')
+    os.remove(temp_fa)
 
     # In the outdir folder, write a tsv file to index shortened contig headers to the original headers
     with open(f"{outdir}/contig_index.tsv", 'w') as fh:
@@ -110,5 +104,5 @@ def prokka(fasta, outdir, kingdom, locus_tag='LOCUS', proteins='',
     # Rename the contig header back to the original headers using <contig_dict>
     __rename_contig_id(f"{outdir}.gb", contig_dict)
 
-    # Remove temporary files in the output dir
+    # Remove files in the output dir if keep == False
     if not keep: __call(f"rm -r {outdir}")

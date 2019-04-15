@@ -1,8 +1,6 @@
 from .gtftools import GtfParser
 from .fasta import FastaParser
 from .dnatools import translate, rev_comp
-
-
 from datetime import date
 
 

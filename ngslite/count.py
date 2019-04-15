@@ -1,10 +1,8 @@
+from .filetools import gzip
 import subprocess
 import os
 from functools import partial
 printf = partial(print, flush=True)
-
-
-from .filetools import gzip
 
 
 def count_reads(file, mapped=True):

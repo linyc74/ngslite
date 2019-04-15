@@ -18,6 +18,7 @@ ngslite/gtftools.py
 ngslite/hmmer.py
 ngslite/jellyfish.py
 ngslite/kmertools.py
+ngslite/lowlevel.py
 ngslite/metaspades.py
 ngslite/orf_finder.py
 ngslite/prokka.py

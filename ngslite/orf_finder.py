@@ -1,19 +1,9 @@
-import subprocess
+from .fasta import *
+from .gtftools import *
+from .lowlevel import __call, __temp
 import os
 from functools import partial
 printf = partial(print, flush=True)
-
-
-from .fasta import *
-from .gtftools import *
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def orf_finder(fasta, output, min_length=75):
@@ -32,9 +22,10 @@ def orf_finder(fasta, output, min_length=75):
     # ORFfinder can only take fasta headers <= 50 characters
     # Create a temporary fasta file with short headers
     #   and a dictionary matching the short and the original headers
+    temp_fa = temp('temp', '.fa')  # for example, temp000.fa
+    contig_dict = {}
     with FastaParser(fasta) as parser:
-        with FastaWriter('temp.fa') as writer:
-            contig_dict = {}
+        with FastaWriter(temp_fa) as writer:
             for i, contig in enumerate(parser):
                 head, seq = contig
                 writer.write(str(i), seq)
@@ -42,12 +33,13 @@ def orf_finder(fasta, output, min_length=75):
 
     # -outfmt 3: output format = feature table
     # -ml [int]: minimal length
-    __call(f"ORFfinder -in temp.fa -out feature_table.txt -outfmt 3 -ml {min_length}")
+    temp_table = __temp('temp', '.table')  # for example, temp000.table
+    __call(f"ORFfinder -in {temp_fa} -out {temp_table} -outfmt 3 -ml {min_length}")
 
-    os.remove('temp.fa')
+    os.remove(temp_fa)
 
     with GtfWriter(output) as writer:
-        with open('feature_table.txt', 'r') as fh:
+        with open(temp_table) as fh:
             while True:
                 line1 = fh.readline().rstrip()
                 line2 = fh.readline().rstrip()
@@ -84,5 +76,5 @@ def orf_finder(fasta, output, min_length=75):
                      0                   ,  # 8 frame     int (0, 1, 2)
                      f"name \"{orf_id}\"")  # 9 attribute str
                 writer.write(feature)
-        os.remove('feature_table.txt')
+        os.remove(temp_table)
 

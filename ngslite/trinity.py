@@ -1,13 +1,6 @@
+from .lowlevel import __call
 from functools import partial
 printf = partial(print, flush=True)
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def trinity(fq1, fq2, output, threads=16, memory=128, min_contig_length=1000, normalize_reads=False, min_kmer_cov=1, kmer_size=25):

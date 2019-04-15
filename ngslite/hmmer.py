@@ -1,18 +1,8 @@
-import subprocess
-from functools import partial
-printf = partial(print, flush=True)
-
-
 from .fasta import FastaParser, FastaWriter, read_fasta
 from .dnatools import translate, rev_comp
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
+from .lowlevel import __call
+from functools import partial
+printf = partial(print, flush=True)
 
 
 def __gzip(file, keep=True):

@@ -1,17 +1,7 @@
-import subprocess
+from .fasta import *
+from .lowlevel import __call
 from functools import partial
 printf = partial(print, flush=True)
-
-
-from .fasta import *
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def metaspades(fq1, fq2, output, min_contig_length=1000, threads=16, memory=250):

@@ -1,16 +1,8 @@
-import subprocess
+from .lowlevel import __call
 import random
 import os
 from functools import partial
 printf = partial(print, flush=True)
-
-
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def __gzip(file, keep=True):

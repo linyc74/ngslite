@@ -1,17 +1,9 @@
-import subprocess
+from .lowlevel import __call
 from functools import partial
 printf = partial(print, flush=True)
 
 
-def __call(cmd):
-    printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
-
-
-def bcftools_variant_call(ref, bam, output=None):
+def bcftools_variant_call(ref, bam, output=None, max_depth=250, haploid=False):
     """
     Wrapper function of "bcftools mpileup" -> BCF (genotype likelihood) -> "bcftools call" -> BCF (variants)
     BCF stands for binary VCF file
@@ -25,15 +17,27 @@ def bcftools_variant_call(ref, bam, output=None):
 
         output: str, path-like
             The output BCF file
+
+        max_depth: int
+            Max per-file sequencing depth; avoids excessive memory usage, default 250
+
+        haploid: bool,
+            This is for the option "--ploidy" in "bcftools call"
+            If True, set the option "--ploidy 1" for haploid (bacteria)
+            If False, ignore the option "--ploidy", the default is diploid
+            Command "bcftools call --ploidy ?" prints all available presets: GRCh37, GRCh38, X, Y, 1
     """
     # -Ou: output uncompressed bcf
-    # -m: use the default calling method
+    # -m: use the default calling method, i.e. alternative model for multiallelic and rare-variant calling
     # -v: output only variant sites
     # -o <file_out>
     # -f <ref_fasta>
+    # -d <max_depth>
+    # --ploidy <GRCh37|GRCh38|X|Y|1>
     if output is None:
         output = bam[:-4] + '.bcf'
-    __call(f"bcftools mpileup -Ou -f {ref} {bam} | bcftools call -Ou -m -v -o {output}")
+    ploidy = ['', '--ploidy 1 '][haploid]
+    __call(f"bcftools mpileup -Ou -d {max_depth} -f {ref} {bam} | bcftools call -Ou -m -v {ploidy}-o {output}")
 
 
 def sort_bcf(file, keep=False):

@@ -1,20 +1,9 @@
 from .gtftools import GtfWriter
 from .fasta import FastaParser, FastaWriter
-
-
-import subprocess
+from .lowlevel import __call, __temp
 import os
 from functools import partial
 printf = partial(print, flush=True)
-
-
-def __call(cmd, print_cmd=True):
-    if print_cmd:
-        printf('CMD: ' + cmd)
-    try:
-        subprocess.check_call(cmd, shell=True)
-    except Exception as inst:
-        printf(inst)
 
 
 def __remove_extension(file):
@@ -128,18 +117,18 @@ def glimmer3(fasta, output, linear=True, max_overlap=50, min_length=110,
             else:
                 print_cmd = False
 
-            temp_fa = f"temp.fa"
-            with FastaWriter(temp_fa) as writer:
+            temp = __temp(prefix='temp', suffix='')  # for example, temp000
+            with FastaWriter(f"{temp}.fa") as writer:
                 writer.write(head, seq)
 
             # --- Find long ORFs --- #
             # cutoff: Only genes with entropy distance score less than <cutoff> will be considered. Default 1.15
             line = ['', '--linear '][linear]
-            cmd = f"long-orfs --no_header --cutoff {entropy_distance} {line}{temp_fa} longorfs{log}"
+            cmd = f"long-orfs --no_header --cutoff {entropy_distance} {line}{temp}.fa longorfs{log}"
             __call(cmd, print_cmd)
 
             # --- Extract the DNA sequences of long ORFs --- #
-            cmd = f"extract {temp_fa} longorfs > train"
+            cmd = f"extract {temp}.fa longorfs > train"
             __call(cmd, print_cmd)
 
             # --- Build ICM --- #
@@ -152,17 +141,17 @@ def glimmer3(fasta, output, linear=True, max_overlap=50, min_length=110,
             # gene_len: Set minimum gene length to <n>
             # threshold: Set threshold score for calling as gene to n. If the in-frame score >= <n>,
             #   then the region is given a number and considered a potential gene
-            cmd = f"glimmer3 --max_olap {max_overlap} --gene_len {min_length} --threshold {threshold} {temp_fa} icm temp{log}"
+            cmd = f"glimmer3 --max_olap {max_overlap} --gene_len {min_length} --threshold {threshold} {temp}.fa icm {temp}{log}"
             __call(cmd, print_cmd)
-            # glimmer3 outputs two files: temp.detail and temp.predict
+            # glimmer3 outputs two files: {temp}.detail and {temp}.predict
 
-            __parser_glimmer3_result(file='temp.predict', output='temp.gtf')
+            __parser_glimmer3_result(file=f"{temp}.predict", output=f"{temp}.gtf")
 
             # Append the temp gtf to the output gtf
-            with open('temp.gtf') as temp_gtf:
-                output_gtf.write(temp_gtf.read())
+            with open(f"{temp}.gtf") as fh:
+                output_gtf.write(fh.read())
 
-            __call(f"rm {temp_fa} longorfs train icm temp.detail temp.predict temp.gtf", print_cmd)
+            __call(f"rm {temp}.fa longorfs train icm {temp}.detail {temp}.predict {temp}.gtf", print_cmd)
 
         output_gtf.close()
 

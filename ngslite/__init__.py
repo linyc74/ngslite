@@ -6,7 +6,7 @@ Python functions for manipulating NGS-related data and files
 """
 
 
-__version__ = '0.6.9'
+__version__ = '0.7.0'
 
 
 from .arrfunc import *
