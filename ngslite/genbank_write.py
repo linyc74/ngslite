@@ -56,7 +56,7 @@ def __wrap_line_by_word(line, length, indent):
         if len(last_line) + 1 + len(word) <= length:
             L = L + ' ' + word
         else:
-            L = L + '\n' + ' '*indent + word
+            L = L + ' \n' + ' '*indent + word
     return L[1:]
 
 

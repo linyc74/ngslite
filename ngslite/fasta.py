@@ -82,19 +82,30 @@ class FastaWriter:
         self.__fasta.close()
 
 
-def read_fasta(file):
+def read_fasta(file, as_dict=False):
     """
     Args:
         file: str, path-like object
             The input fasta file
 
-    Returns: list of tuples
-        [(header_1, sequence_1), (header_2, sequence_2), ...]
+        as_dict: bool
+            If True, returns a dictionary
 
-        If no sequences from the fasta, return an empty list
+    Returns: list of tuples, or dict
+
+        [(head_1, seq_1), (head_2, seq_2), ...]
+
+        or
+
+        {head_1: seq_1, head_2: seq_2, ...}
+
+        If no sequences from the fasta, return an empty list or dict
     """
     with FastaParser(file) as parser:
-        return [(head, seq) for head, seq in parser]
+        if as_dict:
+            return {head: seq for head, seq in parser}
+        else:
+            return [(head, seq) for head, seq in parser]
 
 
 def subset_fasta(file, headers, output):

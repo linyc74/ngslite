@@ -12,13 +12,16 @@ ngslite/fasta.py
 ngslite/fastq.py
 ngslite/file_conversion.py
 ngslite/filetools.py
-ngslite/genbank.py
+ngslite/genbank_parse.py
+ngslite/genbank_write.py
 ngslite/glimmer.py
 ngslite/gtftools.py
 ngslite/hmmer.py
 ngslite/jellyfish.py
 ngslite/kmertools.py
+ngslite/locus_extractor.py
 ngslite/lowlevel.py
+ngslite/merge_pfam_orf.py
 ngslite/metaspades.py
 ngslite/orf_finder.py
 ngslite/prokka.py
