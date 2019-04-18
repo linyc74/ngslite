@@ -25,6 +25,23 @@ def __find_feature(feature_arr, keywords):
     return None
 
 
+def __remove_circular(feature_arr):
+    """
+    Remove features of circular genome, i.e. start > end, from an array of GtfFeature objects
+
+    Args:
+        feature_arr: list [GtfFeature, ...]
+
+    Returns:
+        list [GtfFeature, ...]
+    """
+    __feature_arr = []
+    for f in feature_arr:
+        if f.start <= f.end:
+            __feature_arr.append(f)
+    return __feature_arr
+
+
 def __subset_features(feature_arr, start, end):
     """
     In an array of GtfFeature objects, return those located within <start> to <end>
@@ -123,6 +140,9 @@ def locus_extractor(fasta, gtf, keywords, flank, fasta_out, gtf_out):
     If the seed feature is on the reverse strand,
         reverse the genomic region
 
+    Does not support circular genome, thus if a GtfFeature has start > end position, then
+        that feature will be discarded
+
     Args:
         fasta: str, path-like
             The input fasta file
@@ -152,12 +172,12 @@ def locus_extractor(fasta, gtf, keywords, flank, fasta_out, gtf_out):
     # Iterate through each contig
     for seqname in fasta.keys():
         feature_arr = gtf.get(seqname, None)
-
-        if feature_arr is None:  # no annotation for the contig
+        if feature_arr is None:  # no annotation, skip this contig
             continue
 
-        seed = __find_feature(feature_arr, keywords)
+        feature_arr = __remove_circular(feature_arr)
 
+        seed = __find_feature(feature_arr, keywords)
         if seed is None:  # seed not found, skip this contig
             continue
 
@@ -172,7 +192,7 @@ def locus_extractor(fasta, gtf, keywords, flank, fasta_out, gtf_out):
 
         # Crop features from the feature array
         __gtf[seqname] = __crop_features(
-            feature_arr=gtf[seqname],
+            feature_arr=feature_arr,
             start=region_start,
             end=region_end
         )
@@ -185,10 +205,12 @@ def locus_extractor(fasta, gtf, keywords, flank, fasta_out, gtf_out):
                 length=len(__fasta[seqname])
             )
 
+    # Output fasta
     with FastaWriter(fasta_out) as writer:
         for head, seq in __fasta.items():
             writer.write(head, seq)
 
+    # Output GTF
     dict_to_gtf(dict_=__gtf, output=gtf_out)
 
 
