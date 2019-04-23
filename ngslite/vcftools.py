@@ -131,6 +131,7 @@ class VcfParser:
         return
 
     def __iter__(self):
+        self.__vcf.seed(0)
         return self
 
     def __next__(self):

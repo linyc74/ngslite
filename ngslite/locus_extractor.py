@@ -1,5 +1,6 @@
-from .fasta import read_fasta, FastaWriter
-from .gtftools import gtf_to_dict, dict_to_gtf
+from.data_class import FeatureArray
+from .fasta import read_fasta, write_fasta
+from .gtftools import read_gtf, write_gtf
 from .dnatools import rev_comp
 from .genbank_parse import genbank_to_fasta, genbank_to_gtf
 from .genbank_write import make_genbank
@@ -7,129 +8,19 @@ from .lowlevel import __temp
 import os
 
 
-def __find_feature(feature_arr, keywords):
+def _find_feature(feature_arr, keywords):
     """
-    In an array of GtfFeature objects, find one that contains <keywords> in GtfFeature.attribute
-
     Args:
-        feature_arr: list [GtfFeature, ...]
+        feature_arr: list of GenericFeature objects
 
-        keywords: list [str, ...]
-
-    Returns: GtfFeature
+        keywords: list of str
     """
     for f in feature_arr:
-        for k in keywords:
-            if k in f.attribute:
-                return f
+        for word in keywords:
+            for key, val in f.attributes:
+                if word in str(val):
+                    return f
     return None
-
-
-def __remove_circular(feature_arr):
-    """
-    Remove features of circular genome, i.e. start > end, from an array of GtfFeature objects
-
-    Args:
-        feature_arr: list [GtfFeature, ...]
-
-    Returns:
-        list [GtfFeature, ...]
-    """
-    __feature_arr = []
-    for f in feature_arr:
-        if f.start <= f.end:
-            __feature_arr.append(f)
-    return __feature_arr
-
-
-def __subset_features(feature_arr, start, end):
-    """
-    In an array of GtfFeature objects, return those located within <start> to <end>
-
-    Args:
-        feature_arr: list [GtfFeature, ...]
-
-        start: int
-            1-based, inclusive
-
-        end: int
-            1-based, inclusive
-
-    Returns:
-        list [GtfFeature, ...]
-    """
-    __feature_arr = []
-    for f in feature_arr:
-        if f.start >= start and f.end <= end:
-            __feature_arr.append(f)
-    return __feature_arr
-
-
-def __move_features(feature_arr, offset):
-    """
-    For each GtfFeature objects in an array,
-        GtfFeature.start += offset
-        GtfFeature.end += offset
-
-    Args:
-        feature_arr: list [GtfFeature, ...]
-
-        offset: int
-
-    Returns:
-        list [GtfFeature, ...]
-    """
-    __feature_arr = []
-    for f in feature_arr:
-        __f = f._replace(start=f.start + offset, end=f.end + offset)
-        __feature_arr.append(__f)
-    return __feature_arr
-
-
-def __crop_features(feature_arr, start, end):
-    """
-    From an array of GtfFeature objects, crop out those located within <start> to <end>
-
-    Move the locations of GtfFeature by
-        GtfFeature.start += -start + 1
-        GtfFeature.end += -start + 1
-
-    Args:
-        feature_arr: list [GtfFeature, ...]
-
-        start: int
-            1-based, inclusive
-
-        end: int
-            1-base, inclusive
-    """
-    __feature_arr = __subset_features(feature_arr, start, end)
-    return __move_features(__feature_arr, offset=-start+1)
-
-
-def __reverse_features(feature_arr, length):
-    """
-    In an array of GtfFeature objects, reverse the order of those objects and
-        invert start and end of each object by
-            start = length - end + 1
-            end = length - start + 1
-
-    Args:
-        feature_arr: list [GtfFeature, ...]
-
-        length: int,
-            The length (bp) of the genome
-    """
-    __feature_arr = []
-    for f in feature_arr[::-1]:
-        __feature_arr.append(
-            f._replace(
-                start = length - f.end + 1,
-                end = length - f.start + 1,
-                strand = ['+', '-'][f.strand == '+']
-            )
-        )
-    return __feature_arr
 
 
 def locus_extractor(fasta, gtf, keywords, flank, fasta_out, gtf_out):
@@ -163,55 +54,49 @@ def locus_extractor(fasta, gtf, keywords, flank, fasta_out, gtf_out):
     if type(keywords) is str:
         keywords = [keywords]
 
-    fasta = read_fasta(fasta, as_dict=True)
-    gtf = gtf_to_dict(gtf)
+    fasta_dict = read_fasta(fasta, as_dict=True)
+    gtf_dict = read_gtf(gtf, as_dict=True)
 
-    __fasta = dict()
-    __gtf = dict()
+    __sequence_dict = dict()
+    __feature_dict = dict()
 
     # Iterate through each contig
-    for seqname in fasta.keys():
-        feature_arr = gtf.get(seqname, None)
-        if feature_arr is None:  # no annotation, skip this contig
-            continue
+    for seqname, sequence in fasta_dict.items():
+        gtf_features = gtf_dict.get(seqname, [])
+        if len(gtf_features) == 0: continue  # no annotation, skip this contig
 
-        feature_arr = __remove_circular(feature_arr)
+        feature_array = FeatureArray(
+            seqname=seqname,
+            genome_size=len(sequence),
+            features=gtf_features,
+            circular=False
+        )
 
-        seed = __find_feature(feature_arr, keywords)
-        if seed is None:  # seed not found, skip this contig
-            continue
+        seed = _find_feature(feature_array, keywords)
+        if seed is None: continue  # seed not found, skip this contig
 
         region_start = seed.start - flank
         region_end = seed.end + flank
 
         region_start = max(region_start, 1)  # out of bound
-        region_end = min(region_end, len(fasta[seqname]))
 
         # Extract sequence from fasta
-        __fasta[seqname] = fasta[seqname][region_start-1: region_end]
+        sequence = sequence[region_start-1: region_end]
 
         # Crop features from the feature array
-        __gtf[seqname] = __crop_features(
-            feature_arr=feature_arr,
-            start=region_start,
-            end=region_end
-        )
+        feature_array.crop(region_start, region_end)
 
         # Reverse sequence and features if seed is on the reverse strand
         if seed.strand == '-':
-            __fasta[seqname] = rev_comp(__fasta[seqname])
-            __gtf[seqname] = __reverse_features(
-                feature_arr=__gtf[seqname],
-                length=len(__fasta[seqname])
-            )
+            sequence = rev_comp(sequence)
+            feature_array.reverse()
 
-    # Output fasta
-    with FastaWriter(fasta_out) as writer:
-        for head, seq in __fasta.items():
-            writer.write(head, seq)
+        __sequence_dict[seqname] = sequence
+        __feature_dict[seqname] = feature_array
 
-    # Output GTF
-    dict_to_gtf(dict_=__gtf, output=gtf_out)
+    # Write output files
+    write_fasta(data=__sequence_dict, file=fasta_out)
+    write_gtf(data=__feature_dict, file=gtf_out)
 
 
 def genbank_locus_extractor(genbank, keywords, flank, output):
@@ -243,7 +128,7 @@ def genbank_locus_extractor(genbank, keywords, flank, output):
     genbank_to_gtf(
         file=genbank,
         output=temp_gtf,
-        skip_attributes=['translation', 'codon_start']
+        skip_attributes=['translation', 'codon_start', 'transl_table']
     )
 
     locus_extractor(

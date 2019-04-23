@@ -1,45 +1,54 @@
-from .gtftools import *
+from .gtftools import read_gtf, write_gtf
+from .data_class import FeatureArray, GenericFeature
 
 
-def __pfam_in_orf(pfam, orf):
+def _pfam_in_orf(pfam, orf):
+    """
+    Args:
+        pfam: GenericFeature object
+
+        orf: GenericFeature object
+
+    Returns: bool
+        Whether the pfam domain is part of the orf
+    """
     return pfam.start >= orf.start and \
            pfam.end <= orf.end and \
            pfam.strand == orf.strand and \
-           (pfam.start - orf.start) % 3 == 0
+           (pfam.start - orf.start) % 3 == 0  # in-frame
 
 
-def __merge_pfam_arr_to_orf_arr(pfam_arr, orf_arr):
+def _merge_pfam_arr_to_orf_arr(pfam_arr, orf_arr):
     """
     Args:
-        pfam_arr: list of GtfFeature
-            Each GtfFeature is a Pfam domain
+        pfam_arr: list of GenericFeature
+            Each GenericFeature is a Pfam domain
 
-        orf_arr: list of GtfFeature
-            Each GtfFeature is an ORF
+        orf_arr: list of GenericFeature
+            Each GenericFeature is an ORF
 
-    Returns: list of GtfFeature
-        Each GtfFeature is an ORF with Pfam information appended
+    Returns: list of GenericFeature
+        Each GenericFeature is an ORF with Pfam information appended
     """
     merge_arr = []
 
+    # Note that GenericFeature objects in orf_arr and pfam_arr will be altered
     for orf in orf_arr:
-        # D1 is the dictionary of orf attribute
-        D1 = attribute_str_to_dict(orf.attribute)
-
         while len(pfam_arr) > 0:
-            # Get the first Pfam
-            pfam = pfam_arr[0]
+            pfam = pfam_arr[0]  # the first pfam feature
 
-            # D2 is the dictionary of Pfam attribute
-            D2 = attribute_str_to_dict(pfam.attribute)
-            D2['start'] = pfam.start
-            D2['end'] = pfam.end
+            # 1) Pfam is contained by the ORF, so add Pfam information into the ORF
+            if _pfam_in_orf(pfam, orf):
+                pfam_attr = pfam.attributes[:]
+                # Add positional information of the pfam domain
+                pfam_attr += [('start', pfam.start), ('end', pfam.end), ('strand', pfam.strand)]
+                # Convert all pfam attributes [(key, val)] --> str --> 'note' in the ORF
+                orf.add_attribute(key='note', val=str(pfam.attributes))
 
-            # 1) Pfam is completely within the ORF, so add Pfam information into the ORF
-            if __pfam_in_orf(pfam, orf):
-                D1['name'] += ' | ' + D2['name']
-                D1.setdefault('note', '')
-                D1['note'] += str(D2) + ' | '
+                pfam_name = pfam.get_attribute('name')
+                orf_name = orf.get_attribute('name')
+
+                orf.set_attribute('name', f'{orf_name} | {pfam_name}')
                 pfam_arr.pop(0)
 
             # 2) The first Pfam is ahead of ORF, go for the next ORF
@@ -53,24 +62,7 @@ def __merge_pfam_arr_to_orf_arr(pfam_arr, orf_arr):
                 # This is an orphan Pfam not contained by any ORF, add it into the output array
                 merge_arr.append(pfam_arr.pop(0))
 
-        # Remove trailing ' | '
-        if D1.get('note', '').endswith(' | '):
-            D1['note'] = D1['note'][:-3]
-
-        # Instantiate a new GtfFeature for the re-annotated ORF
-        merge_arr.append(
-            GtfFeature(
-                seqname=orf.seqname,
-                source='.',
-                feature='CDS',
-                start=orf.start,
-                end=orf.end,
-                score='.',
-                strand=orf.strand,
-                frame=0,
-                attribute=attribute_dict_to_str(D1),  # D1 is the dictionary of orf attribute
-            )
-        )
+        merge_arr.append(orf)
 
     return merge_arr
 
@@ -87,17 +79,29 @@ def merge_pfam_into_orf(pfam, orf, output):
         output: str, path-like
             The output GTF in which Pfam is merged into ORFs
     """
-    pfam_dict = gtf_to_dict(file=pfam)
-    orf_dict = gtf_to_dict(file=orf)
+    pfam_dict = read_gtf(file=pfam, as_dict=True)
+    orf_dict = read_gtf(file=orf, as_dict=True)
     merge_dict = {}
 
     # For each contig, merge Pfam feature array into ORF feature array
     for seqname in orf_dict.keys():
-        orf_arr = orf_dict[seqname]
-        orf_arr = sorted(orf_arr, key=lambda x: x.start)
-        pfam_arr = pfam_dict.get(seqname, [])
-        pfam_arr = sorted(pfam_arr, key=lambda x: x.start)
 
-        merge_dict[seqname] = __merge_pfam_arr_to_orf_arr(pfam_arr, orf_arr)
+        orf_arr = FeatureArray(
+            seqname,
+            genome_size=1e6,
+            features=orf_dict[seqname],
+            circular=False
+        )
+        orf_arr.sort()
 
-    dict_to_gtf(dict_=merge_dict, output=output)
+        pfam_arr = FeatureArray(
+            seqname,
+            genome_size=1e6,
+            features=pfam_dict.get(seqname, []),
+            circular=False
+        )
+        pfam_arr.sort()
+
+        merge_dict[seqname] = _merge_pfam_arr_to_orf_arr(pfam_arr, orf_arr)
+
+    write_gtf(data=merge_dict, file=output)

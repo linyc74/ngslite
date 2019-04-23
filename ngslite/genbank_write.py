@@ -1,10 +1,11 @@
-from .gtftools import GtfParser
+from .gtftools import read_gtf
 from .fasta import FastaParser
 from .dnatools import translate, rev_comp
 from datetime import date
+from .data_class import gtf_to_generic_feature
 
 
-def __today():
+def _today():
     """
     Returns: str,
         Today, e.g. '20-JUN-2006'
@@ -16,7 +17,7 @@ def __today():
     return f"{day}-{month}-{year}"
 
 
-def __wrap_paragraph(paragraph, length, indent, by_char=False):
+def _wrap_paragraph(paragraph, length, indent, by_char=False):
     """
     Wraps a paragraph (contains '\n'). The returned paragraph ends with '\n'.
 
@@ -32,13 +33,13 @@ def __wrap_paragraph(paragraph, length, indent, by_char=False):
     # Wrap line by line
     for line in paragraph.rstrip().splitlines():
         if by_char:
-            T = T + __wrap_line_by_char(line, length, indent) + '\n'
+            T = T + _wrap_line_by_char(line, length, indent) + '\n'
         else:  # wrap by word
-            T = T + __wrap_line_by_word(line, length, indent) + '\n'
+            T = T + _wrap_line_by_word(line, length, indent) + '\n'
     return T
 
 
-def __wrap_line_by_word(line, length, indent):
+def _wrap_line_by_word(line, length, indent):
     """
     Wraps a line (usually does not contain '\n') by word.
     The returned line does not end with '\n'.
@@ -56,11 +57,11 @@ def __wrap_line_by_word(line, length, indent):
         if len(last_line) + 1 + len(word) <= length:
             L = L + ' ' + word
         else:
-            L = L + ' \n' + ' '*indent + word
+            L = L + ' ' + '\n' + ' '*indent + word
     return L[1:]
 
 
-def __wrap_line_by_char(line, length, indent):
+def _wrap_line_by_char(line, length, indent):
     """
     Wraps a line (usually does not contain '\n') by character.
     The returned line does not end with '\n'.
@@ -82,31 +83,53 @@ def __wrap_line_by_char(line, length, indent):
     return L
 
 
-def __read_gtf_attribute(feature):
-    """
-    From a feature of GTF file,
-        read the attributes (in the last field) as a dict.
+def _generic_feature_to_genbank_text(generic_feature):
+    f = generic_feature
 
-    Args:
-        feature: tuple or list
+    text = ''
 
-    Returns: dict
-    """
-    D = {}
-    for attr in feature[-1].split(';'):
-        attr = attr.strip()
-        # Use the first empty space to separate key and "value"
-        pos = attr.find(' ')
-        key, val = attr[:pos], attr[pos+1:]
-        # Remove the open and close quotes
-        val = val[1:-1]
-        # Add the key value pair to the dictionary
-        D[key] = val
-    return D
+    # --- First line --- #
+    first_line = f"{' '*5}{f.type}{' '*(16 - len(f.type))}"
+
+    ps = ['', '<'][f.partial_start]
+    pe = ['', '>'][f.partial_end]
+
+    # Contiguous segment, no intron
+    if len(f.regions) == 1:
+        if f.strand == '+':
+            first_line += f"{ps}{f.start}..{f.end}{pe}"
+        else:
+            first_line += f"complement({ps}{f.start}..{f.end}{pe})"
+
+    # Introns
+    else:  # len(self.regions) >= 2
+        s = ''
+        for r in f.regions:
+            if r[2] == '+':
+                s += f"{r[0]}..{r[1]},"
+            else:
+                s += f"complement({r[0]}..{r[1]}),"
+        first_line += f"join({s[:-1]})"  # Remove trailing ','
+
+    text += first_line + '\n'
+
+    # --- Second line to the end --- #
+    for key, val in f.attributes:
+        if type(val) is int or type(val) is float:
+            newline = ' ' * 21 + f"/{key}={val}\n"
+        else:
+            newline = ' ' * 21 + f"/{key}=\"{val}\"\n"
+
+        if key == 'translation':
+            text += _wrap_line_by_char(newline, length=79, indent=21)
+        else:
+            text += _wrap_line_by_word(newline, length=79, indent=21)
+
+    return text
 
 
 # HEADER
-def __make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
+def _make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
                      SOURCE, ORGANISM, division='ENV'):
     """
     Create a header section (str) of a genbank file.
@@ -141,7 +164,7 @@ def __make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
     ORGANISM_2 = ' '.join(ORGANISM.split('\n')[1:])
 
     text = f"""\
-LOCUS       {ACCESSION}        {length} bp    {molecule}    {shape}   {division} {__today()}
+LOCUS       {ACCESSION}        {length} bp    {molecule}    {shape}   {division} {_today()}
 DEFINITION  {DEFINITION}
 ACCESSION   {ACCESSION}
 KEYWORDS    {KEYWORDS}
@@ -153,7 +176,7 @@ SOURCE      {SOURCE}
     # block = the text block from 2nd to the last line
     block = '\n'.join(lines[1:])
     # Do not wrap the 1st line; wrap everything starting from the 2nd line
-    block = __wrap_paragraph(block, length=79, indent=12)
+    block = _wrap_paragraph(block, length=79, indent=12)
     # Put the first line and the block together -> genbank header section
     header = lines[0] + '\n' + block
 
@@ -161,7 +184,7 @@ SOURCE      {SOURCE}
 
 
 # FEATURE
-def __init_feature(length, organism, mol_type='genomic DNA'):
+def _init_feature(length, organism, mol_type='genomic DNA'):
     """
     Initialize a feature section of genbank file.
     The feature section always start with the mandatory 'source' feature
@@ -183,69 +206,8 @@ FEATURES             Location/Qualifiers
     return text
 
 
-def __add_feature(key, start, end, strand, **kwargs):
-    """
-    Create a feature of genbank file.
-    The returned str can be added to an existing feature section of a genbank file.
-
-    Example:
-
-    '     CDS             complement(205..390)
-    '                     /locus_tag="XPXV15_gp01"
-    '                     /codon_start=1
-    '                     /transl_table=11
-    '                     /product="hypothetical protein"
-    '                     /translation="MSRKELRTSESEWRRTKHTAYMPKGTHVTRTWRSQAIKVATVIM
-    '                     IGTIITAFWYEFLKGAA"
-     1234567890123456789012
-
-    Args:
-        key: str
-            e.g. 'CDS', 'gene'
-
-        start: int
-
-        end: int
-
-        strand: str, '+' or '-'
-
-        kwargs:
-            qualifier=value pairs
-            For example, if qualifier='locus_tag' and value='ABC001', the following will be added:
-                /locus_tag="ABC001"
-
-    Returns: str
-    """
-    # First line, e.g.: '     CDS             complement(205..390)'
-    text = ' '*5 + key + ' '*(21-5-len(key))
-    if strand == '-':
-        text = text + f"complement({start}..{end})\n"
-    else:  # strand == '+'
-        text = text + f"{start}..{end}\n"
-
-    # From the 2nd line
-    for qualifier, value in kwargs.items():
-        if type(value) is int or type(value) is float:
-            # If value is a number, add it without quotes
-            line = ' '*21 + f"/{qualifier}={value}"
-        else:  # type(value) is str
-            # If value is str, add it with quotes
-            line = ' ' * 21 + f"/{qualifier}=\"{value}\""
-
-        if qualifier == 'translation':
-            # If it's a protein sequence, there's no space, wrap the line by character
-            line = __wrap_line_by_char(line, length=79, indent=21)
-        else:
-            line = __wrap_line_by_word(line, length=79, indent=21)
-
-        # Add the /qualifier="value" line to the text block
-        text = text + line + '\n'
-
-    return text
-
-
 # ORIGIN
-def __format_ref_seq(seq):
+def _format_ref_seq(seq):
     """
     Take a DNA sequence (str) and format it to the ORIGIN section of genbank file.
 
@@ -257,18 +219,19 @@ def __format_ref_seq(seq):
     # Remove all ' ' and '\n'
     seq = seq.replace(' ', '').replace('\n', '')
 
-    text = 'ORIGIN\n'
-    # Each line contains 60 nucleotides
-    num_lines = int(len(seq) / 60) + 1
+    lines = []
+    num_lines = int(len(seq) / 60) + 1  # 60 nucleotides each line
     for i in range(num_lines):
+        new = ''  # new line
         pos = i * 60 + 1
-        text = text + ' '*(9 - len(str(pos))) + str(pos)
+        new += ' '*(9 - len(str(pos))) + str(pos)
         for j in range(6):
             a = pos + j * 10 - 1
             b = a + 10
-            text = text + ' ' + seq[a:b]
-        text = text + '\n'
-    return text
+            new += ' ' + seq[a:b]
+        lines.append(new)
+
+    return 'ORIGIN\n' + '\n'.join(lines) + '\n'
 
 
 # The master public function
@@ -280,7 +243,7 @@ def make_genbank(fasta, gtf, output, shape='linear', DEFINITION='.',
         the GTF file provides annotation (e.g. CDS).
 
     The fasta file can contain more than one sequence. Headers in the fasta file
-        is used as the ACCESSION in the genbank file.
+        is used as the LOCUS name (i.e. ACCESSION) in the genbank file.
 
     GFF and GTF formats are both supported.
 
@@ -315,66 +278,56 @@ def make_genbank(fasta, gtf, output, shape='linear', DEFINITION='.',
     """
 
     # Group the features in the GTF file in a dictionary
-    # {'seqname': [list of features]}
-    #                      where each feature is a tuple of 9 fields
-    feature_dict = {}
-    for ftr in GtfParser(gtf):
-        seqname = ftr[0]
-        feature_dict.setdefault(seqname, [])
-        feature_dict[seqname].append(ftr)
+    # {'seqname': [GtfFeature, ...]}
+    feature_dict = read_gtf(gtf, as_dict=True)
 
     gbk = open(output, 'w')
     
     for genome_id, genome_seq in FastaParser(fasta):
         # --- HEADER --- #
-        text = __make_header(molecule = 'DNA',
-                             length = len(genome_seq),
-                             shape = shape,
-                             ACCESSION = genome_id,
-                             DEFINITION = DEFINITION,
-                             KEYWORDS = KEYWORDS,
-                             SOURCE = SOURCE,
-                             ORGANISM = ORGANISM,
-                             division=genbank_division)
+        text = _make_header(
+            molecule = 'DNA',
+            length = len(genome_seq),
+            shape = shape,
+            ACCESSION = genome_id,
+            DEFINITION = DEFINITION,
+            KEYWORDS = KEYWORDS,
+            SOURCE = SOURCE,
+            ORGANISM = ORGANISM,
+            division=genbank_division
+        )
         gbk.write(text)
 
         # --- FEATURE --- #
-        text = __init_feature(length=len(genome_seq),
-                              organism=ORGANISM.split('\n')[0])
+        text = _init_feature(
+            length=len(genome_seq),
+            organism=ORGANISM.split('\n')[0],
+        )
         gbk.write(text)
 
         # Get the features belonging to the current genome
         features = feature_dict.get(genome_id, [])
-        for ftr in features:
-            ftr_type, start, end, strand, frame = ftr[2], ftr[3], ftr[4], ftr[6], ftr[7]
+        for f in features:
+            f = gtf_to_generic_feature(f)
 
-            # Read the attributes of the feature as a dictionary
-            attr_dict = __read_gtf_attribute(ftr)
-
-            # If the feature is a CDS, we need to add:
-            #   protein sequence (tranlation)
+            # If the feature is a CDS, need to add:
+            #   protein sequence (translation)
             #   frame (codon start)
-            if ftr_type == 'CDS':
-                if strand == '+':
-                    cds = genome_seq[start - 1:end]
+            if f.type == 'CDS':
+                if f.strand == '+':
+                    cds = genome_seq[(f.start-1):f.end]
                 else:  # strand == '-'
-                    cds = rev_comp(genome_seq[start - 1:end])
-                attr_dict['translation'] = translate(cds)
-                attr_dict['codon_start'] = frame + 1  # codon start is 1-based
-
-            text = __add_feature(key=ftr_type,
-                                 start=start,
-                                 end=end,
-                                 strand=strand,
-                                 **attr_dict)
+                    cds = rev_comp(genome_seq[(f.start-1):f.end])
+                f.add_attribute('translation', translate(cds))
+                f.add_attribute('codon_start', f.frame)
+            text = _generic_feature_to_genbank_text(f)
             gbk.write(text)
 
         # --- ORIGIN --- #
-        text = __format_ref_seq(genome_seq)
+        text = _format_ref_seq(genome_seq)
         gbk.write(text)
 
         # Finally, write '//' to separate genomes
         gbk.write('//\n')
 
     gbk.close()
-

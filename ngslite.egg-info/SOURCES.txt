@@ -6,9 +6,11 @@ ngslite/bedtools.py
 ngslite/bowtie2.py
 ngslite/bwa.py
 ngslite/count.py
+ngslite/data_class.py
 ngslite/dnatools.py
 ngslite/enrichment.py
 ngslite/fasta.py
+ngslite/fasta_gtf.py
 ngslite/fastq.py
 ngslite/file_conversion.py
 ngslite/filetools.py

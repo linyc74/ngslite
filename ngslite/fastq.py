@@ -17,6 +17,7 @@ class FastqParser:
         return
 
     def __iter__(self):
+        self.__fastq.seek(0)
         return self
 
     def __next__(self):

@@ -1,4 +1,4 @@
-class FastaParser:
+class FastaParser(object):
     """
     A simple fasta parser that parses each read of a fasta file
     """
@@ -17,6 +17,7 @@ class FastaParser:
         return
 
     def __iter__(self):
+        self.__fasta.seek(0)
         return self
 
     def __next__(self):
@@ -51,7 +52,7 @@ class FastaParser:
         self.__fasta.close()
 
 
-class FastaWriter:
+class FastaWriter(object):
     """
     A simple fasta writer that writes a single read (header and sequence) each time
     """
@@ -68,7 +69,6 @@ class FastaWriter:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
-        return
 
     def write(self, header, sequence):
         """
@@ -106,6 +106,24 @@ def read_fasta(file, as_dict=False):
             return {head: seq for head, seq in parser}
         else:
             return [(head, seq) for head, seq in parser]
+
+
+def write_fasta(data, file):
+    """
+    Take the data in the format returned by read_fasta()
+        and write it into a new fasta file
+
+    Args:
+        data: list of tuples, or dict
+
+        file: str, path-like
+            The output fasta file
+    """
+    with FastaWriter(file) as writer:
+        if type(data) is dict:
+            data = data.items()
+        for head, seq in data:
+            writer.write(head, seq)
 
 
 def subset_fasta(file, headers, output):

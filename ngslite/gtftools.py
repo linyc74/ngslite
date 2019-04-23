@@ -22,6 +22,7 @@ class GtfParser:
         return
 
     def __iter__(self):
+        self.__gtf.seek(0)
         return self
 
     def __next__(self):
@@ -115,86 +116,62 @@ def subset_gtf(file, seqname, output):
                     writer.write(feature)
 
 
-def gtf_to_dict(file):
+def read_gtf(file, as_dict=False):
     """
     Args:
-        file: str, path-like
+        file: str, path-like object
             The input GTF file
 
-    Returns: dict
+        as_dict: bool
+            If True, returns a dictionary
+
+    Returns: list of GtfFeature objects, or dict
+
+        [GtfFeature_1, GtfFeature_2, ...]
+
+        or
+
         {
-            seqname: [GtfFeature(), GtfFeature(), ...],
-            seqname: [GtfFeature(), GtfFeature(), ...],
+            seqname_1: [GtfFeature_1, ...],
+            seqname_2: [GtfFeature_2, ...], ...
         }
     """
-    D = dict()
     with GtfParser(file) as parser:
-        for feature in parser:
-            seqname = feature.seqname
-            D.setdefault(seqname, [])
-            D[seqname].append(feature)
-    return D
+        features = [feature for feature in parser]
+    if as_dict:
+        D = {}
+        for f in features:
+            D.setdefault(f.seqname, [])
+            D[f.seqname].append(f)
+        return D
+    return features
 
 
-def dict_to_gtf(dict_, output):
+def write_gtf(data, file):
     """
-    Args:
-        dict_: dict
-            The dictionary returned by gtf_to_dict()
-            {
-                seqname: [GtfFeature(), GtfFeature(), ...],
-                seqname: [GtfFeature(), GtfFeature(), ...],
-            }
+    Take the data in the format returned by read_gtf()
+        and write it into a new GTF file
 
-        output: str, path-like
+    Accepts GtfFeature and GenericFeature objects
+
+    Args:
+        data: list of GtfFeature objects, or dict
+
+        file: str, path-like
             The output GTF file
     """
-    with GtfWriter(output) as writer:
-        for features in dict_.values():
-            for f in features:
-                writer.write(f)
-
-
-def attribute_str_to_dict(str_):
-    """
-    Args:
-        str_: str
-            name "2OG-FeII_Oxy_3  [M=96]";accession "PF13640.6";description "2OG-Fe(II) oxygenase superfamily";E_value "7e-19"
-
-    Returns: dict
-        {
-            'name': '2OG-FeII_Oxy_3  [M=96]',
-            'accession': 'PF13640.6'
-            'description': '2OG-Fe(II) oxygenase superfamily'
-            'E_value': '7e-19'
-        }
-    """
-    D = dict()
-    for a in str_.split(';'):
-        key = a.split(' "')[0]
-        val = a[len(key)+2:-1]
-        D[key] = val
-    return D
-
-
-def attribute_dict_to_str(dict_):
-    """
-    Args:
-        dict_: dict
-            {
-                'name': '2OG-FeII_Oxy_3  [M=96]',
-                'accession': 'PF13640.6'
-                'description': '2OG-Fe(II) oxygenase superfamily'
-                'E_value': '7e-19'
-            }
-
-    Returns: str
-        name "2OG-FeII_Oxy_3  [M=96]";accession "PF13640.6";description "2OG-Fe(II) oxygenase superfamily";E_value "7e-19"
-    """
-    s = ''
-    for key, val in dict_.items():
-        s = s + f"{key} \"{val}\";"
-    return s[:-1]
+    with GtfWriter(file) as writer:
+        if type(data) is dict:
+            for feature_arr in data.values():
+                for feature in feature_arr:
+                    if feature.__class__.__name__ == 'GenericFeature':
+                        feature = feature.to_gtf_feature()
+                    writer.write(feature)
+        elif type(data) is list:
+            for feature in data:
+                if feature.__class__.__name__ == 'GenericFeature':
+                    feature = feature.to_gtf_feature()
+                writer.write(feature)
 
 
 def print_gtf(feature=None):
