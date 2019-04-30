@@ -1,11 +1,9 @@
-from.data_class import FeatureArray
+from.data_class import FeatureArray, Chromosome
 from .fasta import read_fasta, write_fasta
 from .gtftools import read_gtf, write_gtf
 from .dnatools import rev_comp
-from .genbank_parse import genbank_to_fasta, genbank_to_gtf
-from .genbank_write import make_genbank
-from .lowlevel import __temp
-import os
+from .genbank_parse import read_genbank
+from .genbank_write import write_genbank
 
 
 def _find_feature(feature_arr, keywords):
@@ -117,34 +115,45 @@ def genbank_locus_extractor(genbank, keywords, flank, output):
         output: str, path-like
             The output genbank file
     """
-    temp_fa = __temp('temp', '.fa')
-    temp_gtf = __temp('temp', '.gtf')
+    if type(keywords) is str:
+        keywords = [keywords]
 
-    genbank_to_fasta(
-        file=genbank,
-        output=temp_fa
-    )
+    loci = []  # list of Chromosome objects
 
-    genbank_to_gtf(
-        file=genbank,
-        output=temp_gtf,
-        skip_attributes=['translation', 'codon_start', 'transl_table']
-    )
+    # Iterate through each contig
+    for chromosome in read_genbank(genbank):
+        seqname = chromosome.seqname
+        feature_array = chromosome.feature_array
+        sequence = chromosome.sequence
 
-    locus_extractor(
-        fasta=temp_fa,
-        gtf=temp_gtf,
-        keywords=keywords,
-        flank=flank,
-        fasta_out=temp_fa,
-        gtf_out=temp_gtf
-    )
+        seed = _find_feature(feature_array, keywords)
+        if seed is None: continue  # seed not found, skip this chromosome
 
-    make_genbank(
-        fasta=temp_fa,
-        gtf=temp_gtf,
-        output=output
-    )
+        region_start = seed.start - flank
+        region_end = seed.end + flank
 
-    os.remove(temp_fa)
-    os.remove(temp_gtf)
+        region_start = max(region_start, 1)  # out of bound
+        region_end = min(region_end, len(sequence))
+
+        # Extract sequence from fasta
+        sequence = sequence[region_start-1: region_end]
+
+        # Crop features from the feature array
+        feature_array.crop(region_start, region_end)
+
+        # Reverse sequence and features if seed is on the reverse strand
+        if seed.strand == '-':
+            sequence = rev_comp(sequence)
+            feature_array.reverse()
+
+        loci.append(
+            Chromosome(
+                seqname=seqname,
+                sequence=sequence,
+                feature_array=feature_array,
+                circular=False  # Must be linear molecule after locus extraction
+            )
+        )
+
+    # Write output files
+    write_genbank(data=loci, file=output)

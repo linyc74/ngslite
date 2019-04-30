@@ -6,7 +6,7 @@ Python functions for manipulating NGS-related data and files
 """
 
 
-__version__ = '0.8.0'
+__version__ = '0.8.1'
 
 
 from .arrfunc import *
@@ -36,6 +36,7 @@ from .orf_finder import *
 from .prokka import *
 from .samtools import *
 from .subsample import *
+from .synteny import *
 from .trim import *
 from .trinity import *
 from .vcftools import *

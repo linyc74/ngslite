@@ -43,7 +43,7 @@ def _merge_pfam_arr_to_orf_arr(pfam_arr, orf_arr):
                 # Add positional information of the pfam domain
                 pfam_attr += [('start', pfam.start), ('end', pfam.end), ('strand', pfam.strand)]
                 # Convert all pfam attributes [(key, val)] --> str --> 'note' in the ORF
-                orf.add_attribute(key='note', val=str(pfam.attributes))
+                orf.add_attribute(key='note', val=str(pfam_attr))
 
                 pfam_name = pfam.get_attribute('name')
                 orf_name = orf.get_attribute('name')

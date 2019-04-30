@@ -41,7 +41,7 @@ class GenbankParser(object):
         self.__gbk.seek(pos)
         lines = []
         while True:
-            line = self.__gbk.readline().rstrip()
+            line = self.__gbk.readline()[:-1]  # Remove trailing '\n'
             if line.startswith('//'): break
             lines.append(line)
         text = '\n'.join(lines)
@@ -51,34 +51,6 @@ class GenbankParser(object):
         ORIGIN = text[text.find('ORIGIN'):]
 
         return GenbankItem(LOCUS, FEATURES, ORIGIN)
-
-    def close(self):
-        self.__gbk.close()
-
-
-class GenbankWriter(object):
-    def __init__(self, file, mode='w'):
-        """
-        Args
-            file: str, path-like object
-            mode: str, 'w' for write or 'a' for append
-        """
-        self.__gbk = open(file, mode)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
-    def write(self, genbank_item):
-        """
-        Args:
-            genbank_item: namedtuple GenbankItem
-        """
-        for i in range(3):
-            self.__gbk.write(genbank_item[i].rstrip() + '\n')
-        self.__gbk.write('//\n')
 
     def close(self):
         self.__gbk.close()
@@ -234,7 +206,8 @@ def _get_feature_attributes(feature_text):
         if line.startswith(' '*21+'/') and '=' in line:
             attr_list.append(line[22:])
         else:
-            attr_list[-1] = attr_list[-1] + line.lstrip()
+            # Add a blank space ' ' for changing line
+            attr_list[-1] += ' ' + line.lstrip()
 
     # Unpack key="value" or key=value into a list of tuples (key, value)
     for i, attr in enumerate(attr_list):
@@ -251,6 +224,10 @@ def _get_feature_attributes(feature_text):
                 val = int(val)
         else:
             continue
+
+        # Protein sequence should not contain blank space
+        if key == 'translation':
+            val = val.replace(' ', '')
 
         attr_list[i] = (key, val)
 
@@ -387,7 +364,8 @@ def construct_chromosome(genbank_item):
         seqname=seqname,
         sequence=sequence,
         feature_array=feature_array,
-        circular=circular
+        circular=circular,
+        genbank_LOCUS=item.LOCUS
     )
 
 

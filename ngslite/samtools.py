@@ -128,9 +128,11 @@ class SamParser:
                 #   the header section has been parsed completely,
                 #   then go back one line and break out the loop
                 self.__sam.seek(pos)
+                # Remember where the first line of data is
+                self.pos_0 = pos
                 break
         # Store the header string
-        self.__header = header
+        self.header = header
 
     def __enter__(self):
         return self
@@ -140,7 +142,7 @@ class SamParser:
         return
 
     def __iter__(self):
-        self.__sam.seek(0)
+        self.__sam.seek(self.pos_0)
         return self
 
     def __next__(self):
@@ -181,10 +183,6 @@ class SamParser:
         else:  # line == ''
             return None
 
-    def get_header(self):
-        """Returns the header section (str) of SAM file"""
-        return self.__header
-
     def close(self):
         self.__sam.close()
 
@@ -213,31 +211,32 @@ class SamWriter:
         self.close()
         return
 
-    def write(self, alignment):
+    def write(self, read):
         """
         Args:
-            alignment: tuple of str or int
+            read: tuple of str or int
                 Containing 11 (at least) fields of a line of SAM file
         """
-        self.__sam.write('\t'.join(map(str, alignment)) + '\n')
+        self.__sam.write('\t'.join(map(str, read)) + '\n')
 
     def close(self):
         self.__sam.close()
 
 
-FLAGS_PROPERTIES = ('read paired',  # 0
-                    'read mapped in proper pair',  # 1
-                    'read unmapped',  # 2
-                    'mate unmapped',  # 3
-                    'read reverse strand',  # 4
-                    'mate reverse strand',  # 5
-                    'first in pair',  # 6
-                    'second in pair',  # 7
-                    'not primary alignment',  # 8
-                    'read fails platform/vendor quality checks',  # 9
-                    'read is PCR or optical duplicate',  # 10
-                    'supplementary alignment')  # 11
-
+FLAGS_PROPERTIES = (
+    'read paired',  # 0
+    'read mapped in proper pair',  # 1
+    'read unmapped',  # 2
+    'mate unmapped',  # 3
+    'read reverse strand',  # 4
+    'mate reverse strand',  # 5
+    'first in pair',  # 6
+    'second in pair',  # 7
+    'not primary alignment',  # 8
+    'read fails platform/vendor quality checks',  # 9
+    'read is PCR or optical duplicate',  # 10
+    'supplementary alignment'  # 11
+)
 
 def decode_flag(flag, return_tuple=False):
     """
@@ -439,4 +438,5 @@ def print_sam(read=None):
         if len(read) > 11:
             for i in range(11, len(read)):
                 printf(f"{i}\t     \t{read[i]}")
+
 

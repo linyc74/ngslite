@@ -56,4 +56,3 @@ def read_fasta_gtf(fasta, gtf, as_dict=False, circular=False):
     if as_dict:
         return {chrom.seqname: chrom for chrom in chromosomes}
     return chromosomes
-

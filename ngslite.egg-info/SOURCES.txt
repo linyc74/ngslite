@@ -29,6 +29,7 @@ ngslite/orf_finder.py
 ngslite/prokka.py
 ngslite/samtools.py
 ngslite/subsample.py
+ngslite/synteny.py
 ngslite/trim.py
 ngslite/trinity.py
 ngslite/vcftools.py

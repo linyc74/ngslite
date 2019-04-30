@@ -1,8 +1,35 @@
-from .gtftools import read_gtf
-from .fasta import FastaParser
+from .fasta_gtf import read_fasta_gtf
 from .dnatools import translate, rev_comp
+from .genbank_parse import GenbankItem
 from datetime import date
-from .data_class import gtf_to_generic_feature
+
+
+class GenbankWriter(object):
+    def __init__(self, file, mode='w'):
+        """
+        Args
+            file: str, path-like object
+            mode: str, 'w' for write or 'a' for append
+        """
+        self.__gbk = open(file, mode)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    def write(self, genbank_item):
+        """
+        Args:
+            genbank_item: namedtuple GenbankItem
+        """
+        for i in range(3):
+            self.__gbk.write(genbank_item[i].rstrip() + '\n')
+        self.__gbk.write('//\n')
+
+    def close(self):
+        self.__gbk.close()
 
 
 def _today():
@@ -57,7 +84,7 @@ def _wrap_line_by_word(line, length, indent):
         if len(last_line) + 1 + len(word) <= length:
             L = L + ' ' + word
         else:
-            L = L + ' ' + '\n' + ' '*indent + word
+            L = L + '\n' + ' '*indent + word
     return L[1:]
 
 
@@ -84,6 +111,20 @@ def _wrap_line_by_char(line, length, indent):
 
 
 def _generic_feature_to_genbank_text(generic_feature):
+    """
+    Use the information in <generic_feature> to write
+        a genbank feature text section, for example:
+
+        '     CDS             complement(12..2189)
+        '                     /gene="rIIA"
+        '                     /locus_tag="T4p001"
+        '                     /db_xref="GeneID:1258593"
+
+    Args:
+        generic_feature: GenericFeature object
+
+    Returns: str
+    """
     f = generic_feature
 
     text = ''
@@ -128,7 +169,6 @@ def _generic_feature_to_genbank_text(generic_feature):
     return text
 
 
-# HEADER
 def _make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
                      SOURCE, ORGANISM, division='ENV'):
     """
@@ -183,7 +223,6 @@ SOURCE      {SOURCE}
     return header
 
 
-# FEATURE
 def _init_feature(length, organism, mol_type='genomic DNA'):
     """
     Initialize a feature section of genbank file.
@@ -206,7 +245,6 @@ FEATURES             Location/Qualifiers
     return text
 
 
-# ORIGIN
 def _format_ref_seq(seq):
     """
     Take a DNA sequence (str) and format it to the ORIGIN section of genbank file.
@@ -234,7 +272,102 @@ def _format_ref_seq(seq):
     return 'ORIGIN\n' + '\n'.join(lines) + '\n'
 
 
-# The master public function
+def write_genbank(data, file, DEFINITION='.', KEYWORDS='.', SOURCE='.',
+                  ORGANISM='.', genbank_division='ENV'):
+    """
+    Write <data> into a new genbank <file>
+
+    Args:
+        data: list of Chromosome objects, or dict
+
+            [Chromosome_1, Chromosome_2, ...]
+
+            or
+
+            {
+                Chromosome_1.seqname: Chromosome_1,
+                Chromosome_2.seqname: Chromosome_2, ...
+            }
+
+        file: str, path-like
+            The output genbank file
+
+        DEFINITION: str
+            The "DEFINITION" field in the genbank file
+
+        KEYWORDS: str
+            The "KEYWORDS" field in the genbank file
+
+        SOURCE: str
+            The "SOURCE" field in the genbank file
+
+        ORGANISM: str
+            The "ORGANISM" field in the genbank file
+
+        genbank_division: str,
+            The three-letter tag for one of the 18 divisions in the GenBank database.
+            Default 'ENV' for environmental sampling sequences
+    """
+    if type(data) is dict:
+        data = data.values()
+
+    with GenbankWriter(file) as writer:
+        for chromosome in data:
+            sequence = chromosome.sequence
+
+            # --- LOCUS text section --- #
+            if chromosome.genbank_LOCUS == '':
+                LOCUS = _make_header(
+                    molecule='DNA',
+                    length=len(sequence),
+                    shape=['linear', 'circular'][chromosome.circular],
+                    ACCESSION=chromosome.seqname,
+                    DEFINITION=DEFINITION,
+                    KEYWORDS=KEYWORDS,
+                    SOURCE=SOURCE,
+                    ORGANISM=ORGANISM,
+                    division=genbank_division
+                )
+            else:
+                LOCUS = chromosome.genbank_LOCUS
+
+            # --- FEATURES text section --- #
+            if chromosome.feature_array[0].type == 'source':
+                FEATURES = 'FEATURES             Location/Qualifiers\n'
+            else:
+                FEATURES = _init_feature(
+                    length=len(sequence),
+                    organism=ORGANISM.split('\n')[0],
+                )
+
+            for f in chromosome.feature_array:
+                # For CDS, re-make 'translation', 'codon_start' and 'transl_table'
+                if f.type == 'CDS':
+                    if f.strand == '+':
+                        cds = sequence[(f.start - 1):f.end]
+                    else:  # strand == '-'
+                        cds = rev_comp(sequence[(f.start - 1):f.end])
+                    # Always start with M regardless of GUG or other alternate start codons
+                    # Remove stop codon *
+                    aa = 'M' + translate(cds)[1:-1]
+                    f.replace_attribute('translation', aa)
+                    f.replace_attribute('codon_start', f.frame)
+                    f.replace_attribute('transl_table', 11)
+                FEATURES += _generic_feature_to_genbank_text(f)
+
+            # --- ORIGIN text sections --- #
+            ORIGIN = _format_ref_seq(sequence)
+
+            # --- Write into file --- #
+            writer.write(
+                GenbankItem(
+                    LOCUS=LOCUS,
+                    FEATURES=FEATURES,
+                    ORIGIN=ORIGIN
+                )
+            )
+
+
 def make_genbank(fasta, gtf, output, shape='linear', DEFINITION='.',
                  KEYWORDS='.', SOURCE='.', ORGANISM='.', genbank_division='ENV'):
     """
@@ -276,58 +409,18 @@ def make_genbank(fasta, gtf, output, shape='linear', DEFINITION='.',
             The three-letter tag for one of the 18 divisions in the GenBank database.
             Default 'ENV' for environmental sampling sequences
     """
+    data = read_fasta_gtf(
+        fasta=fasta,
+        gtf=gtf,
+        circular=(shape == 'circular')
+    )
 
-    # Group the features in the GTF file in a dictionary
-    # {'seqname': [GtfFeature, ...]}
-    feature_dict = read_gtf(gtf, as_dict=True)
-
-    gbk = open(output, 'w')
-    
-    for genome_id, genome_seq in FastaParser(fasta):
-        # --- HEADER --- #
-        text = _make_header(
-            molecule = 'DNA',
-            length = len(genome_seq),
-            shape = shape,
-            ACCESSION = genome_id,
-            DEFINITION = DEFINITION,
-            KEYWORDS = KEYWORDS,
-            SOURCE = SOURCE,
-            ORGANISM = ORGANISM,
-            division=genbank_division
-        )
-        gbk.write(text)
-
-        # --- FEATURE --- #
-        text = _init_feature(
-            length=len(genome_seq),
-            organism=ORGANISM.split('\n')[0],
-        )
-        gbk.write(text)
-
-        # Get the features belonging to the current genome
-        features = feature_dict.get(genome_id, [])
-        for f in features:
-            f = gtf_to_generic_feature(f)
-
-            # If the feature is a CDS, need to add:
-            #   protein sequence (translation)
-            #   frame (codon start)
-            if f.type == 'CDS':
-                if f.strand == '+':
-                    cds = genome_seq[(f.start-1):f.end]
-                else:  # strand == '-'
-                    cds = rev_comp(genome_seq[(f.start-1):f.end])
-                f.add_attribute('translation', translate(cds))
-                f.add_attribute('codon_start', f.frame)
-            text = _generic_feature_to_genbank_text(f)
-            gbk.write(text)
-
-        # --- ORIGIN --- #
-        text = _format_ref_seq(genome_seq)
-        gbk.write(text)
-
-        # Finally, write '//' to separate genomes
-        gbk.write('//\n')
-
-    gbk.close()
+    write_genbank(
+        data=data,
+        file=output,
+        DEFINITION=DEFINITION,
+        KEYWORDS=KEYWORDS,
+        SOURCE=SOURCE,
+        ORGANISM=ORGANISM,
+        genbank_division=genbank_division
+    )

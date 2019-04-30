@@ -85,7 +85,7 @@ class GtfWriter:
     def write(self, feature):
         """
         Args:
-            feature: namedtuple of str or int
+            feature: namedtuple 'GtfFeature'
                 Containing 9 fields of a line of GTF file
         """
         self.__gtf.write('\t'.join(map(str, feature)) + '\n')

@@ -136,6 +136,11 @@ GenericFeature
     def remove_attribute(self, key):
         self.attributes = [a for a in self.attributes if a[0] != key]
 
+    def replace_attribute(self, key, val):
+        for i, a in enumerate(self.attributes):
+            if a[0] == key:
+                self.attributes[i] = (a[0], val)
+
     def to_gtf_feature(self):
         """
         Returns GtfFeature object
@@ -146,6 +151,7 @@ GenericFeature
             if type(val) is int or type(val) is float:
                 attr_str += f"{key} {val};"
             else:  # type(val) is str -> Add quote ""
+                val = val.replace(';', '<semicolon>')  # semicolon is not allowed in the GTF attribute field
                 attr_str += f"{key} \"{val}\";"
 
         return GtfFeature(
@@ -388,7 +394,6 @@ class Chromosome(object):
     """
     An annotated chromosome
 
-
     Instance attributes:
         seqname: str
             The unique name of chromosome, genome or contig to which this feature_array belons
@@ -401,9 +406,13 @@ class Chromosome(object):
 
         circular: bool
             Is circular genome or not
+
+        genbank_LOCUS: str
+            The complete LOCUS section of a genbank file
     """
-    def __init__(self, seqname, sequence, feature_array, circular=False):
+    def __init__(self, seqname, sequence, feature_array, circular=False, genbank_LOCUS=''):
         self.seqname = seqname
         self.sequence = sequence
         self.feature_array = feature_array
         self.circular = circular
+        self.genbank_LOCUS = genbank_LOCUS

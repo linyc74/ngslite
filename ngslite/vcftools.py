@@ -119,9 +119,11 @@ class VcfParser:
                 #   the header section has been parsed completely,
                 #   then go back one line and break out the loop
                 self.__vcf.seek(pos)
+                # Remember where the first line of data is
+                self.pos_0 = pos
                 break
         # Store the header string
-        self.__header = header
+        self.header = header
 
     def __enter__(self):
         return self
@@ -131,7 +133,7 @@ class VcfParser:
         return
 
     def __iter__(self):
-        self.__vcf.seed(0)
+        self.__vcf.seek(self.pos_0)
         return self
 
     def __next__(self):
@@ -144,7 +146,7 @@ class VcfParser:
 
     def next(self):
         """
-        Each line of the SAM file has at least 11 fields
+        Each line of VCF file has 8 fixed, mandatory fields
 
         #   Col	Field   Type    Description
         0   1   CHROM   String  The name of the sequence (typically a chromosome)
@@ -155,11 +157,9 @@ class VcfParser:
         5   6   QUAL    Int     A quality score associated with the inference of the given alleles.
         6   7   FILTER  String  A flag indicating which of a given set of filters the variation has passed
         7   8   INFO    String  An extensible list of key-value pairs (fields) describing the variation, for example, NS=2;DP=10;AF=0.333,0.667;AA=T;DB
-        8   9                   Optional fields...
 
         Returns: tuple of str or int
-            The length of tuple might be > 8,
-              depending of the presence of additional optional fields
+            8 fields of a variant (i.e. a line) plus optional fields
         """
         line = self.__vcf.readline().rstrip()
         if line:
@@ -169,10 +169,6 @@ class VcfParser:
             return tuple(fields)
         else:  # line == ''
             return None
-
-    def get_header(self):
-        """Returns the header section (str) of VCF file"""
-        return self.__header
 
     def close(self):
         self.__vcf.close()
@@ -191,9 +187,9 @@ class VcfWriter:
 
             mode: str, 'w' or 'a'
         """
-        self.__sam = open(file, mode)
+        self.__vcf = open(file, mode)
         if not header == '':
-            self.__sam.write(header.rstrip() + '\n')
+            self.__vcf.write(header.rstrip() + '\n')
 
     def __enter__(self):
         return self
@@ -202,16 +198,16 @@ class VcfWriter:
         self.close()
         return
 
-    def write(self, alignment):
+    def write(self, variant):
         """
         Args:
-            alignment: tuple of str or int
-                Containing 11 (at least) fields of a line of SAM file
+            variant: tuple
+                Containing at least 8 fields of a line of VCF file
         """
-        self.__sam.write('\t'.join(map(str, alignment)) + '\n')
+        self.__vcf.write('\t'.join(map(str, variant)) + '\n')
 
     def close(self):
-        self.__sam.close()
+        self.__vcf.close()
 
 
 def print_vcf(var=None):
