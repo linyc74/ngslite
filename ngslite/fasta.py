@@ -1,3 +1,19 @@
+def _wrap(seq, width):
+    """
+    Args:
+        seq: str
+            A single line of DNA or protein sequence without '\n'
+
+    Returns: str
+    """
+    if len(seq) <= width: return seq  # no need to wrap
+    w = width
+    L = []
+    for i in range(int(len(seq)/w) + 1):
+        L.append(seq[i*w:(i+1)*w])
+    return '\n'.join(L)
+
+
 class FastaParser(object):
     """
     A simple fasta parser that parses each read of a fasta file
@@ -59,8 +75,10 @@ class FastaWriter(object):
     def __init__(self, file, mode='w'):
         """
         Args
-            file: str, path-like object
-            mode: str, 'w' for write or 'a' for append
+            file: str, path-like
+
+            mode: str
+                'w' for write or 'a' for append
         """
         self.__fasta = open(file, mode)
 
@@ -70,13 +88,16 @@ class FastaWriter(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def write(self, header, sequence):
+    def write(self, header, sequence, wrap=80):
         """
         Args:
             header: str
-            sequence: str, i.e. DNA sequence
+
+            sequence: str
+
+            wrap: int
         """
-        self.__fasta.write('>' + header + '\n' + sequence + '\n')
+        self.__fasta.write('>' + header + '\n' + _wrap(sequence, wrap) + '\n')
 
     def close(self):
         self.__fasta.close()

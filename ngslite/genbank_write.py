@@ -68,41 +68,46 @@ def _wrap_paragraph(paragraph, length, indent, by_char=False):
 
 def _wrap_line_by_word(line, length, indent):
     """
-    Wraps a line (usually does not contain '\n') by word.
+    Wraps a line (not containing any '\n') by word.
     The returned line does not end with '\n'.
 
     Args:
         line: str
+
         length: int
+
         indent: int
 
     Returns: str
     """
-    L = ''
-    for word in line.split(' '):
-        last_line = L.split('\n')[-1]
+    words = line.split(' ')
+    L = ' ' * indent + words[0]
+    for word in words[1:]:
+        last_line = L[L.rfind('\n')+1:]
         if len(last_line) + 1 + len(word) <= length:
-            L = L + ' ' + word
+            L += ' ' + word
         else:
-            L = L + '\n' + ' '*indent + word
-    return L[1:]
+            L += '\n' + ' '*indent + word
+    return L
 
 
 def _wrap_line_by_char(line, length, indent):
     """
-    Wraps a line (usually does not contain '\n') by character.
+    Wraps a line (not containing any '\n') by character.
     The returned line does not end with '\n'.
 
     Args:
         line: str
+
         length: int
+
         indent: int
 
     Returns: str
     """
-    L = ''
+    L = ' ' * indent
     for char in line:
-        last_line = L.split('\n')[-1]
+        last_line = L[L.rfind('\n') + 1:]
         if len(last_line) + 1 <= length:
             L = L + char
         else:
@@ -112,7 +117,7 @@ def _wrap_line_by_char(line, length, indent):
 
 def _generic_feature_to_genbank_text(generic_feature):
     """
-    Use the information in <generic_feature> to write
+    Use the information in <generic_feature> object to write
         a genbank feature text section, for example:
 
         '     CDS             complement(12..2189)
@@ -143,7 +148,7 @@ def _generic_feature_to_genbank_text(generic_feature):
             first_line += f"complement({ps}{f.start}..{f.end}{pe})"
 
     # Introns
-    else:  # len(self.regions) >= 2
+    else:  # len(f.regions) >= 2
         s = ''
         for r in f.regions:
             if r[2] == '+':
@@ -157,14 +162,14 @@ def _generic_feature_to_genbank_text(generic_feature):
     # --- Second line to the end --- #
     for key, val in f.attributes:
         if type(val) is int or type(val) is float:
-            newline = ' ' * 21 + f"/{key}={val}\n"
+            newline = f"/{key}={val}"
         else:
-            newline = ' ' * 21 + f"/{key}=\"{val}\"\n"
+            newline = f"/{key}=\"{val}\""
 
         if key == 'translation':
-            text += _wrap_line_by_char(newline, length=79, indent=21)
+            text += _wrap_line_by_char(newline, length=79, indent=21) + '\n'
         else:
-            text += _wrap_line_by_word(newline, length=79, indent=21)
+            text += _wrap_line_by_word(newline, length=79, indent=21) + '\n'
 
     return text
 
@@ -197,28 +202,27 @@ def _make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
     KEYWORDS   = KEYWORDS.replace('\n', ' ')
     SOURCE     = SOURCE.replace('\n', ' ')
 
-    # The 1st line of ORGANISM should be the species name
-    ORGANISM_1 = ORGANISM.split('\n')[0]
-    # Starting from the 2nd line, it should be the taxanomy
-    # Make everything from the 2nd line a single line
-    ORGANISM_2 = ' '.join(ORGANISM.split('\n')[1:])
+    # Wrap and then remove the indent of the first line
+    ACCESSION  = _wrap_line_by_word(ACCESSION , length=79, indent=12).lstrip()
+    DEFINITION = _wrap_line_by_word(DEFINITION, length=79, indent=12).lstrip()
+    KEYWORDS   = _wrap_line_by_word(KEYWORDS  , length=79, indent=12).lstrip()
+    SOURCE     = _wrap_line_by_word(SOURCE    , length=79, indent=12).lstrip()
 
-    text = f"""\
+    # If there are multiple lines in ORGANISM
+    if '\n' in ORGANISM:
+        lines = ORGANISM.split('\n')
+        # The 1st line of ORGANISM should be the species name
+        # Starting from the 2nd line, it should be the taxanomy
+        # Make everything from the 2nd line a single line without wrapping
+        ORGANISM = lines[0] + '\n' + ' ' * 12 + ''.join(lines[1:])
+
+    header = f"""\
 LOCUS       {ACCESSION}        {length} bp    {molecule}    {shape}   {division} {_today()}
 DEFINITION  {DEFINITION}
 ACCESSION   {ACCESSION}
 KEYWORDS    {KEYWORDS}
 SOURCE      {SOURCE}
-  ORGANISM  {ORGANISM_1}
-            {ORGANISM_2}\n"""
-
-    lines = text.splitlines()
-    # block = the text block from 2nd to the last line
-    block = '\n'.join(lines[1:])
-    # Do not wrap the 1st line; wrap everything starting from the 2nd line
-    block = _wrap_paragraph(block, length=79, indent=12)
-    # Put the first line and the block together -> genbank header section
-    header = lines[0] + '\n' + block
+  ORGANISM  {ORGANISM}\n"""
 
     return header
 
@@ -332,15 +336,14 @@ def write_genbank(data, file, DEFINITION='.', KEYWORDS='.', SOURCE='.',
                 LOCUS = chromosome.genbank_LOCUS
 
             # --- FEATURES text section --- #
-            if chromosome.feature_array[0].type == 'source':
-                FEATURES = 'FEATURES             Location/Qualifiers\n'
-            else:
-                FEATURES = _init_feature(
-                    length=len(sequence),
-                    organism=ORGANISM.split('\n')[0],
-                )
+            FEATURES = _init_feature(
+                length=len(sequence),
+                organism=ORGANISM.split('\n')[0]
+            )
 
             for f in chromosome.feature_array:
+                if f.type == 'source': continue
+
                 # For CDS, re-make 'translation', 'codon_start' and 'transl_table'
                 if f.type == 'CDS':
                     if f.strand == '+':
@@ -350,9 +353,9 @@ def write_genbank(data, file, DEFINITION='.', KEYWORDS='.', SOURCE='.',
                     # Always start with M regardless of GUG or other alternate start codons
                     # Remove stop codon *
                     aa = 'M' + translate(cds)[1:-1]
-                    f.replace_attribute('translation', aa)
-                    f.replace_attribute('codon_start', f.frame)
-                    f.replace_attribute('transl_table', 11)
+                    f.set_attribute('translation', aa)
+                    f.set_attribute('codon_start', f.frame)
+                    f.set_attribute('transl_table', 11)
                 FEATURES += _generic_feature_to_genbank_text(f)
 
             # --- ORIGIN text sections --- #
@@ -424,3 +427,4 @@ def make_genbank(fasta, gtf, output, shape='linear', DEFINITION='.',
         ORGANISM=ORGANISM,
         genbank_division=genbank_division
     )
+

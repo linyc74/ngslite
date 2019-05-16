@@ -5,7 +5,7 @@ from .data_class import Chromosome, FeatureArray
 
 def read_fasta_gtf(fasta, gtf, as_dict=False, circular=False):
     """
-    Read fasta and gtf simultaneously into Chromosome ojbects, i.e. annotated genome
+    Read fasta and gtf simultaneously into Chromosome ojbects, i.e. annotated genomes
 
     Args:
         fasta: str, path-like

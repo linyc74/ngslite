@@ -6,7 +6,7 @@ Python functions for manipulating NGS-related data and files
 """
 
 
-__version__ = '0.8.1'
+__version__ = '0.8.2'
 
 
 from .arrfunc import *
@@ -32,13 +32,12 @@ from .kmertools import *
 from .locus_extractor import *
 from .merge_pfam_orf import *
 from .metaspades import *
+from .multiple_sequence_alignment import *
 from .orf_finder import *
 from .prokka import *
 from .samtools import *
 from .subsample import *
 from .synteny import *
-from .trim import *
-from .trinity import *
 from .vcftools import *
 
 

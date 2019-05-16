@@ -129,17 +129,14 @@ GenericFeature
         for i, attr in enumerate(self.attributes):
             if attr[0] == key:
                 self.attributes[i] = (key, val)
+                return
+        self.add_attribute(key, val)
 
     def add_attribute(self, key, val):
         self.attributes.append((key, val))
 
     def remove_attribute(self, key):
         self.attributes = [a for a in self.attributes if a[0] != key]
-
-    def replace_attribute(self, key, val):
-        for i, a in enumerate(self.attributes):
-            if a[0] == key:
-                self.attributes[i] = (a[0], val)
 
     def to_gtf_feature(self):
         """

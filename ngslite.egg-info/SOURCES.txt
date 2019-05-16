@@ -25,13 +25,13 @@ ngslite/locus_extractor.py
 ngslite/lowlevel.py
 ngslite/merge_pfam_orf.py
 ngslite/metaspades.py
+ngslite/multiple_sequence_alignment.py
 ngslite/orf_finder.py
 ngslite/prokka.py
 ngslite/samtools.py
 ngslite/subsample.py
 ngslite/synteny.py
 ngslite/trim.py
-ngslite/trinity.py
 ngslite/vcftools.py
 ngslite.egg-info/PKG-INFO
 ngslite.egg-info/SOURCES.txt

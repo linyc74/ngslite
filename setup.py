@@ -12,7 +12,7 @@ setup(
     license='MIT',
     packages=['ngslite'],
     python_requires='>3.6',
-    install_requires=['numpy', 'pandas'],
+    install_requires=['numpy', 'pandas', 'biopython', 'scipy'],
     zip_safe=False
 )
 

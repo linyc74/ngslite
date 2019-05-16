@@ -214,8 +214,9 @@ def _get_feature_attributes(feature_text):
 
         # With quote, value is text
         if '="' in attr:
-            key, val = attr.split('="')
-            val = val[:-1]
+            pos = attr.find('="')
+            key = attr[:pos]
+            val = attr[pos+2:-1]
 
         # Without quote
         elif '=' in attr:

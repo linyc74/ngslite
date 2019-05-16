@@ -8,13 +8,19 @@ from .genbank_write import write_genbank
 
 def _find_feature(feature_arr, keywords):
     """
+    In a FeatureArray object, if any one of the GenericFeature contains any one of the <keywords>,
+        then return the GenericFeature object
+
     Args:
-        feature_arr: list of GenericFeature objects
+        feature_arr: FeatureArray object
 
         keywords: list of str
     """
+    # For each GenericFeature
     for f in feature_arr:
+        # For each keyword
         for word in keywords:
+            # For each value in the attributes [(key_1, val_1), (key_2, val_2), ...]
             for key, val in f.attributes:
                 if word in str(val):
                     return f
@@ -99,16 +105,14 @@ def locus_extractor(fasta, gtf, keywords, flank, fasta_out, gtf_out):
 
 def genbank_locus_extractor(genbank, keywords, flank, output):
     """
-    A wrapper function of locus_extractor() that does:
-        genbank to (fasta, gtf)
-        locus_extractor()
-        (fasta, gtf) to genbank
+    Similar to locus_extractor() except the genomic sequence and annotation are
+        read from a genbank file
 
     Args:
         genbank: str, path-like
             The input genbank file
 
-        keywords: list of str
+        keywords: str, or list of str
 
         flank: int
 
@@ -121,7 +125,7 @@ def genbank_locus_extractor(genbank, keywords, flank, output):
     loci = []  # list of Chromosome objects
 
     # Iterate through each contig
-    for chromosome in read_genbank(genbank):
+    for chromosome in read_genbank(genbank):  # read_genbank() -> list of Chromosome objects
         seqname = chromosome.seqname
         feature_array = chromosome.feature_array
         sequence = chromosome.sequence
@@ -134,6 +138,9 @@ def genbank_locus_extractor(genbank, keywords, flank, output):
 
         region_start = max(region_start, 1)  # out of bound
         region_end = min(region_end, len(sequence))
+
+        # Add information to the seqname
+        seqname = seqname + f';from={region_start};to={region_end};strand={seed.strand}'
 
         # Extract sequence from fasta
         sequence = sequence[region_start-1: region_end]
