@@ -11,12 +11,11 @@ from scipy.cluster import hierarchy
 
 score = {
     'gap': -1,
-    'common_tag': +100,
-    'CDS_intergenic': -1,
-    'CDS_CDS_same_strand': +2,
-    'CDS_CDS_opposite_strand': -5,
-    'intergenic_intergeic': 0,
-    'else': 0
+    'feature_intergenic': -1,
+    'different_feature': -2,
+    'same_feature_same_strand': +2,
+    'same_feature_opposite_strand': -5,
+    'common_tag': +100
 }
 
 score_scalar = 0.01
@@ -133,23 +132,29 @@ def _compare(feature1, feature2):
     if X is None:
         return score['gap']
 
-    elif Y is None:
+    if Y is None:
         return score['gap']
 
-    elif (X.type == 'CDS' and Y.type == 'intergenic') or \
-            (X.type == 'intergenic' and Y.type == 'CDS'):
-        return score['CDS_intergenic']
+    if X.type == Y.type == 'intergenic':
+        return 0
 
-    elif X.type == 'CDS' and Y.type == 'CDS':
+    if X.type == 'intergenic' or Y.type == 'intergenic':
+        return score['feature_intergenic']
+
+    if X.type != Y.type:
+        return score['different_feature']
+
+    else: # X.type == Y.type but not 'intergenic'
+
         if X.strand == Y.strand:
+
             if _has_common_tag(X.tags, Y.tags):
                 return score['common_tag']
             else:
-                return score['CDS_CDS_same_strand']
-        elif X.strand != Y.strand:
-            return score['CDS_CDS_opposite_strand']
+                return score['same_feature_same_strand']
 
-    return score['else']
+        else: # X.strand != Y.strand
+            return score['same_feature_opposite_strand']
 
 
 def _align(feature_array_1, feature_array_2):
@@ -316,15 +321,15 @@ def synteny(genbank=None, fasta=None, gtf=None, output=None, ax=None, qualifiers
     id_order = hierarchy.dendrogram(
         Z=linkage_matrix,
         ax=ax,
-        orientation='right' # root on the right
+        orientation='top' # root on top
     )['ivl'] # 'ivl': a list of labels corresponding to the leaf nodes
 
     # Get actual seqname order with id order
     seqname_order = [seqname_list[int(i)] for i in id_order]
 
-    # Set the contig labels on the y axis
+    # Set the contig labels on the x axis
     if ax is not None:
-        ax.set_yticklabels(seqname_order, rotation=90, verticalalignment='top')
+        ax.set_xticklabels(seqname_order, rotation=90, horizontalalignment='right')
 
     # Re-order Chromosome objects in a list
     data = [chromosome_dict[seqname] for seqname in seqname_order]

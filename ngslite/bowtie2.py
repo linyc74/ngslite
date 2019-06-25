@@ -21,7 +21,7 @@ def bowtie2_mapping(ref, fq1, sam, fq2=None):
             The output SAM file
     """
     # Build the .bt2 index files
-    __call(f"bowtie2-build {ref} ref > bowtie2_build_{ref}.log")
+    __call(f"bowtie2-build {ref} ref > {ref}_bowtie2_build.log")
 
     log = sam[:-4]+'.log'
     if fq2 is None:

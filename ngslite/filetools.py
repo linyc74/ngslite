@@ -125,9 +125,19 @@ def gzip(file, keep=True):
 
         keep: bool, keep the input file or not
     """
-    keep = ['', '-k '][keep]
-    decomp = ['', '-d '][file.endswith('.gz')]
-    __call(f"gzip {decomp}{keep}{file}")
+    is_gz = file.endswith('.gz')
+
+    decompress = '--decompress ' if is_gz else ''
+
+    if keep:
+        stdout = '--stdout '
+        if is_gz: output = f' > {file[:-3]}'
+        else: output = f' > {file}.gz'
+    else:
+        stdout = ''
+        output = ''
+
+    __call(f"gzip {decompress}{stdout}{file}{output}")
 
 
 def call(cmd):

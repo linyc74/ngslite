@@ -232,6 +232,10 @@ def parse_hmmsearch_result(file, output, database=None):
 
         # Second layer of for loop: Each translated contig hit by the query
         for contig in translated_contigs:
+            # Very corner case where there's no table
+            if '[No individual domains that satisfy reporting thresholds (although complete target did)]' in contig:
+                continue
+
             # Get the table appearing before 'Alignments for each domain'
             table = contig.split('\n\n  Alignments for each domain:')[0]
 
