@@ -41,3 +41,4 @@ ngslite.egg-info/requires.txt
 ngslite.egg-info/top_level.txt
 test/test_arrfunc.py
 test/test_dnatools.py
+test/test_genbank_parse.py
