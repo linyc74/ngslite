@@ -1,5 +1,4 @@
-.idea
 *.pyc
+__pycache__
 toy
 run.py
-__pycache__

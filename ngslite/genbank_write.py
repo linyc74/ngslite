@@ -142,7 +142,9 @@ def _generic_feature_to_genbank_text(generic_feature):
 
     # Contiguous segment, no intron
     if len(f.regions) == 1:
-        if f.strand == '+':
+        if f.start == f.end:
+            first_line += f"{f.start}"
+        elif f.strand == '+':
             first_line += f"{ps}{f.start}..{f.end}{pe}"
         else:
             first_line += f"complement({ps}{f.start}..{f.end}{pe})"

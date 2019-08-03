@@ -127,12 +127,13 @@ def _split_feature_text(FEATURES):
 def _get_feature_type(feature_text):
     """
     Args:
-        feature_text: str
+        feature_text: str, endswith '\n'
 
-            '     CDS             complement(12..2189)
-            '                     /gene="rIIA"
-            '                     /locus_tag="T4p001"
-            '                     /db_xref="GeneID:1258593"
+For example:
+     CDS             complement(12..2189)
+                     /gene="rIIA"
+                     /locus_tag="T4p001"
+                     /db_xref="GeneID:1258593"
 
     Returns: str
         The example would be 'CDS'
@@ -144,12 +145,13 @@ def _get_feature_type(feature_text):
 def _get_feature_location(feature_text):
     """
     Args:
-        feature_text: str,
+        feature_text: str, endswith '\n'
 
-            '     CDS             complement(12..2189)
-            '                     /gene="rIIA"
-            '                     /locus_tag="T4p001"
-            '                     /db_xref="GeneID:1258593"
+For example:
+     CDS             complement(12..2189)
+                     /gene="rIIA"
+                     /locus_tag="T4p001"
+                     /db_xref="GeneID:1258593"
 
     Returns:
         start: int
@@ -160,34 +162,55 @@ def _get_feature_location(feature_text):
 
         strand: str, '+' or '-'
             The example would be '-'
+
+        regions: list of tuple (int, int, str)
+            Indicating start, end, strand of each region (intron)
+            The example would be [(12, 2189, '-')]
     """
-    line1 = feature_text.splitlines()[0]
-    region = line1.strip().split()[1]
+    # The location string is before ' '*21 + '/'
+    # e.g. "join(complement(2853..2990),complement(2458..2802))", sometimes could be multiple lines
+    pos = feature_text.find(' '*21 + '/')
+    # locstr = location string
+    locstr = feature_text[:pos]
+    locstr = locstr.replace('\n'+' '*21, '') # multiple -> single line
+    locstr = locstr.strip().split()[1]
 
-    if region.startswith('complement('):
-        strand = '-'
-        region = region[len('complement('):-1]
-    else:
-        strand = '+'
+    if locstr.startswith('join('):
+        # Remove 'join(' and ')'
+        locstr = locstr[5:-1]
 
-    start = int(region.split('..')[0])
-    if '..' in region:
-        end = int(region.split('..')[1])
-    else:
-        end = start
+    # loclist = list of strings
+    # e.g. ["complement(2853..2990)", "complement(2458..2802))"]
+    loclist = locstr.split(',')
 
-    return start, end, strand
+    regions = [] # e.g. [(1, 9, '-'), (11, 19, '-')]
+    for s in loclist:
+        if s.startswith('complement('):
+            s = s[len('complement('):-1]
+            c = '-'  # c = strand
+        else:
+            c = '+'
+        a = int(s.split('..')[0])  # a is start
+        b = int(s.split('..')[-1])  # b is end
+        if a > b: a, b = b, a # a must be < b
+        regions.append((a, b, c))
+
+    regions = sorted(regions, key=lambda x: x[0])
+    start, end, strand = regions[0][0], regions[-1][1], regions[0][2]
+
+    return start, end, strand, regions
 
 
 def _get_feature_attributes(feature_text):
     """
     Args:
-        feature_text: str,
+        feature_text: str, endswith '\n'
 
-            '     CDS             complement(12..2189)
-            '                     /gene="rIIA"
-            '                     /locus_tag="T4p001"
-            '                     /db_xref="GeneID:1258593"
+For example:
+     CDS             complement(12..2189)
+                     /gene="rIIA"
+                     /locus_tag="T4p001"
+                     /db_xref="GeneID:1258593"
 
     Returns: list of tuples of (key, value) pairs
         The example would be
@@ -197,10 +220,15 @@ def _get_feature_attributes(feature_text):
             ('db_xref', 'GeneID:1258593')
         ]
     """
-    # Remove the first line
-    feature_text = '\n'.join(feature_text.splitlines()[1:])
+    # If no attribute at all, return empty list
+    if (' '*21 + '/') not in feature_text:
+        return []
 
-    # Parse as a list of str, each str is 'key="text"' or 'key=value'
+    # Remove the location information before ' '*21 + '/'
+    pos = feature_text.find(' '*21 + '/')
+    feature_text = feature_text[pos:]
+
+    # Parse the feature_text into a list of str, where each str is 'key="text"' or 'key=value'
     attr_list = list()
     for line in feature_text.splitlines():
         if line.startswith(' '*21+'/') and '=' in line:
@@ -238,31 +266,29 @@ def _get_feature_attributes(feature_text):
 def _construct_feature(feature_text, seqname):
     """
     Construct a GenericFeature object from a single feature text
-
-    Introns (joined regions) are not supported
+    Introns (joined regions) are supported
 
     Args:
-        feature_text: str
+        feature_text: str, endswith '\n'
 
-            '     CDS             complement(12..2189)
-            '                     /gene="rIIA"
-            '                     /locus_tag="T4p001"
-            '                     /db_xref="GeneID:1258593"
+For example:
+     CDS             complement(12..2189)
+                     /gene="rIIA"
+                     /locus_tag="T4p001"
+                     /db_xref="GeneID:1258593"
 
         seqname: str
     """
-    if 'join(' in feature_text.split('\n')[0]:
-        return None
-
-    start, end, strand = _get_feature_location(feature_text)
+    start, end, strand, regions = _get_feature_location(feature_text)
     return GenericFeature(
         seqname=seqname,
         type_=_get_feature_type(feature_text),
         start=start,
         end=end,
         strand=strand,
-        attributes=_get_feature_attributes(feature_text),
-        frame=1
+        regions=regions,
+        frame=1,
+        attributes=_get_feature_attributes(feature_text)
     )
 
 
@@ -333,8 +359,12 @@ def _pack_attributes(feature, skip_attributes):
         return '.'
     s = ''
     for key, val in feature.attributes:
-        if not key in skip_attributes:
-            s += f"{key} \"{val}\";"
+        if key in skip_attributes:
+            continue
+        if type(val) in (int, float):
+            s += f'{key} {val};'
+        else:  # type(val) is str
+            s += f'{key} "{val}";'
     return s[:-1]  # Remove trailing ";"
 
 
@@ -418,6 +448,7 @@ def genbank_to_fasta(file, output):
 default_skip_types = ['source']
 default_skip_attributes = ['translation', 'codon_start', 'transl_table']
 
+
 def genbank_to_gtf(file, output, skip_types=None, skip_attributes=None):
     """
     Extract features in the genbank file and write them into a GTF file
@@ -458,3 +489,4 @@ def genbank_to_gtf(file, output, skip_types=None, skip_attributes=None):
                         feature.remove_attribute(key)
                     gtf_feature = feature.to_gtf_feature()
                     writer.write(gtf_feature)
+

@@ -374,10 +374,13 @@ FeatureArray
 
             for i in range(len(f.regions)):
                 start, end, strand = f.regions[i]
-                start = size - end + 1
-                end =  size - start + 1
+                # Simultaneously update start and end
+                start, end = size - end + 1, size - start + 1
                 strand = ['+', '-'][strand == '+']
                 f.regions[i] = (start, end, strand)
+            # Use start position to sort the regions (i.e. exons)
+            f.regions = sorted(f.regions, key=lambda x: x[0])
+
         self.sort()
 
     def pop(self, index=-1):
