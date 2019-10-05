@@ -1,4 +1,5 @@
 from .gtftools import GtfFeature
+from .gfftools import GffFeature
 
 
 def gtf_to_generic_feature(gtf_feature):
@@ -27,7 +28,33 @@ def gtf_to_generic_feature(gtf_feature):
     )
 
 
-class GenericFeature(object):
+def gff_to_generic_feature(gff_feature):
+    """
+    Covert GffFeature (namedtuple) to GenericFeature
+
+    Args:
+        gff_feature: GffFeature object
+    """
+    f = gff_feature
+    items = [item for item in f.attributes.split(';') if item]
+
+    attr_list = []
+    for item in items:
+        key, val = item.split('=')
+        attr_list.append((key, val))
+
+    return GenericFeature(
+        seqname=f.seqid,
+        type_=f.type,
+        start=f.start,
+        end=f.end,
+        strand=f.strand,
+        attributes=attr_list,
+        frame=1 if f.phase == '.' else f.phase + 1
+    )
+
+
+class GenericFeature:
     """
     Data class designed to store features from Genbank and GTF files.
 
@@ -113,7 +140,7 @@ GenericFeature
   end: {self.end}{pe}
   strand: '{self.strand}'
   frame: {self.frame}
-  attributes: {attr_str}  
+  attributes: {attr_str}
   tags: {','.join(self.tags)}
   regions: {self.regions}'''
 
@@ -163,8 +190,30 @@ GenericFeature
             attribute=attr_str[:-1]  # Remove trailing ';'
         )
 
+    def to_gff_feature(self):
+        """
+        Returns GffFeature object
+        """
+        attr_str = ''
+        for key, val in self.attributes:
+            # Escape characters not allowed
+            val = val.replace(';', '%3B').replace('=', '%3D')
+            attr_str += f"{key}={val};"
 
-class FeatureArray(object):
+        return GffFeature(
+            seqid=self.seqname,
+            source='.',
+            feature=self.type,
+            start=self.start,
+            end=self.end,
+            score='.',
+            strand=self.strand,
+            frame=self.frame - 1,  # GFF frame is 0, 1, 2
+            attribute=attr_str[:-1]  # Remove trailing ';'
+        )
+
+
+class FeatureArray:
     """
     A list of GenericFeature that behaves like a list, but more than a list.
 
@@ -175,6 +224,8 @@ class FeatureArray(object):
             The unique name of chromosome, genome or contig to which this feature_array belons
 
         genome_size: int (bp)
+
+        features: list of GenericFeature or GtfFeature
 
         circular: bool
             Is circular genome or not
@@ -203,7 +254,7 @@ class FeatureArray(object):
 
         self.__arr = features
 
-        # For each feature in the list, convert to GenericFeature is it's GtfFeature
+        # For each feature in the list, convert to GenericFeature if it's GtfFeature
         for i, feature in enumerate(self.__arr):
             if feature.__class__.__name__ == 'GtfFeature':
                 self.__arr[i] = gtf_to_generic_feature(feature)
@@ -390,7 +441,7 @@ FeatureArray
         return self.__arr.pop(index)
 
 
-class Chromosome(object):
+class Chromosome:
     """
     An annotated chromosome
 

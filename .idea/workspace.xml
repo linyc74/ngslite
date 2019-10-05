@@ -9,20 +9,23 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/setup.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="13" column="4" selection-start-line="13" selection-start-column="4" selection-end-line="13" selection-end-column="27" />
+              <folding>
+                <element signature="e#0#28#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>_pfam_in_orf</find>
-      <find>.append</find>
-      <find>self.regions</find>
-      <find>self.pos</find>
-      <find>GenbankWriter</find>
-      <find>GenericFeature</find>
-      <find>tag_match</find>
-      <find>49190</find>
-      <find>_contruct_feature_array</find>
-      <find>tuple</find>
       <find>self.__sam</find>
       <find>=&quot;</find>
       <find>crop</find>
@@ -43,6 +46,16 @@
       <find>feature_text: str</find>
       <find>genbank_LOCUS</find>
       <find>genbank_parse</find>
+      <find>GtfWriter</find>
+      <find>gtf</find>
+      <find>to_gff</find>
+      <find>get_attribute</find>
+      <find>a = int(s.split('..')[0])  # a is start</find>
+      <find>partial</find>
+      <find>GenericFeature</find>
+      <find>_get_feature_location</find>
+      <find>translation</find>
+      <find>ngs.</find>
     </findStrings>
     <replaceStrings>
       <replace>__extract_features</replace>
@@ -66,6 +79,11 @@
       <replace>self.__vcf</replace>
       <replace>read</replace>
       <replace>gb_parse</replace>
+      <replace>GffParser</replace>
+      <replace>GffWriter</replace>
+      <replace>read_gff</replace>
+      <replace>Gff</replace>
+      <replace>to_gff_feature</replace>
     </replaceStrings>
     <dirStrings>
       <dir>C:\Users\linyc\OneDrive - New England Biolabs\Research\1_Python\ngslite\ngslite</dir>
@@ -78,10 +96,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/ngslite/jellyfish.py" />
-        <option value="$PROJECT_DIR$/ngslite/prokka.py" />
-        <option value="$PROJECT_DIR$/ngslite/orf_finder.py" />
-        <option value="$PROJECT_DIR$/../synteny/locus_extractor.py" />
         <option value="$PROJECT_DIR$/ngslite/annot_merge.py" />
         <option value="$PROJECT_DIR$/ngslite/glimmer_hmmer.py" />
         <option value="$PROJECT_DIR$/ngslite/merge_orf_pfam.py" />
@@ -103,7 +117,6 @@
         <option value="$USER_HOME$/Documents/wdir/19_0502_MUSCLE/19_0502_MUSCLE.py" />
         <option value="$PROJECT_DIR$/ngslite/multiple_sequence_alignment.py" />
         <option value="$PROJECT_DIR$/ngslite/fasta_gtf.py" />
-        <option value="$PROJECT_DIR$/ngslite/__init__.py" />
         <option value="$PROJECT_DIR$/test/test_genbank_write" />
         <option value="$PROJECT_DIR$/../locus_cropper/locus_cropper.py" />
         <option value="$PROJECT_DIR$/setup.py" />
@@ -114,21 +127,26 @@
         <option value="$PROJECT_DIR$/ngslite/hmmer.py" />
         <option value="$PROJECT_DIR$/ngslite/filetools.py" />
         <option value="$PROJECT_DIR$/ngslite/dnatools.py" />
-        <option value="$PROJECT_DIR$/ngslite/genbank_write.py" />
         <option value="$PROJECT_DIR$/ngslite/temp.py" />
         <option value="$PROJECT_DIR$/test/test_temp.py" />
-        <option value="$PROJECT_DIR$/test/test_data_class.py" />
         <option value="$PROJECT_DIR$/ngslite/locus_extractor.py" />
-        <option value="$PROJECT_DIR$/run.py" />
         <option value="$PROJECT_DIR$/../empty/empty/__init__.py" />
         <option value="$PROJECT_DIR$/../empty/test/__init__.py" />
         <option value="$PROJECT_DIR$/../empty/test/test_cat.py" />
         <option value="$PROJECT_DIR$/../empty/test/test_dog.py" />
         <option value="$PROJECT_DIR$/../empty/test/test_pig.py" />
         <option value="$PROJECT_DIR$/../empty/empty/pig.py" />
-        <option value="$PROJECT_DIR$/ngslite/data_class.py" />
-        <option value="$PROJECT_DIR$/ngslite/genbank_parse.py" />
         <option value="$PROJECT_DIR$/test/test_genbank_parse.py" />
+        <option value="$PROJECT_DIR$/test/test_data_class.py" />
+        <option value="$PROJECT_DIR$/ngslite/__init__.py" />
+        <option value="$PROJECT_DIR$/ngslite/genbank_parse.py" />
+        <option value="$PROJECT_DIR$/ngslite/gfftools.py" />
+        <option value="$PROJECT_DIR$/ngslite/data_class.py" />
+        <option value="$PROJECT_DIR$/ngslite/genbank_write.py" />
+        <option value="$PROJECT_DIR$/run.py" />
+        <option value="$USER_HOME$/Dropbox/Files/gff_into_gbk/__main__.py" />
+        <option value="$PROJECT_DIR$/../gff_into_gbk/__main__.py" />
+        <option value="$PROJECT_DIR$/../gff_into_gbk/gff_into_gbk/__init__.py" />
       </list>
     </option>
   </component>
@@ -174,7 +192,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -191,6 +208,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -210,7 +228,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.test_genbank_parse">
+  <component name="RunManager" selected="Python.run">
     <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="ngslite" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -319,15 +337,15 @@
     <list>
       <item itemvalue="Python.run" />
       <item itemvalue="Python.test_arrfunc" />
-      <item itemvalue="Python.test_temp" />
-      <item itemvalue="Python.test_genbank_parse" />
       <item itemvalue="Python.test_cat" />
+      <item itemvalue="Python.test_genbank_parse" />
+      <item itemvalue="Python.test_temp" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.run" />
         <item itemvalue="Python.test_genbank_parse" />
         <item itemvalue="Python.test_cat" />
-        <item itemvalue="Python.run" />
         <item itemvalue="Python.test_temp" />
         <item itemvalue="Python.test_arrfunc" />
       </list>
@@ -347,8 +365,27 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1381" height="885" extended-state="7" />
+    <frame x="-7" y="-7" width="1381" height="885" extended-state="6" />
     <layout>
+      <window_info content_ui="combo" id="Project" order="0" weight="0.21974759" />
+      <window_info id="Structure" order="1" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49851412" weight="0.34656084" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39946914" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5014859" side_tool="true" weight="0.27272728" />
+      <window_info anchor="bottom" id="Python Console" order="8" />
+      <window_info anchor="bottom" id="Terminal" order="9" />
+      <window_info anchor="bottom" id="Version Control" order="10" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+    <layout-to-restore>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21974759" />
       <window_info id="Structure" order="1" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -366,49 +403,9 @@
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-    </layout>
-    <layout-to-restore>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21974759" />
-      <window_info id="Structure" order="1" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49851412" visible="true" weight="0.23677249" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39946914" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5014859" side_tool="true" weight="0.27272728" />
-      <window_info anchor="bottom" id="Python Console" order="8" />
-      <window_info anchor="bottom" id="Terminal" order="9" />
-      <window_info anchor="bottom" id="Version Control" order="10" />
-      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
     </layout-to-restore>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/ngslite/arrfunc.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ngslite/bedtools.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ngslite/count.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret lean-forward="true" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ngslite/fastq.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="627">
-          <caret line="19" column="27" selection-start-line="19" selection-start-column="27" selection-end-line="19" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/test_genbank_write" />
     <entry file="file://$PROJECT_DIR$/../locus_cropper/locus_cropper.py" />
     <entry file="file://$USER_HOME$/Documents/wdir/my_projects/19_0426_napA_loci/19_0426_napA_loci.py" />
     <entry file="file://$USER_HOME$/Documents/wdir/my_projects/19_0516_napA_loci/19_0516_napA_loci.py" />
@@ -490,68 +487,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ngslite/gtftools.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="66" lean-forward="true" selection-start-line="66" selection-end-line="66" />
-          <folding>
-            <element signature="e#229#1686#0" expanded="false" />
-            <element signature="e#263#369#0" expanded="false" />
-            <element signature="e#263#332#1" expanded="false" />
-            <element signature="e#404#415#0" expanded="false" />
-            <element signature="e#476#503#0" expanded="false" />
-            <element signature="e#537#575#0" expanded="false" />
-            <element signature="e#609#718#0" expanded="false" />
-            <element signature="e#748#1637#0" expanded="false" />
-            <element signature="e#748#1246#1" expanded="false" />
-            <element signature="e#1322#1585#0" expanded="false" />
-            <element signature="e#1396#1463#0" expanded="false" />
-            <element signature="e#1668#1686#0" expanded="false" />
-            <element signature="e#1710#2312#0" expanded="false" />
-            <element signature="e#1754#1895#0" expanded="false" />
-            <element signature="e#1754#1857#1" expanded="false" />
-            <element signature="e#1930#1941#0" expanded="false" />
-            <element signature="e#2002#2029#0" expanded="false" />
-            <element signature="e#2069#2263#0" expanded="false" />
-            <element signature="e#2069#2201#1" expanded="false" />
-            <element signature="e#2294#2312#0" expanded="false" />
-            <element signature="e#2358#2867#0" expanded="false" />
-            <element signature="e#2358#2608#1" expanded="false" />
-            <element signature="e#2715#2867#0" expanded="false" />
-            <element signature="e#2761#2867#0" expanded="false" />
-            <element signature="e#2800#2867#0" expanded="false" />
-            <element signature="e#2909#3537#0" expanded="false" />
-            <element signature="e#2909#3280#1" expanded="false" />
-            <element signature="e#3392#3517#0" expanded="false" />
-            <element signature="e#3438#3500#0" expanded="false" />
-            <element signature="e#3571#4407#0" expanded="false" />
-            <element signature="e#3571#3852#1" expanded="false" />
-            <element signature="e#3897#4407#0" expanded="false" />
-            <element signature="e#3932#4181#0" expanded="false" />
-            <element signature="e#3982#4181#0" expanded="false" />
-            <element signature="e#4030#4181#0" expanded="false" />
-            <element signature="e#4227#4407#0" expanded="false" />
-            <element signature="e#4264#4407#0" expanded="false" />
-            <element signature="e#4443#5227#0" expanded="false" />
-            <element signature="e#4443#4635#1" expanded="false" />
-            <element signature="e#4668#4982#0" expanded="false" />
-            <element signature="e#4675#4961#0" expanded="false" />
-            <element signature="e#5002#5227#0" expanded="false" />
-            <element signature="e#5011#5146#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="13" column="4" lean-forward="true" selection-start-line="13" selection-start-column="4" selection-end-line="13" selection-end-column="27" />
-          <folding>
-            <element signature="e#0#28#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ngslite/synteny.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="19">
@@ -600,63 +535,8 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ngslite/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="663">
-          <caret line="39" column="22" selection-start-line="39" selection-start-column="22" selection-end-line="39" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/__init__.py">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ngslite/genbank_write.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="19">
-          <caret line="281" column="31" selection-start-line="281" selection-start-column="31" selection-end-line="281" selection-end-column="31" />
-          <folding>
-            <element signature="e#180#798#0" />
-            <element signature="e#224#385#0" />
-            <element signature="e#224#347#1" />
-            <element signature="e#420#431#0" />
-            <element signature="e#492#504#0" />
-            <element signature="e#549#749#0" />
-            <element signature="e#549#627#1" />
-            <element signature="e#780#798#0" />
-            <element signature="e#819#1046#0" />
-            <element signature="e#819#882#1" />
-            <element signature="e#1116#1602#0" />
-            <element signature="e#1116#1319#1" />
-            <element signature="e#1412#1589#0" />
-            <element signature="e#1655#2130#0" />
-            <element signature="e#1655#1853#1" />
-            <element signature="e#1949#2117#0" />
-            <element signature="e#2183#2609#0" />
-            <element signature="e#2183#2386#1" />
-            <element signature="e#2438#2596#0" />
-            <element signature="e#2671#4333#0" />
-            <element signature="e#2671#3073#1" />
-            <element signature="e#3345#3572#0" />
-            <element signature="e#3629#3864#0" />
-            <element signature="e#3676#3801#0" />
-            <element signature="e#3978#4316#0" />
-            <element signature="e#4471#6235#0" />
-            <element signature="e#4471#4997#1" />
-            <element signature="e#5687#5983#0" />
-            <element signature="e#5724#5777#0" />
-            <element signature="e#5998#6216#0" />
-            <element signature="e#6303#6781#0" />
-            <element signature="e#6303#6581#1" />
-            <element signature="e#6593#6765#0" />
-            <element signature="e#6814#7443#0" />
-            <element signature="e#6814#6954#1" />
-            <element signature="e#7156#7394#0" />
-            <element signature="e#7291#7368#0" />
-            <element signature="e#10753#12249#0" />
-            <element signature="e#10753#11923#1" />
-          </folding>
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/test_arrfunc.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -670,7 +550,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/test_temp.py" />
     <entry file="file://$PROJECT_DIR$/ngslite/temp.py" />
-    <entry file="file://$PROJECT_DIR$/test/test_data_class.py" />
     <entry file="file://$PROJECT_DIR$/ngslite/locus_extractor.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-456">
@@ -686,13 +565,6 @@
             <element signature="e#1938#2975#0" />
             <element signature="e#2817#2882#0" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/run.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="95">
-          <caret line="5" selection-start-line="5" selection-end-line="5" />
         </state>
       </provider>
     </entry>
@@ -753,136 +625,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="38">
           <caret line="2" selection-start-line="2" selection-end-line="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ngslite/data_class.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="114">
-          <caret line="29" column="29" selection-start-line="29" selection-start-column="29" selection-end-line="29" selection-end-column="29" />
-          <folding>
-            <element signature="e#80#579#0" />
-            <element signature="e#80#194#1" />
-            <element signature="e#280#370#0" />
-            <element signature="e#616#4556#0" />
-            <element signature="e#616#1699#1" />
-            <element signature="e#1893#2384#0" />
-            <element signature="e#2417#2449#0" />
-            <element signature="e#2483#3112#0" />
-            <element signature="e#2653#2822#0" />
-            <element signature="e#2839#3091#0" />
-            <element signature="e#3156#3266#0" />
-            <element signature="e#3197#3246#0" />
-            <element signature="e#3315#3496#0" />
-            <element signature="e#3370#3459#0" />
-            <element signature="e#3405#3459#0" />
-            <element signature="e#3545#3579#0" />
-            <element signature="e#3626#3687#0" />
-            <element signature="e#3727#4556#0" />
-            <element signature="e#3727#3776#1" />
-            <element signature="e#3904#4201#0" />
-            <element signature="e#4061#4201#0" />
-            <element signature="e#4591#11672#0" />
-            <element signature="e#4591#4973#1" />
-            <element signature="e#5059#5943#0" />
-            <element signature="e#5059#5351#1" />
-            <element signature="e#5812#5922#0" />
-            <element signature="e#5986#6228#0" />
-            <element signature="e#6268#6474#0" />
-            <element signature="e#6508#6542#0" />
-            <element signature="e#6576#6769#0" />
-            <element signature="e#6621#6696#0" />
-            <element signature="e#6723#6769#0" />
-            <element signature="e#6802#6824#0" />
-            <element signature="e#6858#7075#0" />
-            <element signature="e#6919#7055#0" />
-            <element signature="e#7107#7846#0" />
-            <element signature="e#7107#7282#1" />
-            <element signature="e#7356#7846#0" />
-            <element signature="e#7583#7846#0" />
-            <element signature="e#7876#8013#0" />
-            <element signature="e#7876#7950#1" />
-            <element signature="e#8054#8295#0" />
-            <element signature="e#8054#8151#1" />
-            <element signature="e#8339#9339#0" />
-            <element signature="e#8339#8571#1" />
-            <element signature="e#9034#9314#0" />
-            <element signature="e#9379#10045#0" />
-            <element signature="e#9379#9482#1" />
-            <element signature="e#9556#9915#0" />
-            <element signature="e#9669#9810#0" />
-            <element signature="e#10087#10653#0" />
-            <element signature="e#10087#10362#1" />
-            <element signature="e#10686#11537#0" />
-            <element signature="e#10686#10842#1" />
-            <element signature="e#10916#11516#0" />
-            <element signature="e#11136#11388#0" />
-            <element signature="e#11576#11672#0" />
-            <element signature="e#11576#11635#1" />
-            <element signature="e#11705#12434#0" />
-            <element signature="e#11705#12159#1" />
-            <element signature="e#12260#12434#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ngslite/genbank_parse.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="399">
-          <caret line="366" column="31" selection-start-line="366" selection-start-column="31" selection-end-line="366" selection-end-column="31" />
-          <folding>
-            <element signature="e#265#1395#0" />
-            <element signature="e#299#405#0" />
-            <element signature="e#299#368#1" />
-            <element signature="e#440#451#0" />
-            <element signature="e#512#539#0" />
-            <element signature="e#573#611#0" />
-            <element signature="e#645#754#0" />
-            <element signature="e#784#1346#0" />
-            <element signature="e#971#1103#0" />
-            <element signature="e#1377#1395#0" />
-            <element signature="e#1427#1680#0" />
-            <element signature="e#1427#1586#1" />
-            <element signature="e#1712#1927#0" />
-            <element signature="e#1712#1831#1" />
-            <element signature="e#1969#3459#0" />
-            <element signature="e#1969#3179#1" />
-            <element signature="e#3267#3446#0" />
-            <element signature="e#3503#3873#0" />
-            <element signature="e#3503#3796#1" />
-            <element signature="e#3921#5675#0" />
-            <element signature="e#3921#4521#1" />
-            <element signature="e#4526#4570#0" />
-            <element signature="e#4930#4984#0" />
-            <element signature="e#4990#5017#0" />
-            <element signature="e#5199#5514#0" />
-            <element signature="e#5243#5305#0" />
-            <element signature="e#5725#7444#0" />
-            <element signature="e#5725#6174#1" />
-            <element signature="e#6593#6797#0" />
-            <element signature="e#6707#6797#0" />
-            <element signature="e#6922#7422#0" />
-            <element signature="e#6987#7070#0" />
-            <element signature="e#7134#7221#0" />
-            <element signature="e#7498#8204#0" />
-            <element signature="e#8282#9338#0" />
-            <element signature="e#9372#9648#0" />
-            <element signature="e#10370#11109#0" />
-            <element signature="e#10370#10595#1" />
-            <element signature="e#11155#11773#0" />
-            <element signature="e#11155#11561#1" />
-            <element signature="e#11816#12194#0" />
-            <element signature="e#11816#11967#1" />
-            <element signature="e#12016#12194#0" />
-            <element signature="e#12064#12194#0" />
-            <element signature="e#12100#12194#0" />
-            <element signature="e#12417#13789#0" />
-            <element signature="e#12417#12979#1" />
-            <element signature="e#13328#13789#0" />
-            <element signature="e#13376#13789#0" />
-            <element signature="e#13412#13789#0" />
-            <element signature="e#13519#13789#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1005,6 +747,359 @@
         <state>
           <folding>
             <element signature="e#167#877#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/test_data_class.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="65" column="46" lean-forward="true" selection-start-line="65" selection-start-column="46" selection-end-line="65" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ngslite/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" column="20" lean-forward="true" selection-start-line="15" selection-start-column="20" selection-end-line="15" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ngslite/gtftools.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="5" column="61" selection-start-line="5" selection-start-column="54" selection-end-line="5" selection-end-column="61" />
+          <folding>
+            <element signature="e#229#1686#0" />
+            <element signature="e#263#369#0" />
+            <element signature="e#263#332#1" />
+            <element signature="e#404#415#0" />
+            <element signature="e#476#503#0" />
+            <element signature="e#537#575#0" />
+            <element signature="e#609#718#0" />
+            <element signature="e#748#1637#0" />
+            <element signature="e#748#1246#1" />
+            <element signature="e#1322#1585#0" />
+            <element signature="e#1396#1463#0" />
+            <element signature="e#1668#1686#0" />
+            <element signature="e#1710#2312#0" />
+            <element signature="e#1754#1895#0" />
+            <element signature="e#1754#1857#1" />
+            <element signature="e#1930#1941#0" />
+            <element signature="e#2002#2029#0" />
+            <element signature="e#2069#2263#0" />
+            <element signature="e#2069#2201#1" />
+            <element signature="e#2294#2312#0" />
+            <element signature="e#2358#2867#0" />
+            <element signature="e#2358#2608#1" />
+            <element signature="e#2715#2867#0" />
+            <element signature="e#2761#2867#0" />
+            <element signature="e#2800#2867#0" />
+            <element signature="e#2909#3537#0" />
+            <element signature="e#2909#3280#1" />
+            <element signature="e#3392#3517#0" />
+            <element signature="e#3438#3500#0" />
+            <element signature="e#3571#4407#0" />
+            <element signature="e#3571#3852#1" />
+            <element signature="e#3897#4407#0" />
+            <element signature="e#3932#4181#0" />
+            <element signature="e#3982#4181#0" />
+            <element signature="e#4030#4181#0" />
+            <element signature="e#4227#4407#0" />
+            <element signature="e#4264#4407#0" />
+            <element signature="e#4443#5227#0" />
+            <element signature="e#4443#4635#1" />
+            <element signature="e#4668#4982#0" />
+            <element signature="e#4675#4961#0" />
+            <element signature="e#5002#5227#0" />
+            <element signature="e#5011#5146#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ngslite/genbank_parse.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="714">
+          <caret line="436" column="38" selection-start-line="436" selection-start-column="38" selection-end-line="436" selection-end-column="38" />
+          <folding>
+            <element signature="e#265#1395#0" />
+            <element signature="e#299#405#0" />
+            <element signature="e#299#368#1" />
+            <element signature="e#440#451#0" />
+            <element signature="e#512#539#0" />
+            <element signature="e#573#611#0" />
+            <element signature="e#645#754#0" />
+            <element signature="e#784#1346#0" />
+            <element signature="e#971#1103#0" />
+            <element signature="e#1377#1395#0" />
+            <element signature="e#1427#1680#0" />
+            <element signature="e#1427#1586#1" />
+            <element signature="e#1712#1927#0" />
+            <element signature="e#1712#1831#1" />
+            <element signature="e#1969#3459#0" />
+            <element signature="e#1969#3179#1" />
+            <element signature="e#3267#3446#0" />
+            <element signature="e#3503#3873#0" />
+            <element signature="e#3503#3796#1" />
+            <element signature="e#3921#6709#0" />
+            <element signature="e#3921#4521#1" />
+            <element signature="e#4526#4570#0" />
+            <element signature="e#4993#5104#0" />
+            <element signature="e#4930#4984#0" />
+            <element signature="e#4990#5017#0" />
+            <element signature="e#5492#6520#0" />
+            <element signature="e#5479#5584#0" />
+            <element signature="e#5980#6022#0" />
+            <element signature="e#6163#6203#0" />
+            <element signature="e#5725#7444#0" />
+            <element signature="e#5725#6174#1" />
+            <element signature="e#6593#6797#0" />
+            <element signature="e#6707#6797#0" />
+            <element signature="e#6922#7422#0" />
+            <element signature="e#6987#7070#0" />
+            <element signature="e#7134#7221#0" />
+            <element signature="e#7498#8204#0" />
+            <element signature="e#7498#7869#1" />
+            <element signature="e#8282#9338#0" />
+            <element signature="e#8282#9058#1" />
+            <element signature="e#9140#9272#0" />
+            <element signature="e#9372#9648#0" />
+            <element signature="e#9372#9522#1" />
+            <element signature="e#9703#10443#0" />
+            <element signature="e#9703#10099#1" />
+            <element signature="e#10215#10402#0" />
+            <element signature="e#10490#11229#0" />
+            <element signature="e#10490#10715#1" />
+            <element signature="e#11275#11893#0" />
+            <element signature="e#11936#12314#0" />
+            <element signature="e#11936#12087#1" />
+            <element signature="e#12136#12314#0" />
+            <element signature="e#12184#12314#0" />
+            <element signature="e#12220#12314#0" />
+            <element signature="e#12537#13909#0" />
+            <element signature="e#12537#13099#1" />
+            <element signature="e#13448#13909#0" />
+            <element signature="e#13496#13909#0" />
+            <element signature="e#13532#13909#0" />
+            <element signature="e#13639#13909#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ngslite/gfftools.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="69" lean-forward="true" selection-start-line="69" selection-end-line="69" />
+          <folding>
+            <element signature="e#225#268#1" />
+            <element signature="e#307#369#1" />
+            <element signature="e#573#584#0" />
+            <element signature="e#645#672#0" />
+            <element signature="e#706#797#0" />
+            <element signature="e#831#940#0" />
+            <element signature="e#970#1870#0" />
+            <element signature="e#1901#1919#0" />
+            <element signature="e#1943#2546#0" />
+            <element signature="e#1987#2128#0" />
+            <element signature="e#1987#2090#1" />
+            <element signature="e#2163#2174#0" />
+            <element signature="e#2235#2262#0" />
+            <element signature="e#2302#2497#0" />
+            <element signature="e#2302#2435#1" />
+            <element signature="e#2528#2546#0" />
+            <element signature="e#2590#3069#0" />
+            <element signature="e#3765#4601#0" />
+            <element signature="e#4637#5417#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ngslite/data_class.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="169">
+          <caret line="57" column="4" lean-forward="true" selection-start-line="57" selection-start-column="4" selection-end-line="57" selection-end-column="4" />
+          <folding>
+            <element signature="e#113#612#0" />
+            <element signature="e#113#227#1" />
+            <element signature="e#313#403#0" />
+            <element signature="e#660#1201#0" />
+            <element signature="e#660#774#1" />
+            <element signature="e#909#972#0" />
+            <element signature="e#2507#2998#0" />
+            <element signature="e#3031#3063#0" />
+            <element signature="e#3097#3724#0" />
+            <element signature="e#3267#3436#0" />
+            <element signature="e#3453#3703#0" />
+            <element signature="e#3768#3878#0" />
+            <element signature="e#3809#3858#0" />
+            <element signature="e#3927#4108#0" />
+            <element signature="e#3982#4071#0" />
+            <element signature="e#4017#4071#0" />
+            <element signature="e#4157#4191#0" />
+            <element signature="e#4238#4299#0" />
+            <element signature="e#4339#5168#0" />
+            <element signature="e#4339#4388#1" />
+            <element signature="e#4516#4813#0" />
+            <element signature="e#4673#4813#0" />
+            <element signature="e#5208#5819#0" />
+            <element signature="e#5208#5257#1" />
+            <element signature="e#5333#5466#0" />
+            <element signature="e#5846#12983#0" />
+            <element signature="e#5846#6284#1" />
+            <element signature="e#6370#7254#0" />
+            <element signature="e#6370#6662#1" />
+            <element signature="e#7123#7233#0" />
+            <element signature="e#7297#7539#0" />
+            <element signature="e#7579#7785#0" />
+            <element signature="e#7819#7853#0" />
+            <element signature="e#7887#8080#0" />
+            <element signature="e#7932#8007#0" />
+            <element signature="e#8034#8080#0" />
+            <element signature="e#8113#8135#0" />
+            <element signature="e#8169#8386#0" />
+            <element signature="e#8230#8366#0" />
+            <element signature="e#8418#9157#0" />
+            <element signature="e#8418#8593#1" />
+            <element signature="e#8667#9157#0" />
+            <element signature="e#8894#9157#0" />
+            <element signature="e#9187#9324#0" />
+            <element signature="e#9187#9261#1" />
+            <element signature="e#9365#9606#0" />
+            <element signature="e#9365#9462#1" />
+            <element signature="e#9650#10650#0" />
+            <element signature="e#9650#9882#1" />
+            <element signature="e#10345#10625#0" />
+            <element signature="e#10690#11356#0" />
+            <element signature="e#10690#10793#1" />
+            <element signature="e#10867#11226#0" />
+            <element signature="e#10980#11121#0" />
+            <element signature="e#11398#11964#0" />
+            <element signature="e#11398#11673#1" />
+            <element signature="e#11997#12848#0" />
+            <element signature="e#11997#12153#1" />
+            <element signature="e#12227#12827#0" />
+            <element signature="e#12447#12699#0" />
+            <element signature="e#12887#12983#0" />
+            <element signature="e#12887#12946#1" />
+            <element signature="e#13008#13737#0" />
+            <element signature="e#13008#13462#1" />
+            <element signature="e#13563#13737#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ngslite/genbank_write.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="596">
+          <caret line="362" column="63" lean-forward="true" selection-start-line="362" selection-start-column="63" selection-end-line="362" selection-end-column="63" />
+          <folding>
+            <element signature="e#180#798#0" />
+            <element signature="e#224#385#0" />
+            <element signature="e#224#347#1" />
+            <element signature="e#420#431#0" />
+            <element signature="e#492#504#0" />
+            <element signature="e#549#749#0" />
+            <element signature="e#549#627#1" />
+            <element signature="e#780#798#0" />
+            <element signature="e#819#1046#0" />
+            <element signature="e#819#882#1" />
+            <element signature="e#1116#1602#0" />
+            <element signature="e#1116#1319#1" />
+            <element signature="e#1412#1589#0" />
+            <element signature="e#1655#2130#0" />
+            <element signature="e#1655#1853#1" />
+            <element signature="e#1949#2117#0" />
+            <element signature="e#2183#2609#0" />
+            <element signature="e#2183#2386#1" />
+            <element signature="e#2438#2596#0" />
+            <element signature="e#2671#3073#1" />
+            <element signature="e#3345#3572#0" />
+            <element signature="e#3629#3864#0" />
+            <element signature="e#3676#3801#0" />
+            <element signature="e#4471#6235#0" />
+            <element signature="e#4471#4997#1" />
+            <element signature="e#5687#5983#0" />
+            <element signature="e#5724#5777#0" />
+            <element signature="e#5998#6216#0" />
+            <element signature="e#6303#6781#0" />
+            <element signature="e#6303#6581#1" />
+            <element signature="e#6593#6765#0" />
+            <element signature="e#6814#7443#0" />
+            <element signature="e#6814#6954#1" />
+            <element signature="e#7156#7394#0" />
+            <element signature="e#7291#7368#0" />
+            <element signature="e#10753#12249#0" />
+            <element signature="e#10753#11923#1" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Files/gff_into_gbk/__main__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="521">
+          <caret line="242" column="19" selection-start-line="242" selection-start-column="19" selection-end-line="242" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+            <element signature="e#1619#1937#0" />
+            <element signature="e#1974#2343#0" />
+            <element signature="e#1974#2207#1" />
+            <element signature="e#2268#2328#0" />
+            <element signature="e#2368#3059#0" />
+            <element signature="e#2368#2449#1" />
+            <element signature="e#2571#2695#0" />
+            <element signature="e#2796#2899#0" />
+            <element signature="e#2981#3043#0" />
+            <element signature="e#3085#3851#0" />
+            <element signature="e#3085#3167#1" />
+            <element signature="e#3298#3485#0" />
+            <element signature="e#3586#3689#0" />
+            <element signature="e#3773#3835#0" />
+            <element signature="e#4402#4921#0" />
+            <element signature="e#4402#4791#1" />
+            <element signature="e#4821#4902#0" />
+            <element signature="e#4957#5664#0" />
+            <element signature="e#4957#5259#1" />
+            <element signature="e#5331#5634#0" />
+            <element signature="e#5565#5634#0" />
+            <element signature="e#5700#6508#0" />
+            <element signature="e#5700#5997#1" />
+            <element signature="e#6079#6495#0" />
+            <element signature="e#6157#6230#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/run.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="4" selection-start-line="4" selection-start-column="4" selection-end-line="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../gff_into_gbk/gff_into_gbk/run.py" />
+    <entry file="file://$PROJECT_DIR$/../gff_into_gbk/__main__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4165">
+          <caret line="248" selection-start-line="248" selection-end-line="248" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../gff_into_gbk/gff_into_gbk/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="12" column="21" lean-forward="true" selection-start-line="12" selection-start-column="21" selection-end-line="12" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="13" column="4" selection-start-line="13" selection-start-column="4" selection-end-line="13" selection-end-column="27" />
+          <folding>
+            <element signature="e#0#28#0" expanded="true" />
           </folding>
         </state>
       </provider>

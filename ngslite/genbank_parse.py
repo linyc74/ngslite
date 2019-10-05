@@ -148,7 +148,8 @@ def _get_feature_location(feature_text):
         feature_text: str, endswith '\n'
 
 For example:
-     CDS             complement(12..2189)
+     CDS             complement(join(<360626..360849,360919..360948,
+                     361067..361220,361292..361470,361523..>361555))
                      /gene="rIIA"
                      /locus_tag="T4p001"
                      /db_xref="GeneID:1258593"
@@ -166,39 +167,70 @@ For example:
         regions: list of tuple (int, int, str)
             Indicating start, end, strand of each region (intron)
             The example would be [(12, 2189, '-')]
+
+        partial_start: bool
+
+        partial_end: bool
     """
     # The location string is before ' '*21 + '/'
     # e.g. "join(complement(2853..2990),complement(2458..2802))", sometimes could be multiple lines
     pos = feature_text.find(' '*21 + '/')
     # locstr = location string
     locstr = feature_text[:pos]
-    locstr = locstr.replace('\n'+' '*21, '') # multiple -> single line
+    locstr = locstr.replace('\n'+' '*21, '')  # multiple -> single line
     locstr = locstr.strip().split()[1]
+
+    if locstr.startswith('complement('):
+        # Remove 'complement(' and ')'
+        locstr = locstr[len('complement('):-1]
+        all_complement = True
+    else:
+        all_complement = False
 
     if locstr.startswith('join('):
         # Remove 'join(' and ')'
-        locstr = locstr[5:-1]
+        locstr = locstr[len('join('):-1]
 
     # loclist = list of strings
     # e.g. ["complement(2853..2990)", "complement(2458..2802))"]
     loclist = locstr.split(',')
 
-    regions = [] # e.g. [(1, 9, '-'), (11, 19, '-')]
-    for s in loclist:
+    partial_start, partial_end = False, False
+    regions = []  # e.g. [(100, 200, '-'), (<300, 400, '+'), (500, >600, '+')]
+    for i, s in enumerate(loclist):
+        # Tell the strand
         if s.startswith('complement('):
+            # Remove 'complement(' and ')'
             s = s[len('complement('):-1]
-            c = '-'  # c = strand
+            c = '-'           # c = strand
+        elif all_complement:
+            c = '-'
         else:
             c = '+'
-        a = int(s.split('..')[0])  # a is start
-        b = int(s.split('..')[-1])  # b is end
-        if a > b: a, b = b, a # a must be < b
+
+        a, b = s.split('..')  # a is start, b is end
+
+        # First start has '<'
+        if i == 0 and a.startswith('<'):
+            a = a[1:]
+            partial_start = True
+
+        # Last end has '>'
+        if i == len(loclist) - 1 and b.startswith('>'):
+            b = b[1:]
+            partial_end = True
+
+        a, b = int(a), int(b)
+
+        if a > b:
+            a, b = b, a  # a must be < b
+
         regions.append((a, b, c))
 
     regions = sorted(regions, key=lambda x: x[0])
     start, end, strand = regions[0][0], regions[-1][1], regions[0][2]
 
-    return start, end, strand, regions
+    return start, end, strand, regions, partial_start, partial_end
 
 
 def _get_feature_attributes(feature_text):
@@ -279,7 +311,7 @@ For example:
 
         seqname: str
     """
-    start, end, strand, regions = _get_feature_location(feature_text)
+    start, end, strand, regions, partial_start, partial_end = _get_feature_location(feature_text)
     return GenericFeature(
         seqname=seqname,
         type_=_get_feature_type(feature_text),
@@ -288,7 +320,9 @@ For example:
         strand=strand,
         regions=regions,
         frame=1,
-        attributes=_get_feature_attributes(feature_text)
+        attributes=_get_feature_attributes(feature_text),
+        partial_start=partial_start,
+        partial_end=partial_end
     )
 
 

@@ -1,12 +1,12 @@
 """
-Light-weight functions for next-generation sequencing (NGS) data analysis
+Light-weight functions for next-generation sequencing (NGS) and genomics data analysis
 
 Python API for NGS-related command line tools
-Python functions for manipulating NGS-related data and files
+Python functions for manipulating NGS and genomics data
 """
 
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 
 from .arrfunc import *
@@ -24,6 +24,7 @@ from .file_conversion import *
 from .filetools import *
 from .genbank_parse import *
 from .genbank_write import *
+from .gfftools import *
 from .glimmer import *
 from .gtftools import *
 from .hmmer import *

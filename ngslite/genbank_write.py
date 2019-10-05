@@ -177,7 +177,7 @@ def _generic_feature_to_genbank_text(generic_feature):
 
 
 def _make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
-                     SOURCE, ORGANISM, division='ENV'):
+                 SOURCE, ORGANISM, division='ENV'):
     """
     Create a header section (str) of a genbank file.
 
@@ -346,18 +346,20 @@ def write_genbank(data, file, DEFINITION='.', KEYWORDS='.', SOURCE='.',
             for f in chromosome.feature_array:
                 if f.type == 'source': continue
 
-                # For CDS, re-make 'translation', 'codon_start' and 'transl_table'
+                # For CDS, make 'translation', 'codon_start' if absent
                 if f.type == 'CDS':
-                    if f.strand == '+':
-                        cds = sequence[(f.start - 1):f.end]
-                    else:  # strand == '-'
-                        cds = rev_comp(sequence[(f.start - 1):f.end])
-                    # Always start with M regardless of GUG or other alternate start codons
-                    # Remove stop codon *
-                    aa = 'M' + translate(cds)[1:-1]
-                    f.set_attribute('translation', aa)
-                    f.set_attribute('codon_start', f.frame)
-                    f.set_attribute('transl_table', 11)
+                    if f.get_attribute('translation') is None:
+                        if f.strand == '+':
+                            cds = sequence[(f.start - 1):f.end]
+                        else:
+                            cds = rev_comp(sequence[(f.start - 1):f.end])
+                        # Always start with M regardless of GUG or other alternate start codons
+                        # Remove stop codon *
+                        aa = 'M' + translate(cds)[1:-1]
+                        f.add_attribute('translation', aa)
+
+                    if f.get_attribute('codon_start') is None:
+                        f.set_attribute('codon_start', f.frame)
                 FEATURES += _generic_feature_to_genbank_text(f)
 
             # --- ORIGIN text sections --- #
