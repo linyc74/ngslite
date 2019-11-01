@@ -4,7 +4,7 @@ import random
 
 def replace_zero_with(np_array, value):
     """
-    Replaces the 0s in an numpy array with a specified value.
+    Replaces the 0s in an numpy array with a specified value
 
     Args:
         np_array: 1D numpy.ndarray, dtype = np.int or np.float
@@ -20,8 +20,8 @@ def replace_zero_with(np_array, value):
 
 def jitter(array, value):
     """
-    Add the input <array> with some random numbers.
-    The random numbers are uniformly distributed between -<value> to +<value>.
+    Add the input <array> with some random numbers
+    The random numbers are uniformly distributed between -<value> to +<value>
 
     Args:
         array: an array of numbers, could be list, np.ndarray with int or float data types
@@ -39,7 +39,7 @@ def jitter(array, value):
 
 def densCols(x, y, bins):
     """
-    This is an implementation of the densCols() function in R.
+    This is an implementation of the densCols() function in R
     Python just doesn't have this feature!
 
     Args:

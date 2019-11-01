@@ -7,7 +7,7 @@ printf = partial(print, flush=True)
 
 def __gzip(file, keep=True):
     """
-    Call the "gzip" command to zip or unzip files.
+    Call the "gzip" command to zip or unzip files
 
     Args:
         file: str, path-like
@@ -239,9 +239,9 @@ def subsample(file, fraction, file2='', output='', output2=''):
         SAM/BAM
 
     The input file could be from other folder,
-        but the output file is always written in the current folder.
+        but the output file is always written in the current folder
 
-    Supports compressed input files (automatically detects .gz file name).
+    Supports compressed input files (automatically detects .gz file name)
 
     Args:
         file: str, path-like

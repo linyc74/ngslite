@@ -1,6 +1,6 @@
 from .fasta import FastaParser
 from .gtftools import read_gtf
-from .data_class import Chromosome, FeatureArray
+from .dataclass import Chromosome, FeatureArray
 
 
 def read_fasta_gtf(fasta, gtf, as_dict=False, circular=False):

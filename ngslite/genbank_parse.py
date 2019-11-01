@@ -1,13 +1,13 @@
 from collections import namedtuple
 from .gtftools import GtfWriter
 from .fasta import FastaWriter
-from .data_class import GenericFeature, FeatureArray, Chromosome
+from .dataclass import GenericFeature, FeatureArray, Chromosome
 
 
 GenbankItem = namedtuple('GenbankItem', 'LOCUS FEATURES ORIGIN')
 
 
-class GenbankParser(object):
+class GenbankParser:
     def __init__(self, file):
         """
         Args:
@@ -41,8 +41,10 @@ class GenbankParser(object):
         self.__gbk.seek(pos)
         lines = []
         while True:
-            line = self.__gbk.readline()[:-1]  # Remove trailing '\n'
-            if line.startswith('//'): break
+            line = self.__gbk.readline()
+            if line.startswith('//'):
+                break
+            line = line[:-1]  # remove '\n'
             lines.append(line)
         text = '\n'.join(lines)
 
@@ -208,7 +210,7 @@ For example:
         else:
             c = '+'
 
-        a, b = s.split('..')  # a is start, b is end
+        a, b = s.split('..') if ('..' in s) else (s, s)  # a is start, b is end
 
         # First start has '<'
         if i == 0 and a.startswith('<'):
@@ -372,34 +374,6 @@ def _get_sequence(ORIGIN):
     for line in ORIGIN.splitlines():
         lines.append(line[9:].replace(' ', ''))
     return ''.join(lines)
-
-
-def _pack_attributes(feature, skip_attributes):
-    """
-    Pack feature.attributes into a sinlge line of str,
-        which is in the format of the GTF attribute field, for example:
-
-        gene "AAA  [M=132]";accession "PF00004.29";...
-
-    Args:
-        feature: GenericFeature() object
-
-        skip_attributes: str, or list of str
-            Attributes not to be included, for example ['translation', 'codon_start']
-
-    Returns: str
-    """
-    if len(feature.attributes) == 0:
-        return '.'
-    s = ''
-    for key, val in feature.attributes:
-        if key in skip_attributes:
-            continue
-        if type(val) in (int, float):
-            s += f'{key} {val};'
-        else:  # type(val) is str
-            s += f'{key} "{val}";'
-    return s[:-1]  # Remove trailing ";"
 
 
 def construct_chromosome(genbank_item):

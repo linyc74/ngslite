@@ -6,7 +6,7 @@ Python functions for manipulating NGS and genomics data
 """
 
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 
 from .arrfunc import *
@@ -14,7 +14,7 @@ from .bedtools import *
 from .bowtie2 import *
 from .bwa import *
 from .count import *
-from .data_class import *
+from .dataclass import *
 from .dnatools import *
 from .enrichment import *
 from .fasta import *

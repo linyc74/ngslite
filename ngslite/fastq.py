@@ -30,8 +30,8 @@ class FastqParser:
     def next(self):
         """
         Returns: tuple
-            The next read of the fastq file.
-            If it reaches the end of the file, return (None,)*4.
+            The next read of the fastq file
+            If it reaches the end of the file, return (None,)*4
         """
         line1 = self.__fastq.readline().rstrip()
         line2 = self.__fastq.readline().rstrip()
@@ -79,10 +79,10 @@ class FastqWriter:
 
 def interleave(fq1, fq2, fq_out):
     """
-    Interleave two paired-end fastq files.
+    Interleave two paired-end fastq files
     This method does not check the header to see
-        if the two fastq files are really from paired end reads.
-    It just interleave 4 lines by 4 lines.
+        if the two fastq files are really from paired end reads
+    It just interleave 4 lines by 4 lines
 
     Args:
         fq1: str, path to fastq1 (.1.fq)

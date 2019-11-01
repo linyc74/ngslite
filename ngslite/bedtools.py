@@ -5,8 +5,8 @@ printf = partial(print, flush=True)
 
 def bedtools_multicov(bed, bams, output):
     """
-    Wrapper function of the command "bedtools multicov -bams <bams> -bed <bed> > <output>".
-    Adds a header line to the <output> file.
+    Wrapper function of the command "bedtools multicov -bams <bams> -bed <bed> > <output>"
+    Adds a header line to the <output> file
 
     Args:
         bed: str, path-like
@@ -16,7 +16,7 @@ def bedtools_multicov(bed, bams, output):
             The bam file, or any other mapped read files accepted by the bedtools
 
         output: str, path-like
-            The output tab-separated file (tsv) with headers according to the input file type.
+            The output tab-separated file (tsv) with headers according to the input file type
             Currently supports the header of the following file types:
                 bed file: chrom \t start \t end
                 gtf file: seqname \t source \t feature \t start \t end \t score \t strand \t frame \t attribute

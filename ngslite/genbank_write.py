@@ -4,7 +4,7 @@ from .genbank_parse import GenbankItem
 from datetime import date
 
 
-class GenbankWriter(object):
+class GenbankWriter:
     def __init__(self, file, mode='w'):
         """
         Args
@@ -44,32 +44,10 @@ def _today():
     return f"{day}-{month}-{year}"
 
 
-def _wrap_paragraph(paragraph, length, indent, by_char=False):
+def _wrap_line_by_word(line, length, indent, sep=' ', keep_sep=False):
     """
-    Wraps a paragraph (contains '\n'). The returned paragraph ends with '\n'.
-
-    Args:
-        paragraph: str
-        length: int
-        indent: int
-        by_char: bool
-
-    Returns: str
-    """
-    T = ''
-    # Wrap line by line
-    for line in paragraph.rstrip().splitlines():
-        if by_char:
-            T = T + _wrap_line_by_char(line, length, indent) + '\n'
-        else:  # wrap by word
-            T = T + _wrap_line_by_word(line, length, indent) + '\n'
-    return T
-
-
-def _wrap_line_by_word(line, length, indent):
-    """
-    Wraps a line (not containing any '\n') by word.
-    The returned line does not end with '\n'.
+    Wraps a line (not containing any '\n') by word
+    The returned line does not end with '\n'
 
     Args:
         line: str
@@ -78,23 +56,47 @@ def _wrap_line_by_word(line, length, indent):
 
         indent: int
 
+        sep: str
+            The separator of words, usually ' '
+
+        keep_sep: bool
+            When wrapping, whether or not to keep the separator attached to the word
+
     Returns: str
     """
-    words = line.split(' ')
-    L = ' ' * indent + words[0]
+    words = line.split(sep)
+    if keep_sep:
+        # separator always attached to the word (except the last word)
+        for i, word in enumerate(words[:-1]):
+            words[i] = word + sep
+
+    indent = ' ' * indent
+    text = indent + words[0]
+
     for word in words[1:]:
-        last_line = L[L.rfind('\n')+1:]
-        if len(last_line) + 1 + len(word) <= length:
-            L += ' ' + word
+        last_line = text.split('\n')[-1]
+
+        if keep_sep:
+            # Separator is always attached to the word, no need to consider the separator's length
+            if len(last_line) + len(word) <= length:
+                text += word
+            else:
+                text += '\n' + indent + word
+
         else:
-            L += '\n' + ' '*indent + word
-    return L
+            # Need to consider the separator's length
+            if len(last_line) + 1 + len(word) <= length:
+                text += sep + word
+            else:
+                text += '\n' + indent + word
+
+    return text
 
 
 def _wrap_line_by_char(line, length, indent):
     """
-    Wraps a line (not containing any '\n') by character.
-    The returned line does not end with '\n'.
+    Wraps a line (not containing any '\n') by character
+    The returned line does not end with '\n'
 
     Args:
         line: str
@@ -105,73 +107,81 @@ def _wrap_line_by_char(line, length, indent):
 
     Returns: str
     """
-    L = ' ' * indent
+    text = ' ' * indent
     for char in line:
-        last_line = L[L.rfind('\n') + 1:]
+        last_line = text.split('\n')[-1]
         if len(last_line) + 1 <= length:
-            L = L + char
+            text += char
         else:
-            L = L + '\n' + ' '*indent + char
-    return L
+            text += '\n' + ' '*indent + char
+    return text
 
 
-def _generic_feature_to_genbank_text(generic_feature):
+def _generic_feature_to_genbank_text(feature):
     """
-    Use the information in <generic_feature> object to write
-        a genbank feature text section, for example:
+    Use the information in a GenericFeature object to write a genbank feature
+        text section, for example:
 
-        '     CDS             complement(12..2189)
-        '                     /gene="rIIA"
-        '                     /locus_tag="T4p001"
-        '                     /db_xref="GeneID:1258593"
+    `     CDS             complement(join(<484868..485129,485184..485520,
+    `                     485576..>486058))
+    `                     /locus_tag="GN000052.00_006979"
+    `                     /codon_start=3
+    `                     /product="hypothetical protein"
+    `                     /protein_id="ncbi:GN000052.00_006979-T1"
+    `                     /translation="PAPQAPAPQAPAPQAPAPQAPAPHAPAPHAPAPHAPAQHAPAQQ
+    `                     ASLQGAPAHQVQMPLGVPPPTPSSLRHIQSAIIREEPVYPEPVHRTQSPSPRTHGTKK
+    `                     RANKEYTADSESGPSWGFDDVYGDGFKLADEDKTDLVELTEAQAKNVKTLGLAAGGKL
+    `                     IQDIYKDPFPAAIWNHAGARILHVHMIDPESCERVTHIVPQPPPMAVEEYVKSGGQFF
+    `                     VVEEKVDERLDGGDFDNVKSVSQMDQHLGITTEPEFDPKKPKMCTTCERRLCDCIIRP
+    `                     CNHQFCNVCIKRLDEAGDTEQSVQQARHWKCPTCNSPVSHVAGFSAPMNLPGEERLLR
+    `                     TKVPVHVLKIEDGRMRLSSMQTSRV"
 
     Args:
-        generic_feature: GenericFeature object
+        feature: GenericFeature object
 
     Returns: str
     """
-    f = generic_feature
+    f = feature
 
-    text = ''
+    lines = []
 
-    # --- First line --- #
-    first_line = f"{' '*5}{f.type}{' '*(16 - len(f.type))}"
+    # First line: regions
+    regions = [f'{start}..{end}' for start, end, _ in f.regions]
+    regions = ','.join(regions)
+    if f.partial_start:
+        regions = '<' + regions
+    if f.partial_end:
+        # Insert '>' after the last '..'
+        pos = regions.rfind('..') + 2
+        regions = regions[:pos] + '>' + regions[pos:]
+    if len(f.regions) > 1:
+        regions = f'join({regions})'
+    if f.strand == '-':
+        regions = f'complement({regions})'
 
-    ps = ['', '<'][f.partial_start]
-    pe = ['', '>'][f.partial_end]
+    lines.append(regions)
 
-    # Contiguous segment, no intron
-    if len(f.regions) == 1:
-        if f.start == f.end:
-            first_line += f"{f.start}"
-        elif f.strand == '+':
-            first_line += f"{ps}{f.start}..{f.end}{pe}"
-        else:
-            first_line += f"complement({ps}{f.start}..{f.end}{pe})"
-
-    # Introns
-    else:  # len(f.regions) >= 2
-        s = ''
-        for r in f.regions:
-            if r[2] == '+':
-                s += f"{r[0]}..{r[1]},"
-            else:
-                s += f"complement({r[0]}..{r[1]}),"
-        first_line += f"join({s[:-1]})"  # Remove trailing ','
-
-    text += first_line + '\n'
-
-    # --- Second line to the end --- #
+    # Second to the last line
     for key, val in f.attributes:
         if type(val) is int or type(val) is float:
-            newline = f"/{key}={val}"
+            lines.append(f'/{key}={val}')
         else:
-            newline = f"/{key}=\"{val}\""
+            lines.append(f'/{key}="{val}"')
 
-        if key == 'translation':
-            text += _wrap_line_by_char(newline, length=79, indent=21) + '\n'
+    text = ''
+    for i, line in enumerate(lines):
+        if i == 0:
+            # Wrap the first line (regions) by ',' and keep ','
+            text += _wrap_line_by_word(line, length=79, indent=21, sep=',', keep_sep=True)
+        elif line.startswith('/translation'):
+            text += _wrap_line_by_char(line, length=79, indent=21)
         else:
-            text += _wrap_line_by_word(newline, length=79, indent=21) + '\n'
+            text += _wrap_line_by_word(line, length=79, indent=21, sep=' ', keep_sep=False)
+        text += '\n'
+
+    # Fill in the feature type, e.g. 'CDS'
+    head = ' '*5 + f.type
+    text = head + text[len(head):]
 
     return text
 
@@ -179,7 +189,7 @@ def _generic_feature_to_genbank_text(generic_feature):
 def _make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
                  SOURCE, ORGANISM, division='ENV'):
     """
-    Create a header section (str) of a genbank file.
+    Create a header section of a genbank file
 
     Args:
         molecule: str, e.g. 'DNA', 'mRNA'
@@ -195,7 +205,7 @@ def _make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
             Default 'ENV' for environmental sampling sequences
 
     Returns: str
-        A text (paragraph) of genbank header
+        Text of genbank header
     """
 
     # Replace all '\n' with ' ' to become single line
@@ -243,12 +253,45 @@ def _init_feature(length, organism, mol_type='genomic DNA'):
         mol_type: str
             Usually 'genomic DNA'
     """
-    text = f"""\
+    text = f'''\
 FEATURES             Location/Qualifiers
      source          1..{length}
                      /mol_type="{mol_type}"
-                     /organism="{organism}"\n"""
+                     /organism="{organism}"\n'''
     return text
+
+
+def _translate_feature(feature, sequence):
+    """
+    Args:
+        feature: GenericFeature object
+
+        sequence: str
+            DNA sequence to which the feature belongs
+    """
+    # Build CDS by concatenating introns
+    cds = ''
+    for start, end, _ in feature.regions:
+        cds += sequence[(start - 1):end]
+
+    if feature.strand == '-':
+        cds = rev_comp(cds)
+
+    codon_start = feature.get_attribute('codon_start')
+    if codon_start is not None:
+        cds = cds[(codon_start-1):]
+
+    translation = translate(cds)
+
+    if translation.endswith('*'):
+        translation = translation[:-1]  # remove stop codon
+
+    if feature.partial_start and feature.strand == '+':
+        return translation  # not full protein --> no need to start with 'M'
+    elif feature.partial_end and feature.strand == '-':
+        return translation  # not full protein --> no need to start with 'M'
+    else:
+        return 'M' + translation[1:]  # full protein --> start with 'M'
 
 
 def _format_ref_seq(seq):
@@ -344,23 +387,19 @@ def write_genbank(data, file, DEFINITION='.', KEYWORDS='.', SOURCE='.',
             )
 
             for f in chromosome.feature_array:
-                if f.type == 'source': continue
+                # 'source' feature was made in the _init_feature()
+                if f.type == 'source':
+                    continue
 
                 # For CDS, make 'translation', 'codon_start' if absent
                 if f.type == 'CDS':
                     if f.get_attribute('translation') is None:
-                        if f.strand == '+':
-                            cds = sequence[(f.start - 1):f.end]
-                        else:
-                            cds = rev_comp(sequence[(f.start - 1):f.end])
-                        # Always start with M regardless of GUG or other alternate start codons
-                        # Remove stop codon *
-                        aa = 'M' + translate(cds)[1:-1]
+                        aa = _translate_feature(feature=f, sequence=sequence)
                         f.add_attribute('translation', aa)
-
                     if f.get_attribute('codon_start') is None:
                         f.set_attribute('codon_start', f.frame)
-                FEATURES += _generic_feature_to_genbank_text(f)
+
+                FEATURES += _generic_feature_to_genbank_text(feature=f)
 
             # --- ORIGIN text sections --- #
             ORIGIN = _format_ref_seq(sequence)
@@ -431,4 +470,3 @@ def make_genbank(fasta, gtf, output, shape='linear', DEFINITION='.',
         ORGANISM=ORGANISM,
         genbank_division=genbank_division
     )
-

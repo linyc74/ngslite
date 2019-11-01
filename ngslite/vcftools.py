@@ -6,7 +6,6 @@ printf = partial(print, flush=True)
 def bcftools_variant_call(ref, bam, output=None, max_depth=250, haploid=False):
     """
     Wrapper function of "bcftools mpileup" -> BCF (genotype likelihood) -> "bcftools call" -> BCF (variants)
-    BCF stands for binary VCF file
 
     Args:
         ref: str, path-like
@@ -42,7 +41,7 @@ def bcftools_variant_call(ref, bam, output=None, max_depth=250, haploid=False):
 
 def sort_bcf(file, keep=False):
     """
-    Wrapper function of "bcftools sort" to sort BCF and outputs a BCF file.
+    Wrapper function of "bcftools sort" to sort BCF and outputs a BCF file
 
     Args:
         file: str, path-like
@@ -219,7 +218,7 @@ def print_vcf(var=None):
             Containing (at least) 8 fields of a variant from vcf file
     """
     if var is None:
-        text = """\
+        text = ''''\
 #   Col	Field   Type    Description
 0   1   CHROM   String  The name of the sequence (typically a chromosome)
 1   2   POS     Int     The 1-based position of the variation on the given sequence
@@ -229,7 +228,7 @@ def print_vcf(var=None):
 5   6   QUAL    Int     A quality score associated with the inference of the given alleles.
 6   7   FILTER  String  A flag indicating which of a given set of filters the variation has passed
 7   8   INFO    String  An extensible list of key-value pairs (fields) describing the variation, for example, NS=2;DP=10;AF=0.333,0.667;AA=T;DB
-8   9                   Optional fields..."""
+8   9                   Optional fields...'''
         printf(text)
 
     elif type(var) is tuple or type(var) is list:

@@ -5,7 +5,7 @@ printf = partial(print, flush=True)
 
 def bwa_mapping(ref, fq1, sam, fq2=None, threads=4, score=30):
     """
-    Wrapper function of BWA mapping.
+    Wrapper function of BWA mapping
 
     Args:
         ref: str, path-like object
@@ -15,7 +15,7 @@ def bwa_mapping(ref, fq1, sam, fq2=None, threads=4, score=30):
             The read-1 fastq
 
         fq2: str, path-like object
-            The read-2 fastq. If none, use <fq1> for unpaired mapping.
+            The read-2 fastq. If none, use <fq1> for unpaired mapping
 
         sam: str, path-like object
             The output SAM file

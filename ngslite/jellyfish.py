@@ -6,7 +6,7 @@ printf = partial(print, flush=True)
 
 def __gzip(file, keep=True):
     """
-    Call the "gzip" command to zip or unzip files.
+    Call the "gzip" command to zip or unzip files
 
     Args:
         file: str, path-like
@@ -20,12 +20,12 @@ def __gzip(file, keep=True):
 
 def jellyfish_count(file, k, output, min_count=1, hash_size='100M', threads=4, canonical=True):
     """
-    Wrapper function for the jellyfish k-mer count commands.
+    Wrapper function for the jellyfish k-mer count commands
 
     From a high-level it takes an input fastq or fastq <file>, and eventually
-        exports an <output> fasta file of k-mer counts.
+        exports an <output> fasta file of k-mer counts
 
-    All the intermediate files are deleted.
+    All the intermediate files are deleted
 
     Args:
         file: str, path-like

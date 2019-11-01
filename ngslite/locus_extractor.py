@@ -1,4 +1,4 @@
-from.data_class import FeatureArray, Chromosome
+from .dataclass import FeatureArray, Chromosome
 from .fasta import read_fasta, write_fasta
 from .gtftools import read_gtf, write_gtf
 from .dnatools import rev_comp

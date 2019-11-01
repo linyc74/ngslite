@@ -1,7 +1,7 @@
 from .fasta_gtf import read_fasta_gtf
 from .genbank_parse import read_genbank
 from .genbank_write import write_genbank
-from .data_class import GenericFeature
+from .dataclass import GenericFeature
 import numpy as np
 import re
 from random import randint

@@ -6,7 +6,7 @@ ngslite/bedtools.py
 ngslite/bowtie2.py
 ngslite/bwa.py
 ngslite/count.py
-ngslite/data_class.py
+ngslite/dataclass.py
 ngslite/dnatools.py
 ngslite/enrichment.py
 ngslite/fasta.py
@@ -41,6 +41,7 @@ ngslite.egg-info/not-zip-safe
 ngslite.egg-info/requires.txt
 ngslite.egg-info/top_level.txt
 test/test_arrfunc.py
-test/test_data_class.py
+test/test_dataclass.py
 test/test_dnatools.py
 test/test_genbank_parse.py
+test/test_genbank_write.py

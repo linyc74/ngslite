@@ -58,9 +58,9 @@ def __parser_glimmer3_result(file, output):
 def glimmer3(fasta, output, linear=True, max_overlap=50, min_length=110,
              threshold=30, entropy_distance=1.15, verbose=False, log=None):
     """
-    This is a wrapper function of glimmer3, which predicts ORFs.
+    This is a wrapper function of glimmer3, which predicts ORFs
 
-    Glimmer has to run separately on each contig.
+    Glimmer has to run separately on each contig
 
     For each contig, this function does the following things:
         Find all possible ORFs of the contig    (long-orfs)

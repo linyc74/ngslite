@@ -1,6 +1,5 @@
 import unittest
 import ngslite.genbank_parse as genbank_parse
-from ngslite.data_class import GenericFeature
 
 
 LOCUS = '''\
@@ -33,11 +32,7 @@ FEATURES             Location/Qualifiers
                      /organism="Enterobacteria phage T4"
                      /mol_type="genomic DNA"
                      /db_xref="taxon:10665"
-     gene            complement(2200..2403)
-                     /gene="rIIA.1"
-                     /locus_tag="T4p002"
-                     /db_xref="GeneID:1258774"
-     CDS             join(complement(2853..2990),complement(2458..2802))
+     mRNA            join(484000..485000,486000..487000,488000..489000)
                      /gene=60
                      /locus_tag="T4p003"
                      /note="topoisomerase II in T4 and related phages an
@@ -45,40 +40,13 @@ FEATURES             Location/Qualifiers
                      (gp60 and gp39); a 50-bp segment is inserted in T4 gene 60
                      that forms an mRNA secondary structure that is
                      translationally bypassed"
-                     /codon_start=1
-                     /transl_table=11
                      /product="gp60 topoisomerase II, large subunit,
                      C-terminalregion"
                      /protein_id="NP_049618.1"
                      /db_xref="GI:9632675"
                      /db_xref="GeneID:1258779"
-                     /translation="MKFVKIDSSSVDMKKYKLQNNVRRSIKSSSMNYANVAIMTDADH
-                     DGLGSIYPSLLGFFSNWPELFEQGRIRFVKTPVIIAQVGKKQEWFYTVAEYESAKDAL
-                     PKHSIRYIKGLGSLEKSEYREMIQNPVYDVVKLPENWKELFEMLMGDNADLRKEWMSQ
-                     "
-     gene            join(1..100,1001..2000)
-                     /gene="good"
-                     /note="it's a good gene"
-'''
-
-features = [''] * 4
-
-features[0] = '''\
-     source          1..168903
-                     /organism="Enterobacteria phage T4"
-                     /mol_type="genomic DNA"
-                     /db_xref="taxon:10665"
-'''
-
-features[1] = '''\
-     gene            complement(2200..2403)
-                     /gene="rIIA.1"
-                     /locus_tag="T4p002"
-                     /db_xref="GeneID:1258774"
-'''
-
-features[2] = '''\
-     CDS             join(complement(2853..2990),complement(2458..2802))
+     CDS             complement(join(<484000..485000,486000..487000,
+                     488000..>489000))
                      /gene=60
                      /locus_tag="T4p003"
                      /note="topoisomerase II in T4 and related phages an
@@ -99,10 +67,43 @@ features[2] = '''\
                      "
 '''
 
-features[3] = '''\
-     gene            join(501..1000,1..100)
-                     /gene="good"
-                     /note="it's a good gene"
+feature1 = '''\
+     mRNA            join(484000..485000,486000..487000,488000..489000)
+                     /gene=60
+                     /locus_tag="T4p003"
+                     /note="topoisomerase II in T4 and related phages an
+                     insertion splits the large Topo II subunit in two parts
+                     (gp60 and gp39); a 50-bp segment is inserted in T4 gene 60
+                     that forms an mRNA secondary structure that is
+                     translationally bypassed"
+                     /product="gp60 topoisomerase II, large subunit,
+                     C-terminalregion"
+                     /protein_id="NP_049618.1"
+                     /db_xref="GI:9632675"
+                     /db_xref="GeneID:1258779"
+'''
+
+feature2 = '''\
+     CDS             complement(join(<484000..485000,486000..487000,
+                     488000..>489000))
+                     /gene=60
+                     /locus_tag="T4p003"
+                     /note="topoisomerase II in T4 and related phages an
+                     insertion splits the large Topo II subunit in two parts
+                     (gp60 and gp39); a 50-bp segment is inserted in T4 gene 60
+                     that forms an mRNA secondary structure that is
+                     translationally bypassed"
+                     /codon_start=1
+                     /transl_table=11
+                     /product="gp60 topoisomerase II, large subunit,
+                     C-terminalregion"
+                     /protein_id="NP_049618.1"
+                     /db_xref="GI:9632675"
+                     /db_xref="GeneID:1258779"
+                     /translation="MKFVKIDSSSVDMKKYKLQNNVRRSIKSSSMNYANVAIMTDADH
+                     DGLGSIYPSLLGFFSNWPELFEQGRIRFVKTPVIIAQVGKKQEWFYTVAEYESAKDAL
+                     PKHSIRYIKGLGSLEKSEYREMIQNPVYDVVKLPENWKELFEMLMGDNADLRKEWMSQ
+                     "
 '''
 
 ORIGIN = '''\
@@ -111,21 +112,6 @@ ORIGIN
        61 tcgcacataa ccaactagaa ttagaacggg ctggtctgga tgatcgagcg tttggtggtg
       121 tta
 '''
-
-generic_feature = GenericFeature(
-    seqname='yuchenglin',
-    type_='DNA',
-    start=74,
-    end=1983,
-    strand='+',
-    attributes=[
-        ('gene', 'AAA  [M=132]'),
-        ('accession', 'PF00004.29'),
-        ('translation', 'GIBBERISH'),
-        ('age', 36),
-        ('distance', 42.195)
-    ]
-)
 
 
 class TestGenbankParse(unittest.TestCase):
@@ -140,32 +126,38 @@ class TestGenbankParse(unittest.TestCase):
 
     def test__split_feature_text(self):
         r = genbank_parse._split_feature_text(FEATURES)
-        for i in range(3):
-            self.assertEqual(r[i], features[i])
+        self.assertEqual(r[1], feature1)
+        self.assertEqual(r[2], feature2)
 
     def test__get_feature_type(self):
-        r = genbank_parse._get_feature_type(features[1])
-        self.assertEqual(r, 'gene')
-        r = genbank_parse._get_feature_type(features[2])
+        r = genbank_parse._get_feature_type(feature1)
+        self.assertEqual(r, 'mRNA')
+        r = genbank_parse._get_feature_type(feature2)
         self.assertEqual(r, 'CDS')
 
     def test__get_feature_location(self):
-        start, end, strand, regions = genbank_parse._get_feature_location(features[2])
-        self.assertEqual(start, 2458)
-        self.assertEqual(end, 2990)
-        self.assertEqual(strand, '-')
-        self.assertEqual(regions[0], (2458, 2802, '-'))
-        self.assertEqual(regions[1], (2853, 2990, '-'))
-
-        start, end, strand, regions = genbank_parse._get_feature_location(features[3])
-        self.assertEqual(start, 1)
-        self.assertEqual(end, 1000)
+        start, end, strand, regions, partial_start, partial_end = genbank_parse._get_feature_location(feature1)
+        self.assertEqual(start, 484000)
+        self.assertEqual(end, 489000)
         self.assertEqual(strand, '+')
-        self.assertEqual(regions[0], (1, 100, '+'))
-        self.assertEqual(regions[1], (501, 1000, '+'))
+        self.assertEqual((484000, 485000, '+'), regions[0])
+        self.assertEqual((486000, 487000, '+'), regions[1])
+        self.assertEqual((488000, 489000, '+'), regions[2])
+        self.assertFalse(partial_start)
+        self.assertFalse(partial_end)
+
+        start, end, strand, regions, partial_start, partial_end = genbank_parse._get_feature_location(feature2)
+        self.assertEqual(start, 484000)
+        self.assertEqual(end, 489000)
+        self.assertEqual(strand, '-')
+        self.assertEqual((484000, 485000, '-'), regions[0])
+        self.assertEqual((486000, 487000, '-'), regions[1])
+        self.assertEqual((488000, 489000, '-'), regions[2])
+        self.assertTrue(partial_start)
+        self.assertTrue(partial_end)
 
     def test__get_feature_attributes(self):
-        attr = genbank_parse._get_feature_attributes(features[2])
+        attr = genbank_parse._get_feature_attributes(feature2)
         self.assertEqual(attr[0], ('gene', 60))
         self.assertEqual(attr[1], ('locus_tag', 'T4p003'))
         self.assertEqual(attr[2], ('note', 'topoisomerase II in T4 and related phages an \
@@ -187,13 +179,6 @@ YDVVKLPENWKELFEMLMGDNADLRKEWMSQ'))
         seq = genbank_parse._get_sequence(ORIGIN)
         self.assertEqual(seq, 'tgaatggttcattatctaaaaacttgttagcaaccttagatcaggttgaagctgaggat\
 atcgcacataaccaactagaattagaacgggctggtctggatgatcgagcgtttggtggtgtta')
-
-    def test__pack_attributes(self):
-        line = genbank_parse._pack_attributes(
-            feature=generic_feature,
-            skip_attributes='translation'
-        )
-        self.assertEqual(line, 'gene "AAA  [M=132]";accession "PF00004.29";age 36;distance 42.195')
 
 
 if __name__ == '__main__':

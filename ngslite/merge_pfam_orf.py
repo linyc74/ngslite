@@ -1,5 +1,5 @@
 from .gtftools import read_gtf, write_gtf
-from .data_class import FeatureArray, GenericFeature
+from .dataclass import FeatureArray, GenericFeature
 
 
 def _pfam_in_orf(pfam, orf):

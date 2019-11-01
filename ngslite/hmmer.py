@@ -7,7 +7,7 @@ printf = partial(print, flush=True)
 
 def __gzip(file, keep=True):
     """
-    Call the "gzip" command to zip or unzip files.
+    Call the "gzip" command to zip or unzip files
 
     Args:
         file: str, path-like
@@ -34,9 +34,9 @@ def __is_dna(fasta):
 
 def __translate_dna_database(fasta):
     """
-    Translate the input fasta file in six frames.
-    Append ';frame=<frame>' in the header line.
-    Write a new '<fasta>_translated.fa' file.
+    Translate the input fasta file in six frames
+    Append ';frame=<frame>' in the header line
+    Write a new '<fasta>_translated.fa' file
 
     Args:
         fasta: str, path-like
@@ -66,7 +66,7 @@ def __translate_dna_database(fasta):
 
 def __check_fasta_header(fasta):
     """
-    Fasta headers should NOT contain ' '. This function checks if it's correct.
+    Fasta headers should NOT contain ' '. This function checks if it's correct
 
     Args:
         fasta: str, path-like
@@ -148,9 +148,9 @@ def hmmbuild(seed, hmm):
 
 def parse_hmmsearch_result(file, output, database=None):
     """
-    Parse the result reported by HMMER, to create a GTF file.
+    Parse the result reported by HMMER, to create a GTF file
 
-    The result text file output by hmmsearch is highly unstructured.
+    The result text file output by hmmsearch is highly unstructured
 
     For each hmm query:
         Get <query_name>, <query_accession>, <query_description>
@@ -182,7 +182,7 @@ def parse_hmmsearch_result(file, output, database=None):
 
         database: str, path-like
             The fasta database used for hmmsearch
-            This is used to get the contig length.
+            This is used to get the contig length
             If None, then use the contig name in the input <file> to get contig length
     """
     # Read the hmmsearch result
@@ -304,17 +304,18 @@ def parse_hmmsearch_result(file, output, database=None):
 
 def validate_hmm_parse_result(gtf, dna_database, output):
     """
-    Parsing the HMMER result was very complicated.
-    In particular, the amino acid positions were converted back to the nucleotide positions.
-    There could be errors of this conversion. So I want to verify the nucleotide positions of each predicted domain is correct.
+    Parsing the HMMER result was very complicated
+    In particular, the amino acid positions were converted back to the nucleotide positions
+    There could be errors of this conversion
+    So I want to verify the nucleotide positions of each predicted domain is correct
 
     To verify the positions, for each hit in the GTF file:
         Get DNA sequences from the original fasta database
         Translate it into proteins
         See if there's any stop codon *
 
-    After running the script, I saw there are still a few translated sequences that have stop codon.
-    I went into the HMMER result file and found there was indeed stop codon within the predicted domain.
+    After running the script, I saw there are still a few translated sequences that have stop codon
+    I went into the HMMER result file and found there was indeed stop codon within the predicted domain
 
     Args:
         gtf: str, path-like
@@ -366,4 +367,3 @@ From the GTF file {gtf}:
         {count_minus_err} contains stop codon (*) in the translated sequence."""
 
         fh.write(text)
-
