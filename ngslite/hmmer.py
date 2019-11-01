@@ -1,25 +1,9 @@
 from .fasta import FastaParser, FastaWriter, read_fasta
 from .dnatools import translate, rev_comp
-from .lowlevel import __call
-from functools import partial
-printf = partial(print, flush=True)
+from .lowlevel import _call, _gzip, printf
 
 
-def __gzip(file, keep=True):
-    """
-    Call the "gzip" command to zip or unzip files
-
-    Args:
-        file: str, path-like
-
-        keep: bool, keep the input file or not
-    """
-    decomp = ['', '-d '][file.endswith('.gz')]
-    keep = ['', '-k '][keep]
-    __call(f"gzip {decomp}{keep}{file}")
-
-
-def __is_dna(fasta):
+def _is_dna(fasta):
     """
     Returns 'True' if the first sequence of the <fasta> file is a DNA
     """
@@ -32,7 +16,7 @@ def __is_dna(fasta):
     return is_dna
 
 
-def __translate_dna_database(fasta):
+def _translate_dna_database(fasta):
     """
     Translate the input fasta file in six frames
     Append ';frame=<frame>' in the header line
@@ -64,7 +48,7 @@ def __translate_dna_database(fasta):
     return output
 
 
-def __check_fasta_header(fasta):
+def _check_fasta_header(fasta):
     """
     Fasta headers should NOT contain ' '. This function checks if it's correct
 
@@ -102,32 +86,32 @@ def hmmsearch(hmm, database, output, cpu=2):
     """
     db_is_gz = False
     if database.endswith('.gz'):
-        __gzip(database, keep=True)
+        _gzip(database, keep=True)
         database = database[:-len('.gz')]
         db_is_gz = True
 
     hmm_is_gz = False
     if hmm.endswith('.gz'):
-        __gzip(hmm, keep=True)
+        _gzip(hmm, keep=True)
         hmm = hmm[:-len('.gz')]
         hmm_is_gz = True
 
     db_is_dna = False
-    if __is_dna(database):
-        database = __translate_dna_database(database)
+    if _is_dna(database):
+        database = _translate_dna_database(database)
         db_is_dna = True
 
-    if not __check_fasta_header(database):
+    if not _check_fasta_header(database):
         printf(f"Because the database '{database}' contains blank space in headers, hmmsearch is aborted")
         return
 
     # Run hmmsearch
-    __call(f"hmmsearch --cpu {cpu} {hmm} {database} > {output}")
+    _call(f"hmmsearch --cpu {cpu} {hmm} {database} > {output}")
 
     if db_is_gz or db_is_dna:
-        __call(f"rm {database}")
+        _call(f"rm {database}")
     if hmm_is_gz:
-        __call(f"rm {hmm}")
+        _call(f"rm {hmm}")
 
 
 def hmmbuild(seed, hmm):
@@ -143,7 +127,7 @@ def hmmbuild(seed, hmm):
         hmm = hmm + '.hmm'
     summary = hmm[:-len('.hmm')] + '_summary.txt'
 
-    __call(f"hmmbuild -o {summary} {hmm} {seed}")
+    _call(f"hmmbuild -o {summary} {hmm} {seed}")
 
 
 def parse_hmmsearch_result(file, output, database=None):

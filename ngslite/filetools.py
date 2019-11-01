@@ -1,29 +1,6 @@
-from .lowlevel import __call
+from .lowlevel import _call
 import os
 import itertools
-from functools import partial
-printf = partial(print, flush=True)
-
-
-def zip_broadcast(*lists):
-    """
-    This is a broadcasting version of the built-in zip() function
-    """
-    list_of_lists = []
-
-    # Get the longest length among the input lists
-    longest = max(map(len, lists))
-
-    for L in lists:
-        if len(L) < longest:
-            # If L is not the longest list, use itertools to cycle (i.e. broadcast) the list
-            list_of_lists.append(itertools.cycle(L))
-        else:  # len(L) == longest
-            # If L is the longest list, than just use L to zip
-            # len(L) defines the total length of the zipped result
-            list_of_lists.append(list(L))
-
-    return list(zip(*list_of_lists))
 
 
 def get_files(startswith='', endswith='', source='.', isfullpath=False):
@@ -113,39 +90,25 @@ def concat(files, output):
 
         output: str, path-like
     """
-    __call(f"cat {' '.join(files)} > {output}")
+    _call(f"cat {' '.join(files)} > {output}")
 
 
-def gzip(file, keep=True):
+def zip_broadcast(*lists):
     """
-    Call the "gzip" command to zip or unzip files.
-
-    Args:
-        file: str, path-like
-
-        keep: bool, keep the input file or not
+    This is a broadcasting version of the built-in zip() function
     """
-    is_gz = file.endswith('.gz')
+    list_of_lists = []
 
-    decompress = '--decompress ' if is_gz else ''
+    # Get the longest length among the input lists
+    longest = max(map(len, lists))
 
-    if keep:
-        stdout = '--stdout '
-        if is_gz: output = f' > {file[:-3]}'
-        else: output = f' > {file}.gz'
-    else:
-        stdout = ''
-        output = ''
+    for L in lists:
+        if len(L) < longest:
+            # If L is not the longest list, use itertools to cycle (i.e. broadcast) the list
+            list_of_lists.append(itertools.cycle(L))
+        else:  # len(L) == longest
+            # If L is the longest list, than just use L to zip
+            # len(L) defines the total length of the zipped result
+            list_of_lists.append(list(L))
 
-    __call(f"gzip {decompress}{stdout}{file}{output}")
-
-
-def call(cmd):
-    """
-    A simple wrapper of subprocess.check_call(<cmd>, shell=True)
-
-    Args:
-        cmd: str
-            The command to be executed
-    """
-    __call(cmd)
+    return list(zip(*list_of_lists))

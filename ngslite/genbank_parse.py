@@ -376,7 +376,7 @@ def _get_sequence(ORIGIN):
     return ''.join(lines)
 
 
-def construct_chromosome(genbank_item):
+def _construct_chromosome(genbank_item):
     """
     Construct a Chromosome object from a GenbankItem object
 
@@ -430,7 +430,7 @@ def read_genbank(file, as_dict=False):
         }
     """
     with GenbankParser(file) as parser:
-        chromosomes = [construct_chromosome(item) for item in parser]
+        chromosomes = [_construct_chromosome(item) for item in parser]
     if as_dict:
         return {chrom.seqname: chrom for chrom in chromosomes}
     return chromosomes
@@ -448,7 +448,7 @@ def genbank_to_fasta(file, output):
     with FastaWriter(output) as writer:
         with GenbankParser(file) as parser:
             for item in parser:
-                chrom = construct_chromosome(item)
+                chrom = _construct_chromosome(item)
                 writer.write(chrom.seqname, chrom.sequence)
 
 
@@ -489,7 +489,7 @@ def genbank_to_gtf(file, output, skip_types=None, skip_attributes=None):
     with GtfWriter(output) as writer:
         with GenbankParser(file) as parser:
             for item in parser:
-                chrom = construct_chromosome(item)
+                chrom = _construct_chromosome(item)
                 for feature in chrom.feature_array:
                     if feature.type in skip_types:
                         continue

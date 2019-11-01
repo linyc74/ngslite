@@ -1,6 +1,4 @@
-from .lowlevel import __call
-from functools import partial
-printf = partial(print, flush=True)
+from .lowlevel import _call, printf
 
 
 def bcftools_variant_call(ref, bam, output=None, max_depth=250, haploid=False):
@@ -36,7 +34,7 @@ def bcftools_variant_call(ref, bam, output=None, max_depth=250, haploid=False):
     if output is None:
         output = bam[:-4] + '.bcf'
     ploidy = ['', '--ploidy 1 '][haploid]
-    __call(f"bcftools mpileup -Ou -d {max_depth} -f {ref} {bam} | bcftools call -Ou -m -v {ploidy}-o {output}")
+    _call(f"bcftools mpileup -Ou -d {max_depth} -f {ref} {bam} | bcftools call -Ou -m -v {ploidy}-o {output}")
 
 
 def sort_bcf(file, keep=False):
@@ -52,10 +50,10 @@ def sort_bcf(file, keep=False):
     file_out = f"{file[:-4]}_sorted.{file[-3:]}"
     # -Ou: output uncompressed bcf
     # -o <file_out>
-    __call(f"bcftools sort -Ou -o {file_out} {file}")
+    _call(f"bcftools sort -Ou -o {file_out} {file}")
     if not keep:
-        __call(f"rm {file}")
-        __call(f"mv {file_out} {file}")
+        _call(f"rm {file}")
+        _call(f"mv {file_out} {file}")
 
 
 def subset_bcf_regions(file, regions, output=None, keep=True):
@@ -86,11 +84,11 @@ def subset_bcf_regions(file, regions, output=None, keep=True):
 
     # -Ou: output uncompressed bcf
     # -o <file_out>
-    __call(f"bcftools view -Ou -o {output} {file}{regions}")
+    _call(f"bcftools view -Ou -o {output} {file}{regions}")
 
     if not keep:
-        __call(f"rm {file}")
-        __call(f"mv {output} {file}")
+        _call(f"rm {file}")
+        _call(f"mv {output} {file}")
 
 
 class VcfParser:

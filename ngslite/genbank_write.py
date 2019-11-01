@@ -1,7 +1,7 @@
+from datetime import date
 from .fasta_gtf import read_fasta_gtf
 from .dnatools import translate, rev_comp
 from .genbank_parse import GenbankItem
-from datetime import date
 
 
 class GenbankWriter:

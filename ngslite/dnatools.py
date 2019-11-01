@@ -1,42 +1,40 @@
-comp = {
-    'A': 'T',
-    'C': 'G',
-    'G': 'C',
-    'T': 'A',
-    'N': 'N',
-    'M': 'K',  # M = A C
-    'K': 'M',  # K = G T
-    'R': 'Y',  # R = A G
-    'Y': 'R',  # Y = C T
-    'S': 'S',  # S = C G
-    'W': 'W',  # W = A T
-    'B': 'V',  # B = C G T
-    'V': 'B',  # V = A C G
-    'D': 'H',  # D = A G T
-    'H': 'D',  # H = A C T
-
-    'a': 't',
-    'c': 'g',
-    'g': 'c',
-    't': 'a',
-    'n': 'n',
-    'm': 'k',
-    'k': 'm',
-    'r': 'y',
-    'y': 'r',
-    's': 's',
-    'w': 'w',
-    'b': 'v',
-    'v': 'b',
-    'd': 'h',
-    'h': 'd'
-}
-
-
 def rev_comp(seq):
     """
     Returns reverse complementary sequence of the input DNA string
     """
+    comp = {
+        'A': 'T',
+        'C': 'G',
+        'G': 'C',
+        'T': 'A',
+        'N': 'N',
+        'M': 'K',  # M = A C
+        'K': 'M',  # K = G T
+        'R': 'Y',  # R = A G
+        'Y': 'R',  # Y = C T
+        'S': 'S',  # S = C G
+        'W': 'W',  # W = A T
+        'B': 'V',  # B = C G T
+        'V': 'B',  # V = A C G
+        'D': 'H',  # D = A G T
+        'H': 'D',  # H = A C T
+
+        'a': 't',
+        'c': 'g',
+        'g': 'c',
+        't': 'a',
+        'n': 'n',
+        'm': 'k',
+        'k': 'm',
+        'r': 'y',
+        'y': 'r',
+        's': 's',
+        'w': 'w',
+        'b': 'v',
+        'v': 'b',
+        'd': 'h',
+        'h': 'd'
+    }
     return ''.join([comp[base] for base in seq[::-1]])
 
 
@@ -99,4 +97,3 @@ def base_content(seq, base):
     for b in set(base):
         ret += seq.count(b) / len(seq)
     return ret
-

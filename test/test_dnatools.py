@@ -1,12 +1,12 @@
 import unittest
-
-
-from ngslite.dnatools import *
+from ngslite.dnatools import rev_comp, translate, base_content
 
 
 class TestDnaTools(unittest.TestCase):
+
     def test_rev_comp(self):
         self.assertEqual('AGTCagct', rev_comp('agctGACT'))
+        self.assertEqual('anAN', rev_comp('NTnt'))
 
     def test_translate(self):
         dna = 'TAATCGTTTGCAATTCAGGGcTTGATcTACaCTggATTGCCAttcTCTCAAAGTATTaTGCAGGACGGCGTGCgCGTTCCATGtaaaCCTgTCATAACTT'
@@ -15,12 +15,14 @@ class TestDnaTools(unittest.TestCase):
 
     def test_base_content(self):
         dna = 'AaaCccGgTt'
-        self.assertEqual(0.3, base_content(seq=dna, base='A'))
-        self.assertEqual(0.3, base_content(seq=dna, base='C'))
-        self.assertEqual(0.2, base_content(seq=dna, base='G'))
-        self.assertEqual(0.2, base_content(seq=dna, base='T'))
-        self.assertEqual(0.3, base_content(seq=dna, base='a'))
-        self.assertEqual(0.3, base_content(seq=dna, base='c'))
-        self.assertEqual(0.2, base_content(seq=dna, base='g'))
-        self.assertEqual(0.2, base_content(seq=dna, base='t'))
+        for base, content in [
+            ('A', 0.3), ('a', 0.3),
+            ('C', 0.3), ('c', 0.3),
+            ('G', 0.2), ('g', 0.2),
+            ('T', 0.2), ('t', 0.2),
+        ]:
+            self.assertEqual(content, base_content(seq=dna, base=base))
 
+
+if __name__ == '__main__':
+    unittest.main()

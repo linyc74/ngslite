@@ -131,7 +131,8 @@ def genbank_locus_extractor(genbank, keywords, flank, output):
         sequence = chromosome.sequence
 
         seed = _find_feature(feature_array, keywords)
-        if seed is None: continue  # seed not found, skip this chromosome
+        if seed is None:
+            continue  # seed not found, skip this chromosome
 
         region_start = seed.start - flank
         region_end = seed.end + flank

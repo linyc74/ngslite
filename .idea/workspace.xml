@@ -2,32 +2,46 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b52850a0-2191-4d07-80ac-15b0dcde343d" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ngslite.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ngslite.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ngslite/cmd_toolkit.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ngslite/feature_conversion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/6666666.370014.gbk" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/arrfunc.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/arrfunc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ngslite/bedtools.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/bedtools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ngslite/bowtie2.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/bowtie2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ngslite/bwa.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/bwa.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ngslite/data_class.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/bedtools.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/bowtie2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/bwa.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/count.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/count.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/dataclass.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/dataclass.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/dnatools.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/dnatools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ngslite/fasta_gtf.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/fasta_gtf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/enrichment.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/fasta.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/fasta.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/fastq.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/fastq.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/file_conversion.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/file_conversion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/filetools.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/filetools.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/genbank_parse.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/genbank_parse.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/genbank_write.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/genbank_write.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/gfftools.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/gfftools.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/glimmer.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/glimmer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/gtftools.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/gtftools.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/hmmer.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/hmmer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ngslite/jellyfish.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/jellyfish.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/jellyfish.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/kmertools.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/kmertools.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/locus_extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/locus_extractor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/lowlevel.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/lowlevel.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/merge_pfam_orf.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/merge_pfam_orf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ngslite/subsample.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/subsample.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/metaspades.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/multiple_sequence_alignment.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/multiple_sequence_alignment.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/orf_finder.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/prokka.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/samtools.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/samtools.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/subsample.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/random.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/synteny.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/synteny.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ngslite/trim.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/trim.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ngslite/trim.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ngslite/vcftools.py" beforeDir="false" afterPath="$PROJECT_DIR$/ngslite/vcftools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_data_class.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test_genbank_parse.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_genbank_parse.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_arrfunc.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_arrfunc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_dnatools.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_dnatools.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -35,71 +49,12 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>genbank_LOCUS</find>
-      <find>genbank_parse</find>
-      <find>GtfWriter</find>
-      <find>gtf</find>
-      <find>to_gff</find>
-      <find>get_attribute</find>
-      <find>a = int(s.split('..')[0])  # a is start</find>
-      <find>partial</find>
-      <find>GenericFeature</find>
-      <find>_get_feature_location</find>
-      <find>translation</find>
-      <find>ngs.</find>
-      <find>_wrap_paragraph</find>
-      <find>indent</find>
-      <find>genbank_parse._get_feature_location(features[2])</find>
-      <find>features[3]</find>
-      <find>features[1]</find>
-      <find>FEATURES</find>
-      <find>self.assertEqual(r[2], feature2)</find>
-      <find>generic_feature</find>
-      <find>to_gtf_feature</find>
-      <find>_pack_attributes</find>
-      <find>__gzip</find>
-      <find>.</find>
-      <find>X</find>
-      <find>GT</find>
-      <find>construct_chromosome</find>
-      <find>print</find>
-      <find>print(</find>
-      <find>GffFeature</find>
-    </findStrings>
-    <replaceStrings>
-      <replace>__extract_features</replace>
-      <replace>orf_gtf</replace>
-      <replace>GbFeature</replace>
-      <replace>__split_feature_text</replace>
-      <replace>__inst_gb_feature</replace>
-      <replace>__get_genome_id</replace>
-      <replace>genome_text</replace>
-      <replace>__align</replace>
-      <replace>__insert_intergenic</replace>
-      <replace>_format_ref_seq</replace>
-      <replace>type_</replace>
-      <replace>GenericFeature</replace>
-      <replace>self.__sort(</replace>
-      <replace>circular</replace>
-      <replace>_pfam_in_orf</replace>
-      <replace>sort</replace>
-      <replace>self.__pos</replace>
-      <replace>common_tag</replace>
-      <replace>self.__vcf</replace>
-      <replace>read</replace>
-      <replace>gb_parse</replace>
-      <replace>GffParser</replace>
-      <replace>GffWriter</replace>
-      <replace>read_gff</replace>
-      <replace>Gff</replace>
-      <replace>to_gff_feature</replace>
-    </replaceStrings>
-    <dirStrings>
-      <dir>C:\Users\linyc\OneDrive - New England Biolabs\Research\1_Python\ngslite\ngslite</dir>
-      <dir>C:\Users\linyc\OneDrive\My Research\Python\ngslite\ngslite</dir>
-    </dirStrings>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -139,7 +94,13 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file://C:/Users/linyc/OneDrive - New England Biolabs/Research/1_Python/ngslite/ngslite/synteny.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/ngslite/feature_conversion.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\linyc\OneDrive\CompBio\python\ngslite\toy" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -153,8 +114,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.test_dataclass">
-    <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.setup">
+    <configuration name="setup" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="ngslite" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -166,28 +127,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="test_cat" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="ngslite" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../empty/test" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../empty/test/test_cat.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/setup.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -209,6 +149,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/test_dataclass.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_dnatools" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="ngslite" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/test_dnatools.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -260,19 +221,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.run" />
-      <item itemvalue="Python.test_cat" />
       <item itemvalue="Python.test_dataclass" />
-      <item itemvalue="Python.test_genbank_parse" />
+      <item itemvalue="Python.test_dnatools" />
       <item itemvalue="Python.test_genbank_write" />
+      <item itemvalue="Python.test_genbank_parse" />
+      <item itemvalue="Python.setup" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.test_dataclass" />
-        <item itemvalue="Python.run" />
-        <item itemvalue="Python.test_genbank_write" />
+        <item itemvalue="Python.setup" />
         <item itemvalue="Python.test_genbank_parse" />
-        <item itemvalue="Python.test_cat" />
+        <item itemvalue="Python.test_genbank_write" />
+        <item itemvalue="Python.test_dnatools" />
+        <item itemvalue="Python.test_dataclass" />
       </list>
     </recent_temporary>
   </component>

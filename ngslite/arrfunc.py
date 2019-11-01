@@ -13,9 +13,9 @@ def replace_zero_with(np_array, value):
 
     Returns: 1D numpy.ndarray, dtype = np.float
     """
-    A = np.ones((len(np_array), ), dtype=np.float) * value
-    B = np.equal(np_array, 0)
-    return A * B + np_array
+    bool_arr = np.equal(np_array, 0)
+    val_arr = np.ones((len(np_array), ), dtype=np.float) * value
+    return np_array + bool_arr * val_arr
 
 
 def jitter(array, value):

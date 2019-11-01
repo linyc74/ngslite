@@ -1,8 +1,6 @@
-from .filetools import gzip
+from .lowlevel import _gzip, printf
 import subprocess
 import os
-from functools import partial
-printf = partial(print, flush=True)
 
 
 def count_reads(file, mapped=True):
@@ -23,7 +21,7 @@ def count_reads(file, mapped=True):
     """
     is_gz = False
     if file.endswith('.gz'):
-        gzip(file, keep=True)
+        _gzip(file, keep=True)
         file = file[:-3]
         is_gz = True
 

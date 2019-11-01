@@ -1,7 +1,5 @@
-from .lowlevel import __call
+from .lowlevel import _call, printf
 from .file_conversion import sam_to_bam
-from functools import partial
-printf = partial(print, flush=True)
 
 
 def sort_bam(file, keep=False):
@@ -13,10 +11,10 @@ def sort_bam(file, keep=False):
             Keep the input file or not
     """
     file_out = f"{file[:-4]}_sorted.{file[-3:]}"
-    __call(f"samtools sort {file} > {file_out}")
+    _call(f"samtools sort {file} > {file_out}")
     if not keep:
-        __call(f"rm {file}")
-        __call(f"mv {file_out} {file}")
+        _call(f"rm {file}")
+        _call(f"mv {file_out} {file}")
 
 
 def index_bam(file):
@@ -25,7 +23,7 @@ def index_bam(file):
         file: str, path-like
     """
     cmd = f"samtools index {file}"
-    __call(cmd)
+    _call(cmd)
 
 
 def sam_to_indexed_bam(file, keep=True):
@@ -71,11 +69,11 @@ def subset_bam_regions(file, regions, output=None, keep=True):
 
     # -b: output is a bam
     # -h: include header section
-    __call(f"samtools view -b -h {file}{regions} > {output}")
+    _call(f"samtools view -b -h {file}{regions} > {output}")
 
     if not keep:
-        __call(f"rm {file}")
-        __call(f"mv {output} {file}")
+        _call(f"rm {file}")
+        _call(f"mv {output} {file}")
 
 
 def remove_unmapped(file, keep=True):
@@ -96,11 +94,11 @@ def remove_unmapped(file, keep=True):
     # -b: output is a bam
     # -h: include header section
     # -F 4: NOT including the flag 'read unmapped'
-    __call(f"samtools view -h -F 4 {b}{file} > {file_out}")
+    _call(f"samtools view -h -F 4 {b}{file} > {file_out}")
 
     if not keep:
-        __call(f"rm {file}")
-        __call(f"mv {file_out} {file}")
+        _call(f"rm {file}")
+        _call(f"mv {file_out} {file}")
 
 
 class SamParser:
@@ -237,6 +235,7 @@ FLAGS_PROPERTIES = (
     'read is PCR or optical duplicate',  # 10
     'supplementary alignment'  # 11
 )
+
 
 def decode_flag(flag, return_tuple=False):
     """
@@ -438,5 +437,3 @@ def print_sam(read=None):
         if len(read) > 11:
             for i in range(11, len(read)):
                 printf(f"{i}\t     \t{read[i]}")
-
-

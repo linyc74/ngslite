@@ -1,5 +1,5 @@
 from .gtftools import read_gtf, write_gtf
-from .dataclass import FeatureArray, GenericFeature
+from .dataclass import FeatureArray
 
 
 def _pfam_in_orf(pfam, orf):
@@ -13,9 +13,9 @@ def _pfam_in_orf(pfam, orf):
         Whether the pfam domain is part of the orf
     """
     return pfam.start >= orf.start and \
-           pfam.end <= orf.end and \
-           pfam.strand == orf.strand and \
-           (pfam.start - orf.start) % 3 == 0  # in-frame
+        pfam.end <= orf.end and \
+        pfam.strand == orf.strand and \
+        (pfam.start - orf.start) % 3 == 0  # in-frame
 
 
 def _merge_pfam_arr_to_orf_arr(pfam_arr, orf_arr):

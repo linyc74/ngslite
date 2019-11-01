@@ -1,119 +1,3 @@
-from .gtftools import GtfFeature
-from .gfftools import GffFeature
-
-
-def gtf_to_generic_feature(gtf_feature):
-    """
-    Covert GtfFeature (namedtuple) to GenericFeature
-
-    Args:
-        gtf_feature: GtfFeature object
-    """
-    f = gtf_feature
-
-    attr_list = []
-    for a in f.attribute.split(';'):
-        key = a.split(' "')[0]
-        val = a[len(key)+2:-1]
-        attr_list.append((key, val))
-
-    return GenericFeature(
-        seqname=f.seqname,
-        type_=f.feature,
-        start=f.start,
-        end=f.end,
-        strand=f.strand,
-        attributes=attr_list,
-        frame=f.frame + 1
-    )
-
-
-def gff_to_generic_feature(gff_feature):
-    """
-    Covert GffFeature (namedtuple) to GenericFeature
-
-    Args:
-        gff_feature: GffFeature object
-    """
-    f = gff_feature
-    items = [item for item in f.attributes.split(';') if item]
-
-    attr_list = []
-    for item in items:
-        key, val = item.split('=')
-        attr_list.append((key, val))
-
-    return GenericFeature(
-        seqname=f.seqid,
-        type_=f.type,
-        start=f.start,
-        end=f.end,
-        strand=f.strand,
-        attributes=attr_list,
-        frame=1 if f.phase == '.' else f.phase + 1
-    )
-
-
-def generic_to_gtf_feature(generic_feature):
-    """
-    Covert GenericFeature to GtfFeature (namedtuple)
-
-    Args:
-        generic_feature: GenericFeature object
-    """
-    f = generic_feature
-
-    # Pack attributes into a single line of str
-    attr_str = ''
-    for key, val in f.attributes:
-        if type(val) is int or type(val) is float:
-            attr_str += f"{key} {val};"
-        else:  # type(val) is str -> Add quote ""
-            val = val.replace(';', '<semicolon>')  # semicolon is not allowed in the GTF attribute field
-            attr_str += f"{key} \"{val}\";"
-
-    return GtfFeature(
-        seqname=f.seqname,
-        source='.',
-        feature=f.type,
-        start=f.start,
-        end=f.end,
-        score='.',
-        strand=f.strand,
-        frame=f.frame - 1,  # GTF frame is 0, 1, 2
-        attribute=attr_str[:-1]  # Remove trailing ';'
-    )
-
-
-def generic_to_gff_feature(generic_feature):
-    """
-    Covert GenericFeature to GffFeature (namedtuple)
-
-    Args:
-        generic_feature: GenericFeature object
-    """
-    f = generic_feature
-
-    # Pack attributes into a single line of str
-    attr_str = ''
-    for key, val in f.attributes:
-        # Escape characters not allowed
-        val = val.replace(';', '%3B').replace('=', '%3D')
-        attr_str += f"{key}={val};"
-
-    return GffFeature(
-        seqid=f.seqname,
-        source='.',
-        type=f.type,
-        start=f.start,
-        end=f.end,
-        score='.',
-        strand=f.strand,
-        phase=f.frame - 1,  # GFF frame is 0, 1, 2
-        attributes=attr_str[:-1]  # Remove trailing ';'
-    )
-
-
 class GenericFeature:
     """
     Data class designed to store features from Genbank and GTF files.
@@ -305,12 +189,7 @@ class FeatureArray:
 
             genome_size: int
 
-            features:
-                Could be any of the following data types:
-                    None, [],
-                    GenericFeature, [GenericFeature, ...],
-                    GtfFeature, [GtfFeature, ...]
-                    GffFeature, [GffFeature, ...]
+            features: GenericFeature or list of GenericFeature
 
             circular: bool
                 Circular molecule or not
@@ -325,17 +204,10 @@ class FeatureArray:
 
         if features is None:
             features = []
-        elif features.__class__.__name__ in ['GenericFeature', 'GtfFeature', 'GffFeature']:
+        elif features.__class__.__name__ == 'GenericFeature':
             features = [features]
 
         self.__arr = features
-
-        # For each feature in the list, convert to GenericFeature
-        for i, feature in enumerate(self.__arr):
-            if feature.__class__.__name__ == 'GtfFeature':
-                self.__arr[i] = gtf_to_generic_feature(feature)
-            elif feature.__class__.__name__ == 'GffFeature':
-                self.__arr[i] = gff_to_generic_feature(feature)
 
         if sort:
             self.sort()
@@ -433,12 +305,8 @@ FeatureArray
 
     def append(self, feature):
         """
-        Append new GenericFeature. GtfFeature will be converted to GenericFeature
+        Append new GenericFeature
         """
-        if feature.__class__.__name__ == 'GtfFeature':
-            feature = gtf_to_generic_feature(feature)
-        if feature.__class__.__name__ == 'GffFeature':
-            feature = gff_to_generic_feature(feature)
         self.__arr.append(feature)
 
     def subset(self, start, end):

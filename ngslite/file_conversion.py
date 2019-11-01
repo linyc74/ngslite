@@ -1,6 +1,4 @@
-from .lowlevel import __call
-from functools import partial
-printf = partial(print, flush=True)
+from .lowlevel import _call
 
 
 def sam_to_bam(file, keep=True):
@@ -16,9 +14,9 @@ def sam_to_bam(file, keep=True):
     # -S: input is a sam
     # -b: output is a bam
     # -h: include header section
-    __call(f"samtools view -S -b -h {file} > {file[:-4]}.bam")
+    _call(f"samtools view -S -b -h {file} > {file[:-4]}.bam")
     if not keep:
-        __call(f"rm {file}")
+        _call(f"rm {file}")
 
 
 def bam_to_sam(file, keep=True):
@@ -32,9 +30,9 @@ def bam_to_sam(file, keep=True):
             Keep the input file or not
     """
     # -h: include header section
-    __call(f"samtools view -h {file} > {file[:-4]}.sam")
+    _call(f"samtools view -h {file} > {file[:-4]}.sam")
     if not keep:
-        __call(f"rm {file}")
+        _call(f"rm {file}")
 
 
 def fq_to_fa(file, keep=True):
@@ -51,10 +49,12 @@ def fq_to_fa(file, keep=True):
         output = file[:-6] + '.fa'
     elif file.endswith('.fq'):
         output = file[:-3] + '.fa'
+    else:
+        output = file + '.fa'
 
-    __call(f"seqtk seq -A {file} > {output}")
+    _call(f"seqtk seq -A {file} > {output}")
     if not keep:
-        __call(f"rm {file}")
+        _call(f"rm {file}")
 
 
 def vcf_to_bcf(file, keep=True):
@@ -69,9 +69,9 @@ def vcf_to_bcf(file, keep=True):
     """
     # -Ou: output uncompressed bcf
     # -o <file_out>
-    __call(f"bcftools view -Ou -o {file[:-4]}.bcf {file}")
+    _call(f"bcftools view -Ou -o {file[:-4]}.bcf {file}")
     if not keep:
-        __call(f"rm {file}")
+        _call(f"rm {file}")
 
 
 def bcf_to_vcf(file, keep=True):
@@ -86,7 +86,6 @@ def bcf_to_vcf(file, keep=True):
     """
     # -Ov: output uncompressed vcf
     # -o <file_out>
-    __call(f"bcftools view -Ov -o {file[:-4]}.vcf {file}")
+    _call(f"bcftools view -Ov -o {file[:-4]}.vcf {file}")
     if not keep:
-        __call(f"rm {file}")
-
+        _call(f"rm {file}")

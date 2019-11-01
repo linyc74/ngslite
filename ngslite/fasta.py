@@ -14,7 +14,7 @@ def _wrap(seq, width):
     return '\n'.join(L)
 
 
-class FastaParser(object):
+class FastaParser:
     """
     A simple fasta parser that parses each read of a fasta file
     """
@@ -68,7 +68,7 @@ class FastaParser(object):
         self.__fasta.close()
 
 
-class FastaWriter(object):
+class FastaWriter:
     """
     A simple fasta writer that writes a single read (header and sequence) each time
     """

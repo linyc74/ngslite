@@ -1,12 +1,10 @@
+import os
 from .gtftools import GtfWriter
 from .fasta import FastaParser, FastaWriter
-from .lowlevel import __call, __temp
-import os
-from functools import partial
-printf = partial(print, flush=True)
+from .lowlevel import _call, _temp, printf
 
 
-def __remove_extension(file):
+def _remove_extension(file):
     """
     Args:
         file: str, path-like
@@ -17,7 +15,7 @@ def __remove_extension(file):
     return '.'.join(file.split('.')[:-1])
 
 
-def __parser_glimmer3_result(file, output):
+def _parser_glimmer3_result(file, output):
     """
     Args:
         file: str, path-like
@@ -42,8 +40,8 @@ def __parser_glimmer3_result(file, output):
                     name, start, end, frame, score = line.rstrip().split()
                     if frame[0] == '-':
                         start, end = end, start
-                    writer.write(
-                        (head,              # seqname
+                    writer.write((
+                        head,               # seqname
                         '.',                # source
                         'CDS',              # feature
                         start,              # start
@@ -51,8 +49,8 @@ def __parser_glimmer3_result(file, output):
                         score,              # score
                         frame[0],           # strand
                         frame[1:],          # frame
-                        f"name \"{name}\"") # attribute
-                    )
+                        f"name \"{name}\""  # attribute
+                    ))
 
 
 def glimmer3(fasta, output, linear=True, max_overlap=50, min_length=110,
@@ -99,59 +97,62 @@ def glimmer3(fasta, output, linear=True, max_overlap=50, min_length=110,
     f = fasta
     for ext in ['.fa', '.fna', '.fasta']:
         if fasta.endswith(ext):
-            f = __remove_extension(fasta)
+            f = _remove_extension(fasta)
 
-    if log is None: log = f"{f}_glimmer3.log"
+    if log is None:
+        log = f"{f}_glimmer3.log"
     log = f" 2>> {log}"
 
-    if os.path.isfile(output): os.remove(output)
+    if os.path.isfile(output):
+        os.remove(output)
     output_gtf = open(output, 'a')
 
-    with FastaParser(fasta) as parser:
-        i = -1
-        for head, seq in parser:
-            i += 1
-            if verbose or i == 0:
-                print_cmd = True
-                printf(f"contig: {head}")
-            else:
-                print_cmd = False
+    fasta_parser = FastaParser(fasta)
 
-            temp = __temp(prefix='temp', suffix='')  # for example, temp000
-            with FastaWriter(f"{temp}.fa") as writer:
-                writer.write(head, seq)
+    i = -1
+    for head, seq in fasta_parser:
+        i += 1
+        if verbose or i == 0:
+            print_cmd = True
+            printf(f"contig: {head}")
+        else:
+            print_cmd = False
 
-            # --- Find long ORFs --- #
-            # cutoff: Only genes with entropy distance score less than <cutoff> will be considered. Default 1.15
-            line = ['', '--linear '][linear]
-            cmd = f"long-orfs --no_header --cutoff {entropy_distance} {line}{temp}.fa longorfs{log}"
-            __call(cmd, print_cmd)
+        temp = _temp(prefix='temp', suffix='')
+        with FastaWriter(f"{temp}.fa") as writer:
+            writer.write(head, seq)
 
-            # --- Extract the DNA sequences of long ORFs --- #
-            cmd = f"extract {temp}.fa longorfs > train"
-            __call(cmd, print_cmd)
+        # --- Find long ORFs --- #
+        # cutoff: Only genes with entropy distance score less than <cutoff> will be considered. Default 1.15
+        line = ['', '--linear '][linear]
+        cmd = f"long-orfs --no_header --cutoff {entropy_distance} {line}{temp}.fa longorfs{log}"
+        _call(cmd, print_cmd)
 
-            # --- Build ICM --- #
-            # r: Use the reverse of input strings to build the model
-            cmd = f"build-icm -r icm < train"
-            __call(cmd, print_cmd)
+        # --- Extract the DNA sequences of long ORFs --- #
+        cmd = f"extract {temp}.fa longorfs > train"
+        _call(cmd, print_cmd)
 
-            # --- Predict genes --- #
-            # max_olap: Set maximum overlap length to <n>. Overlaps this short or shorter are ignored
-            # gene_len: Set minimum gene length to <n>
-            # threshold: Set threshold score for calling as gene to n. If the in-frame score >= <n>,
-            #   then the region is given a number and considered a potential gene
-            cmd = f"glimmer3 --max_olap {max_overlap} --gene_len {min_length} --threshold {threshold} {temp}.fa icm {temp}{log}"
-            __call(cmd, print_cmd)
-            # glimmer3 outputs two files: {temp}.detail and {temp}.predict
+        # --- Build ICM --- #
+        # r: Use the reverse of input strings to build the model
+        cmd = f"build-icm -r icm < train"
+        _call(cmd, print_cmd)
 
-            __parser_glimmer3_result(file=f"{temp}.predict", output=f"{temp}.gtf")
+        # --- Predict genes --- #
+        # max_olap: Set maximum overlap length to <n>. Overlaps this short or shorter are ignored
+        # gene_len: Set minimum gene length to <n>
+        # threshold: Set threshold score for calling as gene to n. If the in-frame score >= <n>,
+        #   then the region is given a number and considered a potential gene
+        cmd = f"glimmer3 --max_olap {max_overlap} --gene_len {min_length} --threshold {threshold} {temp}.fa icm {temp}{log}"
+        _call(cmd, print_cmd)
+        # glimmer3 outputs two files: {temp}.detail and {temp}.predict
 
-            # Append the temp gtf to the output gtf
-            with open(f"{temp}.gtf") as fh:
-                output_gtf.write(fh.read())
+        _parser_glimmer3_result(file=f"{temp}.predict", output=f"{temp}.gtf")
 
-            __call(f"rm {temp}.fa longorfs train icm {temp}.detail {temp}.predict {temp}.gtf", print_cmd)
+        # Append the temp gtf to the output gtf
+        with open(f"{temp}.gtf") as fh:
+            output_gtf.write(fh.read())
 
-        output_gtf.close()
+        _call(f"rm {temp}.fa longorfs train icm {temp}.detail {temp}.predict {temp}.gtf", print_cmd)
 
+    fasta_parser.close()
+    output_gtf.close()

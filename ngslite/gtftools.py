@@ -1,6 +1,5 @@
-from functools import partial
 from collections import namedtuple
-printf = partial(print, flush=True)
+from .lowlevel import printf
 
 
 GtfFeature = namedtuple('GtfFeature', 'seqname source feature start end score strand frame attribute')
@@ -94,28 +93,6 @@ class GtfWriter:
         self.__gtf.close()
 
 
-def subset_gtf(file, seqname, output):
-    """
-    Args:
-        file: str, path-like
-            The input GTF file
-
-        seqname: str, or list of str
-            Each str is a seqname (chromosome name) to be included
-
-        output: str, path-like
-            The output GTF file
-    """
-    if isinstance(seqname, str):
-        seqname = [seqname]
-
-    with GtfParser(file) as parser:
-        with GtfWriter(output) as writer:
-            for feature in parser:
-                if feature[0] in seqname:
-                    writer.write(feature)
-
-
 def read_gtf(file, as_dict=False):
     """
     Args:
@@ -172,6 +149,28 @@ def write_gtf(data, file):
                 if feature.__class__.__name__ == 'GenericFeature':
                     feature = feature.to_gtf_feature()
                 writer.write(feature)
+
+
+def subset_gtf(file, seqname, output):
+    """
+    Args:
+        file: str, path-like
+            The input GTF file
+
+        seqname: str, or list of str
+            Each str is a seqname (chromosome name) to be included
+
+        output: str, path-like
+            The output GTF file
+    """
+    if isinstance(seqname, str):
+        seqname = [seqname]
+
+    with GtfParser(file) as parser:
+        with GtfWriter(output) as writer:
+            for feature in parser:
+                if feature[0] in seqname:
+                    writer.write(feature)
 
 
 def print_gtf(feature=None):

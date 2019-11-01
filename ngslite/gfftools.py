@@ -1,6 +1,5 @@
-from functools import partial
 from collections import namedtuple
-printf = partial(print, flush=True)
+from .lowlevel import printf
 
 
 GffFeature = namedtuple('GffFeature', 'seqid source type start end score strand phase attributes')
@@ -100,28 +99,6 @@ class GffWriter:
         self.__gff.close()
 
 
-def subset_gff(file, seqid, output):
-    """
-    Args:
-        file: str, path-like
-            The input GFF file
-
-        seqid: str, or list of str
-            Each str is a seqid to be included
-
-        output: str, path-like
-            The output GFF file
-    """
-    if isinstance(seqid, str):
-        seqid = [seqid]
-
-    with GffParser(file) as parser:
-        with GffWriter(output) as writer:
-            for feature in parser:
-                if feature[0] in seqid:
-                    writer.write(feature)
-
-
 def read_gff(file, as_dict=False):
     """
     Args:
@@ -178,6 +155,28 @@ def write_gff(data, file):
                 if feature.__class__.__name__ == 'GenericFeature':
                     feature = feature.to_gff_feature()
                 writer.write(feature)
+
+
+def subset_gff(file, seqid, output):
+    """
+    Args:
+        file: str, path-like
+            The input GFF file
+
+        seqid: str, or list of str
+            Each str is a seqid to be included
+
+        output: str, path-like
+            The output GFF file
+    """
+    if isinstance(seqid, str):
+        seqid = [seqid]
+
+    with GffParser(file) as parser:
+        with GffWriter(output) as writer:
+            for feature in parser:
+                if feature[0] in seqid:
+                    writer.write(feature)
 
 
 def print_gff(feature=None):
