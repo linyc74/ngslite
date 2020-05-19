@@ -13,6 +13,7 @@ ngslite/feature_conversion.py
 ngslite/file_conversion.py
 ngslite/filetools.py
 ngslite/genbank_parse.py
+ngslite/genbank_plot.py
 ngslite/genbank_write.py
 ngslite/gfftools.py
 ngslite/glimmer.py
