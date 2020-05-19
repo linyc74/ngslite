@@ -1,13 +1,13 @@
 # ngslite
 **Light-weight functions for next-generation sequencing (NGS) data analysis**
 
-### Install
+## Install
 
     pip install ngslite
 
-### Handling common files
+## Handling common files
 
-#### Fasta files
+### Fasta
 
 Read fasta files:
 
@@ -24,7 +24,7 @@ Write fasta files:
     with FastaWriter('file.fa') as writer:
         writer.write(header, sequence)
 
-#### GFF files
+### GFF
 
 Read GFF files:
 
@@ -51,9 +51,3 @@ Write GFF files:
 
     with GffWriter('file.gff') as writer:
         writer.write(feature)
-
-#### Genbank files
-
-
-
-
