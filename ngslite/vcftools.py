@@ -1,24 +1,30 @@
-from .lowlevel import _call, printf
+from typing import Optional, List, Tuple, Union, Dict
+from .lowlevel import call, printf
 
 
-def bcftools_variant_call(ref, bam, output=None, max_depth=250, haploid=False):
+def bcftools_variant_call(
+        ref: str,
+        bam: str,
+        output: Optional[str] = None,
+        max_depth: int = 250,
+        haploid: bool = False):
     """
     Wrapper function of "bcftools mpileup" -> BCF (genotype likelihood) -> "bcftools call" -> BCF (variants)
 
     Args:
-        ref: str, path-like
+        ref: path-like
             The reference fasta file
 
-        bam: str, path-like
+        bam: path-like
             The alignment BAM file
 
-        output: str, path-like
+        output: path-like
             The output BCF file
 
-        max_depth: int
+        max_depth:
             Max per-file sequencing depth; avoids excessive memory usage, default 250
 
-        haploid: bool,
+        haploid:
             This is for the option "--ploidy" in "bcftools call"
             If True, set the option "--ploidy 1" for haploid (bacteria)
             If False, ignore the option "--ploidy", the default is diploid
@@ -34,40 +40,46 @@ def bcftools_variant_call(ref, bam, output=None, max_depth=250, haploid=False):
     if output is None:
         output = bam[:-4] + '.bcf'
     ploidy = ['', '--ploidy 1 '][haploid]
-    _call(f"bcftools mpileup -Ou -d {max_depth} -f {ref} {bam} | bcftools call -Ou -m -v {ploidy}-o {output}")
+    call(f"bcftools mpileup -Ou -d {max_depth} -f {ref} {bam} | bcftools call -Ou -m -v {ploidy}-o {output}")
 
 
-def sort_bcf(file, keep=False):
+def sort_bcf(
+        file: str,
+        keep: bool = False):
     """
     Wrapper function of "bcftools sort" to sort BCF and outputs a BCF file
 
     Args:
-        file: str, path-like
+        file: path-like
 
-        keep: bool
+        keep:
             Keep the input file or not
     """
     file_out = f"{file[:-4]}_sorted.{file[-3:]}"
     # -Ou: output uncompressed bcf
     # -o <file_out>
-    _call(f"bcftools sort -Ou -o {file_out} {file}")
+    call(f"bcftools sort -Ou -o {file_out} {file}")
     if not keep:
-        _call(f"rm {file}")
-        _call(f"mv {file_out} {file}")
+        call(f"rm {file}")
+        call(f"mv {file_out} {file}")
 
 
-def subset_bcf_regions(file, regions, output=None, keep=True):
+def subset_bcf_regions(
+        file: str,
+        regions: List[str],
+        output: Optional[str] = None,
+        keep: bool = True):
     """
     Args:
-        file: str, path-like
+        file: path-like
             The input BCF file
 
-        regions: list of str
+        regions:
             Each str is a region of the reference genome, e.g.
                 chr1            chromosome 1
                 chr3:1000-2000  chromosome 3 from 1000th (inclusive) to 2000th (inclusive) base
 
-        output: str, path-like
+        output:
             The output BCF file
             If None, add subscript '_subset' to the input <file>
 
@@ -84,23 +96,23 @@ def subset_bcf_regions(file, regions, output=None, keep=True):
 
     # -Ou: output uncompressed bcf
     # -o <file_out>
-    _call(f"bcftools view -Ou -o {output} {file}{regions}")
+    call(f"bcftools view -Ou -o {output} {file}{regions}")
 
     if not keep:
-        _call(f"rm {file}")
-        _call(f"mv {output} {file}")
+        call(f"rm {file}")
+        call(f"mv {output} {file}")
 
 
 class VcfParser:
     """
     A VCF file parser for VCFv4.3
     """
-    def __init__(self, file):
+    def __init__(self, file: str):
         """
-        The header section is parsed upon instantiation.
+        The header section is parsed upon instantiation
 
         Args:
-            file: str, path-like object
+            file: path-like
         """
         self.__vcf = open(file, 'r')
         header = ''
@@ -141,7 +153,7 @@ class VcfParser:
             self.__vcf.close()
             raise StopIteration
 
-    def next(self):
+    def next(self) -> Optional[Tuple[Union[str, int]]]:
         """
         Each line of VCF file has 8 fixed, mandatory fields
 
@@ -160,8 +172,8 @@ class VcfParser:
         """
         line = self.__vcf.readline().rstrip()
         if line:
-            fields = line.split('\t')
-            for i in (1, 5):
+            fields: List[Union[str, int]] = line.split('\t')
+            for i in [1, 5]:
                 fields[i] = int(fields[i])
             return tuple(fields)
         else:  # line == ''
@@ -172,17 +184,18 @@ class VcfParser:
 
 
 class VcfWriter:
-    def __init__(self, file, header, mode='w'):
+    def __init__(self, file: str, header: str, mode: str = 'w'):
         """
-        The header section should be written in upon instantiation.
+        The header section should be written in upon instantiation
 
         Args:
-            file: str, path-like object
+            file: path-like
 
-            header: str
+            header:
                 The header section
 
-            mode: str, 'w' or 'a'
+            mode:
+                File mode: 'w' or 'a'
         """
         self.__vcf = open(file, mode)
         if not header == '':
@@ -195,7 +208,7 @@ class VcfWriter:
         self.close()
         return
 
-    def write(self, variant):
+    def write(self, variant: Tuple[Union[str, int]]):
         """
         Args:
             variant: tuple
@@ -207,7 +220,7 @@ class VcfWriter:
         self.__vcf.close()
 
 
-def print_vcf(var=None):
+def print_vcf(var: Tuple[Union[str, int]] = None):
     """
     Pretty print a variant (tuple) from vcf file
 
@@ -239,7 +252,7 @@ def print_vcf(var=None):
                 printf(f"{i}\t     \t{var[i]}")
 
 
-def unpack_vcf_info(var):
+def unpack_vcf_info(var: Tuple[Union[str, int]]) -> Dict[str, str]:
     """
     Args:
         var: tuple or list of str or int
@@ -249,6 +262,6 @@ def unpack_vcf_info(var):
         Key, value pairs from the INFO (column 7) of a variant
         Values still str, not converted to int or float
     """
-    func = lambda x: x.split('=')
+    def func(x: str) -> List[str]:
+        return x.split('=')
     return {key: val for key, val in map(func, var[7].split(';'))}
-

@@ -1,11 +1,12 @@
 import unittest
-import ngslite.genbank_write as genbank_write
 from ngslite.dataclass import GenericFeature
+from ngslite.genbank_write import wrap_line_by_word, wrap_line_by_char, \
+    generic_feature_to_genbank_text, translate_feature
 
 
 class TestGenbankWrite(unittest.TestCase):
 
-    def test__wrap_line_by_word(self):
+    def test_wrap_line_by_word(self):
         line = '''This is a good world with good intentions, where people love each other every day.'''
         wrapped = '''\
         This is a good world with
@@ -14,7 +15,7 @@ class TestGenbankWrite(unittest.TestCase):
         every day.'''
         self.assertEqual(
             wrapped,
-            genbank_write._wrap_line_by_word(
+            wrap_line_by_word(
                 line=line, length=33, indent=8, sep=' ', keep_sep=False)
         )
 
@@ -26,11 +27,11 @@ class TestGenbankWrite(unittest.TestCase):
         other-every-day.'''
         self.assertEqual(
             wrapped,
-            genbank_write._wrap_line_by_word(
+            wrap_line_by_word(
                 line=line, length=33, indent=8, sep='-', keep_sep=True)
         )
 
-    def test__wrap_line_by_char(self):
+    def test_wrap_line_by_char(self):
         line = 'ABCDEFGHIJKLMNOPQRSEUVWXYZ'
         wrapped = '''\
         ABCDEF
@@ -40,10 +41,10 @@ class TestGenbankWrite(unittest.TestCase):
         YZ'''
         self.assertEqual(
             wrapped,
-            genbank_write._wrap_line_by_char(line=line, length=14, indent=8)
+            wrap_line_by_char(line=line, length=14, indent=8)
         )
 
-    def test__generic_feature_to_genbank_text(self):
+    def test_generic_feature_to_genbank_text(self):
         feature = GenericFeature(
             seqname='yuchenglin',
             type_='DNA',
@@ -80,10 +81,10 @@ cool at the intersection of biology and programming. He also likes to run and pl
 '''
         self.assertEqual(
             text,
-            genbank_write._generic_feature_to_genbank_text(feature=feature)
+            generic_feature_to_genbank_text(feature=feature)
         )
 
-    def test__translate_feature(self):
+    def test_translate_feature(self):
         feature = GenericFeature(
             seqname='seqname',
             type_='CDS',
@@ -108,7 +109,7 @@ MVLLGSNALAPLNVGSLLLSAKVTSGQQVESVFLLVHGAVGKVESDTGDE'''
 
         self.assertEqual(
             translation,
-            genbank_write._translate_feature(feature=feature, sequence=sequence)
+            translate_feature(feature=feature, sequence=sequence)
         )
 
 

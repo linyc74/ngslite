@@ -4,6 +4,7 @@ from ngslite.arrfunc import replace_zero_with
 
 
 class TestArrfunc(unittest.TestCase):
+
     def test_replace_zero_with(self):
         arr1 = replace_zero_with(
             np.array([0, 1, 0, 2, 0, 3, 0]), 100

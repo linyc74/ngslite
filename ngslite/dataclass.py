@@ -1,27 +1,36 @@
+from typing import List, Tuple, Optional, Union
+from collections import namedtuple
+from .dnatools import rev_comp
+
+
+GtfFeature = namedtuple('GtfFeature', 'seqname source feature start end score strand frame attribute')
+
+
+GffFeature = namedtuple('GffFeature', 'seqid source type start end score strand phase attributes')
+
+
 class GenericFeature:
     """
-    Data class designed to store features from Genbank and GTF files.
-
     Instance attributes:
-        seqname: str
+        seqname:
             The unique name of chromosome, genome or contig to which this feature belongs
 
-        type: str
+        type:
             The type of the feature, e.g. 'CDS', 'tRNA', 'misc_feature'
 
-        start: int
+        start:
             1-based inclusive
 
-        end: int
+        end:
             1-based inclusive
 
-        strand: str
-            '+' or '-'
+        strand:
+            {'+' or '-'}
 
-        frame: int
-            1, 2 or 3
+        frame:
+            {1, 2, 3}
 
-        attributes: list of tuples of (key, val) pairs, where key is str and val is str/int/float
+        attributes:
             [
                 ('gene', 'dam'),
                 ('locus_tag', 'T4p032')
@@ -29,21 +38,25 @@ class GenericFeature:
                 ('codon_start', 1)
             ]
 
-        tags: list of str
+        tags
 
-        regions: list of tuple of (start, end, strand) of each exon
+        regions:
             Default just one region
 
-        partial_start: bool
+        partial_start
             Partial 5' end
 
-        partial_end: bool
+        partial_end
             Partial 3' end
-
     """
-    def __init__(self, seqname, type_, start, end, strand,
-                 attributes=None, tags=None, regions=None, frame=1,
-                 partial_start=False, partial_end=False):
+
+    def __init__(
+            self, seqname: str, type_: str, start: int, end: int, strand: str,
+            attributes: Optional[List[Tuple[str, Union[str, int, float]]]] = None,
+            tags: Optional[List[str]] = None,
+            regions: Optional[List[Tuple[int, int, str]]] = None,
+            frame: int = 1, partial_start: bool = False, partial_end: bool = False):
+
         self.seqname = seqname
         self.type = type_
         self.start = start
@@ -68,7 +81,7 @@ class GenericFeature:
     def __len__(self):
         return self.end - self.start + 1
 
-    def __repr__(self):
+    def __str__(self):
         ps = ['', ' (partial)'][self.partial_start]
         pe = ['', ' (partial)'][self.partial_end]
 
@@ -79,7 +92,7 @@ class GenericFeature:
             else:  # type(val) is int or float
                 attr_str += f"\n    {key}: {val}"
 
-        text = f'''\
+        return f'''\
 GenericFeature
   seqname: '{self.seqname}'
   type: '{self.type}'
@@ -91,18 +104,15 @@ GenericFeature
   tags: {','.join(self.tags)}
   regions: {self.regions}'''
 
-        return text
+    def __repr__(self):
+        return f"""GenericFeature(seqname='{self.seqname}', type_='{self.type}'\
+, start={self.start}, end={self.end}, strand='{self.strand}', attributes=\
+{self.attributes}, tags={self.tags}, regions={self.regions}, frame={self.frame}\
+, partial_start={self.partial_start}, partial_end={self.partial_end})"""
 
-    def get_attribute(self, key):
-        """
-        Get the attribute value (i.e. content) with the key
-        If more than one found, returns a list of values
+    def get_attribute(self, key: str) -> \
+            Optional[Union[str, int, float, List[Union[str, int, float]]]]:
 
-        Args:
-            key: str
-
-        Returns: str, int, float, or list of str, int, float
-        """
         vals = [v for k, v in self.attributes if k == key]
         if len(vals) == 0:
             return None
@@ -111,16 +121,10 @@ GenericFeature
         else:
             return vals
 
-    def set_attribute(self, key, val):
+    def set_attribute(self, key: str, val: Union[str, int, float]):
         """
-        Find the attribute with key and set the value
         If more than one attributes found, then set the first one, and remove the rest
         If no attribute found, then add an attribute with key, val
-
-        Args:
-            key: str
-
-            val: str, int, or float
         """
         new = []  # new attributes list
         done = False  # done setting the attribute or not
@@ -144,59 +148,31 @@ GenericFeature
 
         self.attributes = new
 
-    def add_attribute(self, key, val):
-        """
-        Add an attribute of (key, val)
-
-        Args:
-            key: str
-
-            val: str, int, or float
-        """
+    def add_attribute(self, key: str, val: Union[str, int, float]):
         self.attributes.append((key, val))
 
-    def remove_attribute(self, key):
-        """
-        Remove all attributes with the key
-
-        Args:
-            key: str
-        """
+    def remove_attribute(self, key: str):
         self.attributes = [(k, v) for (k, v) in self.attributes if k != key]
 
 
 class FeatureArray:
     """
-    A list of GenericFeature that behaves like a list, but more than a list.
-
-    self.__arr is the list storing GenericFeature objects
-
-    Instance attributes:
-        seqname: str
-            The unique name of chromosome, genome or contig to which this feature_array belons
-
-        genome_size: int (bp)
-
-        features: list of GenericFeature or GtfFeature
-
-        circular: bool
-            Is circular genome or not
+    A list of GenericFeature that behaves like a list, but more than a list
     """
-    def __init__(self, seqname, genome_size, features=None, circular=False, sort=True):
-        """
-        Args:
-            seqname: str
 
-            genome_size: int
+    seqname: str
+    genome_size: int
+    circular: bool
+    __pos: int
 
-            features: GenericFeature or list of GenericFeature
+    # The main data structure, always remain sorted
+    __arr: List[GenericFeature]
 
-            circular: bool
-                Circular molecule or not
+    def __init__(
+            self, seqname: str, genome_size: int,
+            features: Optional[Union[GenericFeature, List[GenericFeature]]] = None,
+            circular: bool = False):
 
-            sort: bool
-                Sort the input features or not
-        """
         self.seqname = seqname
         self.genome_size = genome_size
         self.circular = circular
@@ -204,40 +180,32 @@ class FeatureArray:
 
         if features is None:
             features = []
-        elif features.__class__.__name__ == 'GenericFeature':
+        elif type(features) is GenericFeature:
             features = [features]
 
         self.__arr = features
 
-        if sort:
-            self.sort()
+        self.sort()
 
     def __getitem__(self, item):
         if isinstance(item, int):
             return self.__arr[item]
         elif isinstance(item, slice):
-            return FeatureArray(
-                seqname=self.seqname,
-                genome_size=self.genome_size,
-                features=self.__arr[item],
-                circular=self.circular
-            )
+            return FeatureArray(seqname=self.seqname, genome_size=self.genome_size, features=self.__arr[item],
+                                circular=self.circular)
         else:
             raise TypeError('FeatureArray indices must be integers or slices')
 
     def __add__(self, other):
-        if not other.__class__.__name__ == 'FeatureArray':
+        if type(other) is not FeatureArray:
             raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
 
-        for a in ['seqname', 'genome_size', 'circular']:
-            assert getattr(self, a) == getattr(other, a)
+        for attr in ['seqname', 'genome_size', 'circular']:
+            assert getattr(self, attr) == getattr(other, attr), f'where attr = \'{attr}\''
 
         return FeatureArray(
-            seqname=self.seqname,
-            genome_size=self.genome_size,
-            features=self.__arr + other.__arr,
-            circular=self.circular,
-            sort=False
+            seqname=self.seqname, genome_size=self.genome_size,
+            features=self.__arr + other.__arr, circular=self.circular
         )
 
     def __iter__(self):
@@ -256,14 +224,17 @@ class FeatureArray:
     def __len__(self):
         return len(self.__arr)
 
-    def __repr__(self):
-        shape = ['linear', 'circular'][self.circular]
-        text = f'''\
+    def __str__(self):
+        shape = 'circular' if self.circular else 'linear'
+        return f'''\
 FeatureArray
   seqname: '{self.seqname}'
   genome size: {self.genome_size} bp ({shape})
   number of features: {len(self.__arr)}'''
-        return text
+
+    def __repr__(self):
+        return f"""FeatureArray(seqname={self.seqname}, genome_size=\
+{self.genome_size}, features={repr(self.__arr)}, circular={self.circular})"""
 
     def __wrap(self):
         """
@@ -303,26 +274,24 @@ FeatureArray
         """
         self.__arr = sorted(self.__arr, key=lambda f: f.start)
 
-    def append(self, feature):
+    def append(self, feature: GenericFeature):
         """
-        Append new GenericFeature
+        Append a new GenericFeature
         """
         self.__arr.append(feature)
+        self.sort()
 
-    def subset(self, start, end):
+    def subset(self, start: int, end: int):
         """
         Subset (or filter) the features in self.__arr without changing their positions
 
         Args:
-            start: int
+            start:
                 1-based, inclusive
 
-            end: int
+            end:
                 1-based, inclusive
         """
-        # Covers whole genome -> Do not subset
-        if start == 1 and end == self.genome_size:
-            return
 
         if not self.circular and end < start:
             raise AssertionError('For linear molecule end position must be greater or equal than start position')
@@ -342,12 +311,9 @@ FeatureArray
                 arr.append(f)
         self.__arr = arr
 
-    def offset(self, offset):
+    def offset(self, offset: int):
         """
         Offset (move) each feature in self.__arr
-
-        Args:
-            offset: int
         """
         size = self.genome_size
         for f in self.__arr:
@@ -366,7 +332,7 @@ FeatureArray
         in_bound = lambda x: 1 <= x.start <= size and 1 <= x.end <= size
         self.__arr = list(filter(in_bound, self.__arr))
 
-    def crop(self, start, end):
+    def crop(self, start: int, end: int):
         """
         Crop the features in self.__arr from <start> to <end>,
             which resets positions of features and the genome size
@@ -387,7 +353,9 @@ FeatureArray
 
         self.subset(start, end)
         self.offset(-start + 1)
-        self.genome_size = end - start + 1
+
+        self.genome_size = \
+            min(end, self.genome_size) - max(start, 1) + 1
 
     def reverse(self):
         """
@@ -398,20 +366,20 @@ FeatureArray
         for f in self.__arr:
             # Simultaneously update start and end
             f.start, f.end = (size - f.end + 1), (size - f.start + 1)
-            f.strand = ['+', '-'][f.strand == '+']
+            f.strand = '-' if f.strand == '+' else '+'
 
             for i in range(len(f.regions)):
                 start, end, strand = f.regions[i]
                 # Simultaneously update start and end
                 start, end = size - end + 1, size - start + 1
-                strand = ['+', '-'][strand == '+']
+                strand = '-' if strand == '+' else '+'
                 f.regions[i] = (start, end, strand)
             # Use start position to sort the regions (i.e. exons)
             f.regions = sorted(f.regions, key=lambda x: x[0])
 
         self.sort()
 
-    def pop(self, index=-1):
+    def pop(self, index: int = -1):
         """
         Pop out a feature in the self.__arr
         """
@@ -420,27 +388,67 @@ FeatureArray
 
 class Chromosome:
     """
-    An annotated chromosome
-
     Instance attributes:
-        seqname: str
+        seqname:
             The unique name of chromosome, genome or contig to which this feature_array belons
 
-        sequence: str
+        sequence:
             The genome sequence
 
-        feature_array: FeatureArray object
+        feature_array:
             The annotation
 
-        circular: bool
+        circular:
             Is circular genome or not
 
-        genbank_LOCUS: str
+        genbank_locus_text:
             The complete LOCUS section of a genbank file
     """
-    def __init__(self, seqname, sequence, feature_array, circular=False, genbank_LOCUS=''):
+
+    seqname: str
+    sequence: str
+    features: FeatureArray
+    feature_array: FeatureArray
+    circular: bool
+    genbank_locus_text: str
+
+    def __init__(
+            self, seqname: str, sequence: str, features: FeatureArray,
+            circular: bool = False, genbank_locus_text: str = ''):
+
         self.seqname = seqname
         self.sequence = sequence
-        self.feature_array = feature_array
+        self.features = features
+        self.feature_array = self.features
         self.circular = circular
-        self.genbank_LOCUS = genbank_LOCUS
+        self.genbank_locus_text = genbank_locus_text
+
+    def crop(self, start: int, end: int):
+        """
+        Args:
+            start: 1-based, inclusive
+
+            end: 1-based, inclusive
+        """
+
+        if not self.circular and end < start:
+            return
+
+        if start < 1:
+            start = 1
+
+        self.sequence = self.sequence[start-1:end]
+        self.features.crop(start=start, end=end)
+
+    def reverse(self):
+        """
+        Reverse the features for reverse complementary of the genome sequence,
+            which simply makes start as end, and end as start
+        """
+        self.sequence = rev_comp(self.sequence)
+        self.features.reverse()
+
+    def __repr__(self):
+        return f"""Chromosome(seqname='{self.seqname}', sequence='{self.sequence}'\
+, features={repr(self.features)}, circular={self.circular}, genbank_locus_text=\
+'{self.genbank_locus_text})'"""

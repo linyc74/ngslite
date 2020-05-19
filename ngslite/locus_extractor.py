@@ -1,9 +1,9 @@
-from .dataclass import FeatureArray, Chromosome
-from .fasta import read_fasta, write_fasta
-from .gtftools import read_gtf, write_gtf
 from .dnatools import rev_comp
 from .genbank_parse import read_genbank
 from .genbank_write import write_genbank
+from .gtftools import read_gtf, write_gtf
+from .fasta import read_fasta, write_fasta
+from .dataclass import FeatureArray, Chromosome
 
 
 def _find_feature(feature_arr, keywords):
@@ -69,12 +69,7 @@ def locus_extractor(fasta, gtf, keywords, flank, fasta_out, gtf_out):
         gtf_features = gtf_dict.get(seqname, [])
         if len(gtf_features) == 0: continue  # no annotation, skip this contig
 
-        feature_array = FeatureArray(
-            seqname=seqname,
-            genome_size=len(sequence),
-            features=gtf_features,
-            circular=False
-        )
+        feature_array = FeatureArray(seqname=seqname, genome_size=len(sequence), features=gtf_features, circular=False)
 
         seed = _find_feature(feature_array, keywords)
         if seed is None: continue  # seed not found, skip this contig

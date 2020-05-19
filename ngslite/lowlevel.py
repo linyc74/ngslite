@@ -1,77 +1,66 @@
-from subprocess import check_call
-from os.path import exists
+import os
+import subprocess
+from typing import Optional
 
 
-def _call(cmd, print_cmd=True):
-    """
-    Args:
-        cmd: str
-        print_cmd: bool
-    """
+def call(cmd: str, print_cmd: bool = True):
+
     if print_cmd:
         print(f"CMD: {cmd}", flush=True)
+
     try:
-        check_call(cmd, shell=True)
+        subprocess.check_call(cmd, shell=True)
     except Exception as inst:
         print(inst, flush=True)
 
 
-def _temp(prefix='temp', suffix=''):
+def check_output(cmd: str) -> Optional[str]:
     """
-    Returns a temp file name that does not exists in the current folder, i.e. temp000.sam
+    Wrapper function of subprocess.check_output
+
+    This is meant to act like a function that returns the stdout of a command,
+        but not a method that does something, so do not log the cmd
+
+    Returns:
+        stdout
+        None if call error
+    """
+    try:
+        stdout = subprocess.check_output(cmd, shell=True)
+        return str(stdout, 'utf-8')
+
+    except Exception as inst:
+        print(inst, flush=True)
+        return None
+
+
+def _temp(prefix: str = 'temp', suffix: str = '') -> str:
+    """
+    Returns a temp file name that does not exist in the current folder, i.e. temp000.sam
 
     Args:
-        prefix: str
+        prefix
 
-        suffix: str
-            Usually for the file extension
-
-    Returns: str
+        suffix:
+            Usually the file extension
     """
     i = 0
     while True:
         name = f"{prefix}{i:03}{suffix}"
-        if not exists(name):
+        if not os.path.exists(name):
             return name
         i += 1
 
 
-def _gzip(file, keep=True):
-    """
-    Call the "gzip" command to zip or unzip files
-
-    Args:
-        file: str, path-like
-
-        keep: bool, keep the input file or not
-    """
-    keep = ['', '-k '][keep]
-    decomp = ['', '-d '][file.endswith('.gz')]
-    _call(f"gzip {decomp}{keep}{file}")
-
-
-def call(cmd, print_cmd=True):
-    """
-    Args:
-        cmd: str
-        print_cmd: bool
-    """
-    if print_cmd:
-        print(f"CMD: {cmd}", flush=True)
-    try:
-        check_call(cmd, shell=True)
-    except Exception as inst:
-        print(inst, flush=True)
-
-
-def gzip(file, keep=True):
+def gzip(file: str, keep: bool = True):
     """
     Call the "gzip" command to zip or unzip files.
 
     Args:
-        file: str, path-like
+        file: path-like
 
-        keep: bool, keep the input file or not
+        keep:
+            Keep the input file or not
     """
     is_gz = file.endswith('.gz')
 
@@ -79,14 +68,16 @@ def gzip(file, keep=True):
 
     if keep:
         stdout = '--stdout '
-        if is_gz: output = f' > {file[:-3]}'
-        else: output = f' > {file}.gz'
+        if is_gz:
+            output = f' > {file[:-3]}'
+        else:
+            output = f' > {file}.gz'
     else:
         stdout = ''
         output = ''
 
-    _call(f"gzip {decompress}{stdout}{file}{output}")
+    call(f"gzip {decompress}{stdout}{file}{output}")
 
 
-def printf(s):
+def printf(s: str):
     print(s, flush=True)

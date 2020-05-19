@@ -1,15 +1,10 @@
-from .gtftools import GtfFeature
-from .gfftools import GffFeature
-from .dataclass import GenericFeature
+from .dataclass import GenericFeature, GtfFeature, GffFeature
 
 
-def gtf_to_generic_feature(gtf_feature):
-    """
-    Covert GtfFeature (namedtuple) to GenericFeature
+def gtf_to_generic_feature(gtf_feature: GtfFeature) -> GenericFeature:
 
-    Args:
-        gtf_feature: GtfFeature object
-    """
+    assert type(gtf_feature) is GtfFeature
+
     f = gtf_feature
 
     attr_list = []
@@ -29,13 +24,10 @@ def gtf_to_generic_feature(gtf_feature):
     )
 
 
-def gff_to_generic_feature(gff_feature):
-    """
-    Covert GffFeature (namedtuple) to GenericFeature
+def gff_to_generic_feature(gff_feature: GffFeature) -> GenericFeature:
 
-    Args:
-        gff_feature: GffFeature object
-    """
+    assert type(gff_feature) is GffFeature
+
     f = gff_feature
     items = [item for item in f.attributes.split(';') if item]
 
@@ -55,13 +47,15 @@ def gff_to_generic_feature(gff_feature):
     )
 
 
-def generic_to_gtf_feature(generic_feature):
+def generic_to_gtf_feature(generic_feature: GenericFeature) -> GtfFeature:
     """
     Covert GenericFeature to GtfFeature (namedtuple)
 
     Args:
         generic_feature: GenericFeature object
     """
+    assert type(generic_feature) is GenericFeature
+
     f = generic_feature
 
     # Pack attributes into a single line of str
@@ -86,20 +80,23 @@ def generic_to_gtf_feature(generic_feature):
     )
 
 
-def generic_to_gff_feature(generic_feature):
+def generic_to_gff_feature(generic_feature: GenericFeature) -> GffFeature:
     """
     Covert GenericFeature to GffFeature (namedtuple)
 
     Args:
         generic_feature: GenericFeature object
     """
+    assert type(generic_feature) is GenericFeature
+
     f = generic_feature
 
     # Pack attributes into a single line of str
     attr_str = ''
     for key, val in f.attributes:
         # Escape characters not allowed
-        val = val.replace(';', '%3B').replace('=', '%3D')
+        if type(val) is str:
+            val = val.replace(';', '%3B').replace('=', '%3D')
         attr_str += f"{key}={val};"
 
     return GffFeature(

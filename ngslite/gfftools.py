@@ -1,18 +1,17 @@
-from collections import namedtuple
+from typing import List, Optional, Dict, Union
 from .lowlevel import printf
-
-
-GffFeature = namedtuple('GffFeature', 'seqid source type start end score strand phase attributes')
+from .dataclass import GenericFeature, GffFeature
+from .feature_conversion import generic_to_gff_feature
 
 
 class GffParser:
     """
     File parser for GFF3 format
     """
-    def __init__(self, file):
+    def __init__(self, file: str):
         """
         Args:
-            file: str, path-like
+            file: path-like
         """
         self.__gff = open(file, 'r')
         line1 = self.__gff.readline().rstrip()
@@ -37,7 +36,7 @@ class GffParser:
         else:  # r is None
             raise StopIteration
 
-    def next(self):
+    def next(self) -> Optional[GffFeature]:
         """
         Each line of the GFF3 file has 9 fields
 
@@ -57,7 +56,7 @@ class GffParser:
         """
         line = self.__gff.readline().rstrip()
         if line:
-            fields = line.split('\t')
+            fields: List[Union[str, int, float]] = line.split('\t')
             for i in (3, 4, 7):
                 if fields[i] != '.':
                     fields[i] = int(fields[i])
@@ -72,11 +71,13 @@ class GffParser:
 
 
 class GffWriter:
-    def __init__(self, file, mode='w'):
+    def __init__(self, file: str, mode: str = 'w'):
         """
         Args:
-            file: str, path-like object
-            mode: str, 'w' or 'a'
+            file: path-like
+
+            mode:
+                The file mode: 'w' or 'a'
         """
         self.__gff = open(file, mode)
 
@@ -87,10 +88,10 @@ class GffWriter:
         self.close()
         return
 
-    def write(self, feature):
+    def write(self, feature: GffFeature):
         """
         Args:
-            feature: namedtuple 'GffFeature'
+            feature:
                 Containing 9 fields of a line of GFF3 file
         """
         self.__gff.write('\t'.join(map(str, feature)) + '\n')
@@ -99,13 +100,16 @@ class GffWriter:
         self.__gff.close()
 
 
-def read_gff(file, as_dict=False):
+def read_gff(
+        file: str,
+        as_dict: bool = False) \
+        -> Union[List[GffFeature], Dict[str, GffFeature]]:
     """
     Args:
-        file: str, path-like object
+        file: path-like
             The input GFF file
 
-        as_dict: bool
+        as_dict:
             If True, returns a dictionary
 
     Returns: list of GffFeature objects, or dict
@@ -130,7 +134,10 @@ def read_gff(file, as_dict=False):
     return features
 
 
-def write_gff(data, file):
+def write_gff(
+        data: Union[List[Union[GffFeature, GenericFeature]],
+                    Dict[str, Union[GffFeature, GenericFeature]]],
+        file: str):
     """
     Take the data in the format returned by read_gff()
         and write it into a new GFF file
@@ -140,33 +147,36 @@ def write_gff(data, file):
     Args:
         data: list of GffFeature objects, or dict
 
-        file: str, path-like
+        file: path-like
             The output GFF file
     """
     with GffWriter(file) as writer:
         if type(data) is dict:
             for feature_arr in data.values():
                 for feature in feature_arr:
-                    if feature.__class__.__name__ == 'GenericFeature':
-                        feature = feature.to_gff_feature()
+                    if type(feature) is GenericFeature:
+                        feature = generic_to_gff_feature(feature)
                     writer.write(feature)
         elif type(data) is list:
             for feature in data:
-                if feature.__class__.__name__ == 'GenericFeature':
-                    feature = feature.to_gff_feature()
+                if type(feature) is GenericFeature:
+                    feature = generic_to_gff_feature(feature)
                 writer.write(feature)
 
 
-def subset_gff(file, seqid, output):
+def subset_gff(
+        file: str,
+        seqid: Union[str, List[str]],
+        output: str):
     """
     Args:
-        file: str, path-like
+        file: path-like
             The input GFF file
 
-        seqid: str, or list of str
+        seqid:
             Each str is a seqid to be included
 
-        output: str, path-like
+        output: path-like
             The output GFF file
     """
     if isinstance(seqid, str):
@@ -179,12 +189,13 @@ def subset_gff(file, seqid, output):
                     writer.write(feature)
 
 
-def print_gff(feature=None):
+def print_gff(
+        feature: Optional[GffFeature] = None):
     """
     Pretty print a feature (namedtuple) from GFF or GFF file
 
     Args:
-        feature: namedtuple, tuple or list
+        feature:
             Containing 9 fields of a feature from GFF or GFF file
     """
     if feature is None:
@@ -202,7 +213,16 @@ def print_gff(feature=None):
         printf(text)
 
     else:
-        fields = ['seqid  ', 'source   ', 'feature  ', 'start    ', 'end      ',
-                  'score    ', 'strand   ', 'frame    ', 'attribute']
+        fields = [
+            'seqid    ',
+            'source   ',
+            'feature  ',
+            'start    ',
+            'end      ',
+            'score    ',
+            'strand   ',
+            'frame    ',
+            'attribute',
+        ]
         for i in range(9):
             printf(f"{i}\t{fields[i]}\t{feature[i]}")

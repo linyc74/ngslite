@@ -1,28 +1,9 @@
-def _wrap(seq, width):
-    """
-    Args:
-        seq: str
-            A single line of DNA or protein sequence without '\n'
-
-    Returns: str
-    """
-    if len(seq) <= width: return seq  # no need to wrap
-    w = width
-    L = []
-    for i in range(int(len(seq)/w) + 1):
-        L.append(seq[i*w:(i+1)*w])
-    return '\n'.join(L)
+from typing import Optional, Tuple, Union, Dict, List
 
 
 class FastaParser:
-    """
-    A simple fasta parser that parses each read of a fasta file
-    """
-    def __init__(self, file):
-        """
-        Args:
-            file: str, path-like object
-        """
+
+    def __init__(self, file: str):
         self.__fasta = open(file, 'r')
 
     def __enter__(self):
@@ -43,11 +24,10 @@ class FastaParser:
         else:  # r is None
             raise StopIteration
 
-    def next(self):
+    def next(self) -> Optional[Tuple[str, str]]:
         """
-        Returns: tuple
-            The next read of the fasta file.
-            If it reaches the end of the file, return None.
+        Returns the next read of the fasta file
+        If it reaches the end of the file, return None
         """
         header = self.__fasta.readline().rstrip()[1:]
         if header == '':
@@ -69,17 +49,16 @@ class FastaParser:
 
 
 class FastaWriter:
-    """
-    A simple fasta writer that writes a single read (header and sequence) each time
-    """
-    def __init__(self, file, mode='w'):
-        """
-        Args
-            file: str, path-like
 
-            mode: str
-                'w' for write or 'a' for append
+    def __init__(self, file: str, mode: str = 'w'):
         """
+        Args:
+            file: path-like
+
+            mode: 'w' for write or 'a' for append
+        """
+        assert mode in ['w', 'a']
+
         self.__fasta = open(file, mode)
 
     def __enter__(self):
@@ -88,63 +67,104 @@ class FastaWriter:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def write(self, header, sequence, wrap=80):
+    def __wrap(self, seq: str, length: int) -> str:
+        """
+        Wraps a single line of string by a specified length
+
+        Args:
+            seq: a single line of DNA or protein sequence without '\n'
+
+            length: length of each line
+        """
+        if len(seq) <= length:
+            return seq  # no need to wrap
+
+        w = length
+        list_ = []
+        for i in range(int(len(seq)/w) + 1):
+            list_.append(seq[i*w:(i+1)*w])
+
+        return '\n'.join(list_)
+
+    def write(self, header: str, sequence: str, wrap: int = 80):
         """
         Args:
-            header: str
+            header: Fasta header
 
-            sequence: str
+            sequence: DNA or protein sequence without '\n'
 
-            wrap: int
+            wrap: length of each wrapped line for the sequence
         """
-        self.__fasta.write('>' + header + '\n' + _wrap(sequence, wrap) + '\n')
+        seq = self.__wrap(sequence, wrap)
+        self.__fasta.write(f'>{header}\n{seq}\n')
 
     def close(self):
         self.__fasta.close()
 
 
-def read_fasta(file, as_dict=False):
+def read_fasta(
+        file: str,
+        as_dict: bool = False,
+        strip_header: bool = False) \
+        -> Union[Dict[str, str], List[Tuple[str, str]]]:
     """
     Args:
-        file: str, path-like object
-            The input fasta file
+        file: path-like
 
-        as_dict: bool
-            If True, returns a dictionary
+        as_dict:
+            Return dictionary or not
 
-    Returns: list of tuples, or dict
+        strip_header:
+            Strip everything after the first space in the header
 
-        [(head_1, seq_1), (head_2, seq_2), ...]
+    Returns:
+        {
+            header: sequence, ...
+            header: sequence, ...
+        }
 
-        or
-
-        {head_1: seq_1, head_2: seq_2, ...}
-
-        If no sequences from the fasta, return an empty list or dict
+        [
+            (header, sequence), (header, sequence), ...
+        ]
     """
-    with FastaParser(file) as parser:
-        if as_dict:
-            return {head: seq for head, seq in parser}
+
+    parser = FastaParser(file)
+
+    if as_dict:
+        if strip_header:
+            data = {h.split(' ')[0]: s for h, s in parser}
         else:
-            return [(head, seq) for head, seq in parser]
+            data = {h: s for h, s in parser}
+    else:
+        if strip_header:
+            data = [(h.split(' ')[0], s) for h, s in parser]
+        else:
+            data = [(h, s) for h, s in parser]
+
+    parser.close()
+
+    return data
 
 
-def write_fasta(data, file):
+def write_fasta(
+        data: Union[Dict[str, str], List[Tuple[str, str]]],
+        file: str):
     """
-    Take the data in the format returned by read_fasta()
-        and write it into a new fasta file
-
     Args:
-        data: list of tuples, or dict
+        data:
+            Fasta data return by the function 'read_fasta'
 
-        file: str, path-like
-            The output fasta file
+        file: path-like
     """
+
+    if type(data) is list:
+        iterator = data
+    else:
+        iterator = data.items()
+
     with FastaWriter(file) as writer:
-        if type(data) is dict:
-            data = data.items()
-        for head, seq in data:
-            writer.write(head, seq)
+        for head, seq in iterator:
+            writer.write(header=head, sequence=seq)
 
 
 def subset_fasta(file, headers, output):
@@ -167,4 +187,3 @@ def subset_fasta(file, headers, output):
             for head, seq in parser:
                 if head in headers:
                     writer.write(head, seq)
-

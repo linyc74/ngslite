@@ -6,10 +6,9 @@ Python functions for manipulating NGS and genomics data
 """
 
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 
-from .arrfunc import replace_zero_with, jitter, densCols
 from .cmd_toolkit import bedtools_multicov, bowtie2_mapping, bwa_mapping, \
     metaspades, prokka, trim_galore, orf_finder
 from .count import count_reads
@@ -26,9 +25,6 @@ from .gfftools import GffParser, GffWriter, read_gff, write_gff, subset_gff, pri
 from .glimmer import glimmer3
 from .gtftools import GtfParser, GtfWriter, read_gtf, write_gtf, subset_gtf, print_gtf
 from .hmmer import hmmsearch, hmmbuild, parse_hmmsearch_result, validate_hmm_parse_result
-from .kmertools import jellyfish_count, read_kmers, kmer_2D_points, save_kmer_2D_points, \
-    read_kmer_2D_points, filter_kmer_2D_points, sample_kmer_2D_points, build_kmer_dict, \
-    get_kmer_2D_points, kmers_base_content, fastq_to_saved_kmer_2D_points
 from .locus_extractor import locus_extractor, genbank_locus_extractor
 from .lowlevel import call, gzip
 from .merge_pfam_orf import merge_pfam_into_orf

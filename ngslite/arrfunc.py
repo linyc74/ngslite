@@ -1,15 +1,19 @@
-import numpy as np
 import random
+import numpy as np
+from typing import Union, List
 
 
-def replace_zero_with(np_array, value):
+def replace_zero_with(
+        np_array: np.ndarray,
+        value: Union[int, float]) -> np.ndarray:
     """
     Replaces the 0s in an numpy array with a specified value
 
     Args:
-        np_array: 1D numpy.ndarray, dtype = np.int or np.float
+        np_array:
+            1D numpy.ndarray, dtype = np.int or np.float
 
-        value: int or float
+        value
 
     Returns: 1D numpy.ndarray, dtype = np.float
     """
@@ -18,15 +22,20 @@ def replace_zero_with(np_array, value):
     return np_array + bool_arr * val_arr
 
 
-def jitter(array, value):
+def jitter(
+        array: Union[List[Union[int, float]],
+                     np.ndarray],
+        value: float) -> np.ndarray:
     """
     Add the input <array> with some random numbers
     The random numbers are uniformly distributed between -<value> to +<value>
 
     Args:
-        array: an array of numbers, could be list, np.ndarray with int or float data types
+        array:
+            An array of numbers, could be list, np.ndarray with int or float data types
 
-        value: the max amount of value to be jittered
+        value:
+            The max amount of value to be jittered
 
     Returns: np.ndarray, dtype=np.float32
     """
@@ -37,19 +46,22 @@ def jitter(array, value):
     return array + noise
 
 
-def densCols(x, y, bins):
+def densCols(
+        x: np.ndarray,
+        y: np.ndarray,
+        bins: int) -> np.ndarray:
     """
     This is an implementation of the densCols() function in R
     Python just doesn't have this feature!
 
     Args:
-        x: numpy.ndarray
+        x:
             x coordinates
 
-        y: numpy.ndarray
+        y:
             y coordinates
 
-        bins: int
+        bins:
             number of bins
 
     Returns: 1D numpy array, length = len(x), dtype = np.float64
@@ -79,4 +91,3 @@ def densCols(x, y, bins):
     densities = hist2D[x_pos, y_pos]
 
     return densities
-

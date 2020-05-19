@@ -1,4 +1,4 @@
-def rev_comp(seq):
+def rev_comp(seq: str) -> str:
     """
     Returns reverse complementary sequence of the input DNA string
     """
@@ -38,17 +38,11 @@ def rev_comp(seq):
     return ''.join([comp[base] for base in seq[::-1]])
 
 
-def translate(dna):
+def translate(dna: str) -> str:
     """
-    Translate a DNA sequence.
-    If the DNA length is not a multiple of 3, then leave the last 1 or 2 bases untranslated.
-
-    Args:
-        dna: str,
-            the DNA sequence
-
-    Returns: str,
-        the translated amino acid sequence
+    Translate a DNA sequence
+    If the DNA length is not a multiple of 3,
+        then leave the last 1 or 2 bases untranslated
     """
     codon = {
         'ATT': 'I', 'ATC': 'I', 'ATA': 'I', 'CTT': 'L',
@@ -78,17 +72,15 @@ def translate(dna):
     return ''.join(peptide)
 
 
-def base_content(seq, base):
+def base_content(seq: str, base: str) -> float:
     """
-    Compute the fraction of <base> in the <seq>.
+    Compute the fraction of <base> in the <seq>
 
     Args
-        seq: str
+        seq
 
-        base: str
+        base:
             e.g., 'A' gives the A content; 'GC' gives the GC content; 'ACGT' should give 1.0
-
-    Returns: float
     """
     seq = seq.upper()
     base = base.upper()

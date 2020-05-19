@@ -1,12 +1,11 @@
+from typing import Optional, Tuple
+
+
 class FastqParser:
     """
     A simple fastq parser that parses each read (four lines) of a fastq file
     """
-    def __init__(self, file):
-        """
-        Args:
-            file: str, path-like object
-        """
+    def __init__(self, file: str):
         self.__fastq = open(file, 'r')
 
     def __enter__(self):
@@ -27,11 +26,11 @@ class FastqParser:
         else:  # r is None:
             raise StopIteration
 
-    def next(self):
+    def next(self) -> Optional[Tuple[str, str, str, str]]:
         """
-        Returns: tuple
+        Returns:
             The next read of the fastq file
-            If it reaches the end of the file, return (None,)*4
+            If reaches the end of the file, return None
         """
         line1 = self.__fastq.readline().rstrip()
         line2 = self.__fastq.readline().rstrip()
@@ -50,11 +49,13 @@ class FastqWriter:
     """
     A simple fastq writer that writes a single read (four lines) each time
     """
-    def __init__(self, file, mode='w'):
+    def __init__(self, file: str, mode: str = 'w'):
         """
         Args
-            file: str, path-like object
-            mode: str, 'w' for write or 'a' for append
+            file: path-like
+
+            mode:
+                'w' for write or 'a' for append
         """
         self.__fastq = open(file, mode)
 
@@ -65,7 +66,7 @@ class FastqWriter:
         self.close()
         return
 
-    def write(self, read):
+    def write(self, read: Tuple[str, str, str, str]):
         """
         Args:
             read: tuple of four lines (strings) of each read of fastq
@@ -77,7 +78,7 @@ class FastqWriter:
         self.__fastq.close()
 
 
-def interleave(fq1, fq2, fq_out):
+def interleave(fq1: str, fq2: str, fq_out: str):
     """
     Interleave two paired-end fastq files
     This method does not check the header to see
@@ -85,9 +86,11 @@ def interleave(fq1, fq2, fq_out):
     It just interleave 4 lines by 4 lines
 
     Args:
-        fq1: str, path to fastq1 (.1.fq)
-        fq2: str, path to fastq2 (.2.fq)
-        fq_out:
+        fq1: path to fastq1 (.1.fq)
+
+        fq2: path to fastq2 (.2.fq)
+
+        fq_out
     """
     fq1 = open(fq1, 'r')
     fq2 = open(fq2, 'r')

@@ -1,22 +1,26 @@
 import os
-from .lowlevel import _call, _temp, printf
-from .fasta import FastaParser, FastaWriter
+from typing import Optional, Union, List, Dict
 from .gtftools import GtfWriter
+from .lowlevel import call, _temp, printf
+from .fasta import FastaParser, FastaWriter
 
 
-def bedtools_multicov(bed, bams, output):
+def bedtools_multicov(
+        bed: str,
+        bams: Union[str, List[str]],
+        output: str):
     """
     Wrapper function of the command "bedtools multicov -bams <bams> -bed <bed> > <output>"
     Adds a header line to the <output> file
 
     Args:
-        bed: str, path-like
+        bed: path-like
             The bed file, or any other interval file accepted by the bedtools
 
-        bams: str, path-like; or list of str for multiple input files
+        bams: path-like or list of paths
             The bam file, or any other mapped read files accepted by the bedtools
 
-        output: str, path-like
+        output: path-like
             The output tab-separated file (tsv) with headers according to the input file type
             Currently supports the header of the following file types:
                 bed file: chrom \t start \t end
@@ -25,12 +29,12 @@ def bedtools_multicov(bed, bams, output):
     if isinstance(bams, list):
         bams = ' '.join(bams)
 
-    _call(f"bedtools multicov -bams {bams} -bed {bed} > {output}")
+    call(f"bedtools multicov -bams {bams} -bed {bed} > {output}")
 
     # Read the data of the bedtools output
     with open(output, 'r') as fh:
         data = fh.read()
-    _call(f"rm {output}")
+    call(f"rm {output}")
 
     # Write the header line to the output file
     with open(output, 'w') as fh:
@@ -43,25 +47,29 @@ def bedtools_multicov(bed, bams, output):
         fh.write(data)
 
 
-def bowtie2_mapping(ref, fq1, sam, fq2=None):
+def bowtie2_mapping(
+        ref: str,
+        fq1: str,
+        sam: str,
+        fq2: Optional[str] = None):
     """
     Wrapper function of bowtie2 mapping
 
     Args:
-        ref: str, path-like object
+        ref: path-like
             The reference fasta
 
-        fq1: str, path-like object
+        fq1: path-like
             The read-1 fastq
 
-        fq2: str, path-like object
+        fq2: path-like
             The read-2 fastq. If none, use <fq1> for unpaired mapping
 
-        sam: str, path-like object
+        sam: path-like
             The output SAM file
     """
     # Build the .bt2 index files
-    _call(f"bowtie2-build {ref} ref > {ref}_bowtie2_build.log")
+    call(f"bowtie2-build {ref} ref > {ref}_bowtie2_build.log")
 
     log = sam[:-4]+'.log'
     if fq2 is None:
@@ -70,37 +78,43 @@ def bowtie2_mapping(ref, fq1, sam, fq2=None):
     else:
         # Paired-end mapping
         cmd = f"bowtie2 -x ref -1 {fq1} -2 {fq2} -S {sam} 2> {log}"
-    _call(cmd)
+    call(cmd)
 
     # Remove the .bt2 index files
-    _call('rm *.bt2')
+    call('rm *.bt2')
 
 
-def bwa_mapping(ref, fq1, sam, fq2=None, threads=4, score=30):
+def bwa_mapping(
+        ref: str,
+        fq1: str,
+        sam: str,
+        fq2: Optional[str] = None,
+        threads: int = 4,
+        score: int = 30):
     """
     Wrapper function of BWA mapping
 
     Args:
-        ref: str, path-like object
+        ref: path-like
             The reference fasta
 
-        fq1: str, path-like object
+        fq1: path-like
             The read-1 fastq
 
-        fq2: str, path-like object
+        fq2: path-like
             The read-2 fastq. If none, use <fq1> for unpaired mapping
 
-        sam: str, path-like object
+        sam: path-like
             The output SAM file
 
-        threads: int,
-            # of CPU threads
+        threads:
+            Number of CPUs
 
-        score: int,
+        score:
             Don’t output alignment with score lower than <score>
     """
     # Build index
-    _call(f"bwa index {ref}")
+    call(f"bwa index {ref}")
 
     if fq2 is None:
         # Unpaired
@@ -108,32 +122,43 @@ def bwa_mapping(ref, fq1, sam, fq2=None, threads=4, score=30):
     else:
         # Paired-end
         cmd = f"bwa mem -t {threads} -T {score} {ref} {fq1} {fq2} > {sam}"
-    _call(cmd)
+    call(cmd)
 
     # Remove the index files
-    _call('rm ref.*')
+    call('rm ref.*')
 
 
-def metaspades(fq1, fq2, output, min_contig_length=1000, threads=16, memory=250):
+def metaspades(
+        fq1: str,
+        fq2: str,
+        output: str,
+        min_contig_length: int = 1000,
+        threads: int = 16,
+        memory: int = 250):
     """
     Wrapper function of the command "spades.py --meta".
 
     Args:
-        fq1: str, path-like, the read-1 fastq file
+        fq1: path-like
+            The read-1 fastq file
 
-        fq2: str, path-like, the read-2 fastq file
+        fq2: path-like
+            The read-2 fastq file
 
-        output: str, path-like
-            The output directory of metaspades, also the output fasta file containing assembled contigs
+        output: path-like
+            The output directory of metaspades
+            The output fasta file containing assembled contigs
 
-        min_contig_length: int
+        min_contig_length:
             Minimum (inclusive) contig length in bp
 
-        threads: int, # of CPU cores
+        threads:
+            Number of CPUs
 
-        memory: int, # of Gb of RAM
+        memory:
+            Number of Gb of RAM
     """
-    _call(f"spades.py --meta -1 {fq1} -2 {fq2} -o {output} --threads {threads} --memory {memory} > {output}.log")
+    call(f"spades.py --meta -1 {fq1} -2 {fq2} -o {output} --threads {threads} --memory {memory} > {output}.log")
 
     printf(f"Retrieve contigs (>= {min_contig_length} bp) from {output}/contigs.fasta -> {output}.fa")
 
@@ -144,14 +169,16 @@ def metaspades(fq1, fq2, output, min_contig_length=1000, threads=16, memory=250)
                     writer.write(head, seq)
 
 
-def _rename_contig_id(genbank, contig_dict):
+def _rename_contig_id(
+        genbank: str,
+        contig_dict: Dict[str, str]):
     """
     Args:
-        genbank: str, path-like
+        genbank: path-like
 
-        contig_dict: dict
-            For example: {'contig_1_52671bp': 'assembly=control_contigs;id=NODE_400_length_52671_cov_411.055515;len=52671'}
-                           (short header)        (original header)
+        contig_dict:
+            {'contig_1_52671bp': 'assembly=control_contigs;id=NODE_400_length_52671_cov_411.055515;len=52671'}
+               (short header)        (original header)
     """
     temp_gb = _temp('temp', '.gb')  # for example, temp000.gb
     with open(genbank) as reader:
@@ -168,39 +195,50 @@ def _rename_contig_id(genbank, contig_dict):
     os.rename(temp_gb, genbank)
 
 
-def prokka(fasta, outdir, kingdom, locus_tag='LOCUS', proteins='',
-           metagenome=True, evalue=1e-6, threads=4, log=None, keep=True):
+def prokka(
+        fasta: str,
+        outdir: str,
+        kingdom: str,
+        locus_tag: str = 'LOCUS',
+        proteins: str = '',
+        metagenome: bool = True,
+        evalue: float = 1e-6,
+        threads: int = 4,
+        log: Optional[str] = None,
+        keep: bool = True):
     """
     A wrapper function for Prokka 1.12 (rapid bacterial genome annotation)
 
     This wrapper function takes a fasta and outputs a genbank file with the name <outdir>.gb
 
     Args
-        fasta: str, path-like
+        fasta: path-like
             The input fasta to be annotated
 
-        outdir: str, path-like
+        outdir: path-like
             The output directory and the genbank file name
 
-        kingdom: str
+        kingdom:
             'Archaea', 'Bacteria', 'Mitochondria' or 'Viruses'
 
-        proteins: str, path-like
+        locus_tag
+
+        proteins: path-like
             FASTA or GBK file to use as 1st priority
 
-        metagenome: bool
+        metagenome:
             Improve gene predictions for highly fragmented genomes
 
-        evalue: float or int
+        evalue:
             Similarity e-value cut-off
 
-        threads: int
+        threads:
             Number of CPUs to be used (0 = all)
 
-        log: str, path-like
+        log: path-like
             The log file for stderr
 
-        keep: bool
+        keep:
             Whether or not to keep all data in the <outdir>
     """
     # Create a temp fasta file to shorten the header because prokka does not take long headers
@@ -229,7 +267,7 @@ def prokka(fasta, outdir, kingdom, locus_tag='LOCUS', proteins='',
     cmd = f"prokka --outdir {outdir} --prefix {outdir} --locustag {locus_tag} \
 --kingdom {kingdom} --evalue {evalue} --cpus {threads} {proteins}{meta}{temp_fa}{log}"
 
-    _call(cmd)
+    call(cmd)
     os.remove(temp_fa)
 
     # In the outdir folder, write a tsv file to index shortened contig headers to the original headers
@@ -238,17 +276,23 @@ def prokka(fasta, outdir, kingdom, locus_tag='LOCUS', proteins='',
             fh.write(f"{key}\t{val}\n")
 
     # Copy the genbank file out from the output directory
-    _call(f"cp {outdir}/{outdir}.gbk {outdir}.gb")
+    call(f"cp {outdir}/{outdir}.gbk {outdir}.gb")
 
     # Rename the contig header back to the original headers using <contig_dict>
     _rename_contig_id(f"{outdir}.gb", contig_dict)
 
     # Remove files in the output dir if keep == False
     if not keep:
-        _call(f"rm -r {outdir}")
+        call(f"rm -r {outdir}")
 
 
-def trim_galore(fq1, fq2, quality=20, gzip=True, length=20, log='trim_galore.log'):
+def trim_galore(
+        fq1: str,
+        fq2: str,
+        quality: int = 20,
+        gzip: bool = True,
+        length: int = 20,
+        log: str = 'trim_galore.log'):
     """
     Wrapper function of "trim_galore"
 
@@ -256,40 +300,44 @@ def trim_galore(fq1, fq2, quality=20, gzip=True, length=20, log='trim_galore.log
         e.g. Illumina P5 and P7 adapter sequences are used to trim reads
 
     Args:
-        fq1: str, path-like
+        fq1: path-like
             The read-1 fastq file
 
-        fq2: str, path-like
+        fq2: path-like
             The read-2 fastq file
 
-        quality: int
+        quality:
             phred33 score
 
-        gzip: bool
+        gzip:
             Compress the output fastq files or not
 
-        length: int
+        length:
             The minimal length (bp) of reads to be retained
 
-        log: str, path-like
+        log: path-like
             Append the stderr of trim_galore to the <log> file
     """
     gzip = ['', '--gzip '][gzip]
-    _call(f'trim_galore --paired --quality {quality} --phred33 --fastqc --illumina \
+    call(f'trim_galore --paired --quality {quality} --phred33 --fastqc --illumina \
 {gzip}--length {length} --max_n 0 --trim-n --retain_unpaired {fq1} {fq2} 2>> {log}')
 
 
-def orf_finder(fasta, output, min_length=75):
+def orf_finder(
+        fasta: str,
+        output: str,
+        min_length: int = 75):
     """
     Use the command line tool NCBI ORFfinder to find Open Reading Frames
       in the input fasta file, and output a GTF file
 
     Args:
-        fasta: str, path-like
+        fasta: path-like
 
-        output: str, path-like
+        output: path-like
+            The output GTF file
 
-        min_length: int
+        min_length:
             Minimal length of ORF. 75 is the default of ORFfinder
     """
     # ORFfinder can only take fasta headers <= 50 characters
@@ -307,7 +355,7 @@ def orf_finder(fasta, output, min_length=75):
     # -outfmt 3: output format = feature table
     # -ml [int]: minimal length
     temp_table = _temp('temp', '.table')  # for example, temp000.table
-    _call(f"ORFfinder -in {temp_fa} -out {temp_table} -outfmt 3 -ml {min_length}")
+    call(f"ORFfinder -in {temp_fa} -out {temp_table} -outfmt 3 -ml {min_length}")
 
     os.remove(temp_fa)
 

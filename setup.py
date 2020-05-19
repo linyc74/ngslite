@@ -12,10 +12,9 @@ setup(
     license='MIT',
     packages=['ngslite'],
     python_requires='>3.6',
-    install_requires=['numpy', 'pandas', 'biopython', 'scipy'],
+    install_requires=['numpy', 'pandas', 'biopython', 'scipy', 'dna_features_viewer'],
     zip_safe=False
 )
 
 
 # In command line type in: "python setup.py sdist"
-

@@ -1,27 +1,27 @@
-from .lowlevel import _gzip, printf
-import subprocess
 import os
+import subprocess
+from .lowlevel import gzip, printf
 
 
-def count_reads(file, mapped=True):
+def count_reads(file: str, mapped: bool = True) -> int:
     """
     Count the reads in a file
 
     Supported format: fasta, fastq and sam/bam, compressed gz is also supported
 
     Args:
-        file: str, path-like
+        file: path-like
 
         mapped: bool
             If True, only count reads that are mapped in a sam or bam file
             If False, count all reads
 
-    Returns: int
+    Returns:
         The number of reads or sequences contained in the input file
     """
     is_gz = False
     if file.endswith('.gz'):
-        _gzip(file, keep=True)
+        gzip(file, keep=True)
         file = file[:-3]
         is_gz = True
 

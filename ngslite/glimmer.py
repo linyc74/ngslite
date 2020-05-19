@@ -1,24 +1,25 @@
 import os
+from typing import Optional
 from .gtftools import GtfWriter
 from .fasta import FastaParser, FastaWriter
-from .lowlevel import _call, _temp, printf
+from .lowlevel import call, _temp, printf
 
 
-def _remove_extension(file):
+def _remove_extension(file: str) -> str:
     """
     Args:
-        file: str, path-like
+        file: path-like
 
-    Returns: str,
+    Returns:
         A path without the file extension
     """
     return '.'.join(file.split('.')[:-1])
 
 
-def _parser_glimmer3_result(file, output):
+def _parser_glimmer3_result(file: str, output: str):
     """
     Args:
-        file: str, path-like
+        file: path-like
             The glimmer3 output prediction file, for example:
 
             >fasta_header
@@ -27,7 +28,7 @@ def _parser_glimmer3_result(file, output):
              orf00003      725      549  -3     5.63
                           (start)  (end)(frame)(score)
 
-        output: str, path-like
+        output: path-like
             The output GTF file
     """
     with open(file) as parser:
@@ -53,8 +54,16 @@ def _parser_glimmer3_result(file, output):
                     ))
 
 
-def glimmer3(fasta, output, linear=True, max_overlap=50, min_length=110,
-             threshold=30, entropy_distance=1.15, verbose=False, log=None):
+def glimmer3(
+        fasta: str,
+        output: str,
+        linear: bool = True,
+        max_overlap: int = 50,
+        min_length: int = 110,
+        threshold: int = 30,
+        entropy_distance: float = 1.15,
+        verbose: bool = False,
+        log: Optional[str] = None):
     """
     This is a wrapper function of glimmer3, which predicts ORFs
 
@@ -67,31 +76,31 @@ def glimmer3(fasta, output, linear=True, max_overlap=50, min_length=110,
         Predict ORFs with the ICM               (glimmer3)
 
     Args:
-        fasta: str, path-like
+        fasta: path-like
             The input genome sequences
 
-        output: str, path-like
+        output: path-like
             The output GTF file containing predicted ORFs
 
-        linear: bool
+        linear:
             Linear or circular DNA
 
-        max_overlap: int
+        max_overlap:
             Max overlap (bp) between ORFs
 
-        min_length: int
+        min_length:
             Minimum length of ORFs
 
-        threshold: int
+        threshold
 
-        entropy_distance: float
+        entropy_distance:
             Only genes with entropy distance score less than this value will be considered
 
-        verbose: bool,
+        verbose:
             If True, print every single command line
             If False, only print the command line for the first sequence of the input <fasta>
 
-        log: str, path-like
+        log: path-like
             The log file for stderr
     """
     f = fasta
@@ -126,16 +135,16 @@ def glimmer3(fasta, output, linear=True, max_overlap=50, min_length=110,
         # cutoff: Only genes with entropy distance score less than <cutoff> will be considered. Default 1.15
         line = ['', '--linear '][linear]
         cmd = f"long-orfs --no_header --cutoff {entropy_distance} {line}{temp}.fa longorfs{log}"
-        _call(cmd, print_cmd)
+        call(cmd, print_cmd)
 
         # --- Extract the DNA sequences of long ORFs --- #
         cmd = f"extract {temp}.fa longorfs > train"
-        _call(cmd, print_cmd)
+        call(cmd, print_cmd)
 
         # --- Build ICM --- #
         # r: Use the reverse of input strings to build the model
         cmd = f"build-icm -r icm < train"
-        _call(cmd, print_cmd)
+        call(cmd, print_cmd)
 
         # --- Predict genes --- #
         # max_olap: Set maximum overlap length to <n>. Overlaps this short or shorter are ignored
@@ -143,7 +152,7 @@ def glimmer3(fasta, output, linear=True, max_overlap=50, min_length=110,
         # threshold: Set threshold score for calling as gene to n. If the in-frame score >= <n>,
         #   then the region is given a number and considered a potential gene
         cmd = f"glimmer3 --max_olap {max_overlap} --gene_len {min_length} --threshold {threshold} {temp}.fa icm {temp}{log}"
-        _call(cmd, print_cmd)
+        call(cmd, print_cmd)
         # glimmer3 outputs two files: {temp}.detail and {temp}.predict
 
         _parser_glimmer3_result(file=f"{temp}.predict", output=f"{temp}.gtf")
@@ -152,7 +161,7 @@ def glimmer3(fasta, output, linear=True, max_overlap=50, min_length=110,
         with open(f"{temp}.gtf") as fh:
             output_gtf.write(fh.read())
 
-        _call(f"rm {temp}.fa longorfs train icm {temp}.detail {temp}.predict {temp}.gtf", print_cmd)
+        call(f"rm {temp}.fa longorfs train icm {temp}.detail {temp}.predict {temp}.gtf", print_cmd)
 
     fasta_parser.close()
     output_gtf.close()

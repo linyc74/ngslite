@@ -3,7 +3,7 @@ import subprocess
 import numpy as np
 from .fasta import read_fasta
 from .dnatools import rev_comp
-from .lowlevel import _call, _temp, _gzip, printf
+from .lowlevel import call, _temp, gzip, printf
 from .file_conversion import fq_to_fa
 
 
@@ -44,14 +44,14 @@ def jellyfish_count(file, k, output, min_count=1, hash_size='100M', threads=4, c
 
     # Unzip
     if file.endswith('.gz'):
-        _gzip(file, keep=True)
+        gzip(file, keep=True)
         file = file[:-3]
 
     # Convert fastq to fasta
     if file.endswith('.fastq') or file.endswith('.fq'):
         fq_to_fa(file, keep=True)
         # If the input <file> is not equal to the original input name, then don't keep it
-        if not file == input_name: _call(f"rm {file}")
+        if not file == input_name: call(f"rm {file}")
 
     if file.endswith('.fastq'): file = file[:-6] + '.fa'
     elif file.endswith('.fq'): file = file[:-3] + '.fa'
@@ -59,16 +59,16 @@ def jellyfish_count(file, k, output, min_count=1, hash_size='100M', threads=4, c
     # Count k-mers in the input fastq or fasta file
     canonical = ['', '-C '][canonical]
     temp_jf = _temp('temp', '.jf')  # for example, temp000.jf
-    _call(f"jellyfish count -m {k} -s {hash_size} -t {threads} -o {temp_jf} {canonical}{file}")
+    call(f"jellyfish count -m {k} -s {hash_size} -t {threads} -o {temp_jf} {canonical}{file}")
 
     # Remove the counted file if it's not the original input file
-    if not file == input_name: _call(f"rm {file}")
+    if not file == input_name: call(f"rm {file}")
 
     # Dump the .jf file into a .fa file
-    _call(f"jellyfish dump -L {min_count} --output {output} {temp_jf}")
+    call(f"jellyfish dump -L {min_count} --output {output} {temp_jf}")
 
     # The .jf file is not needed, so remove it.
-    _call(f"rm {temp_jf}")
+    call(f"rm {temp_jf}")
 
 
 def read_kmers(jf_fa, min_count=1):
@@ -628,4 +628,3 @@ def fastq_to_saved_kmer_2D_points(fq1, fq2, k, output, min_count=1, hash_size='1
 
     # Remove the two fasta files exported by jellyfish
     subprocess.check_call('rm 1.fa 2.fa', shell=True)
-

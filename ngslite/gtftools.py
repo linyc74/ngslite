@@ -1,15 +1,14 @@
-from collections import namedtuple
+from typing import List, Union, Optional, Dict
 from .lowlevel import printf
-
-
-GtfFeature = namedtuple('GtfFeature', 'seqname source feature start end score strand frame attribute')
+from .dataclass import GenericFeature, GtfFeature
+from .feature_conversion import generic_to_gtf_feature
 
 
 class GtfParser:
-    def __init__(self, file):
+    def __init__(self, file: str):
         """
         Args:
-            file: str, path-like object
+            file: path-like
         """
         self.__gtf = open(file, 'r')
 
@@ -31,7 +30,7 @@ class GtfParser:
         else:  # r is None
             raise StopIteration
 
-    def next(self):
+    def next(self) -> Optional[GtfFeature]:
         """
         Each line of the GTF file has 9 fields
 
@@ -51,7 +50,7 @@ class GtfParser:
         """
         line = self.__gtf.readline().rstrip()
         if line:
-            fields = line.split('\t')
+            fields: List[Union[str, int, float]] = line.split('\t')
             for i in (3, 4, 7):
                 if fields[i] != '.':
                     fields[i] = int(fields[i])
@@ -66,11 +65,13 @@ class GtfParser:
 
 
 class GtfWriter:
-    def __init__(self, file, mode='w'):
+    def __init__(self, file: str, mode: str = 'w'):
         """
         Args:
-            file: str, path-like object
-            mode: str, 'w' or 'a'
+            file: path-like
+
+            mode:
+                The file mode: 'w' or 'a'
         """
         self.__gtf = open(file, mode)
 
@@ -81,7 +82,7 @@ class GtfWriter:
         self.close()
         return
 
-    def write(self, feature):
+    def write(self, feature: GtfFeature):
         """
         Args:
             feature: namedtuple 'GtfFeature'
@@ -93,10 +94,13 @@ class GtfWriter:
         self.__gtf.close()
 
 
-def read_gtf(file, as_dict=False):
+def read_gtf(
+        file: str,
+        as_dict: bool = False) \
+        -> Union[List[GtfFeature], Dict[str, GtfFeature]]:
     """
     Args:
-        file: str, path-like object
+        file: path-like object
             The input GTF file
 
         as_dict: bool
@@ -124,7 +128,10 @@ def read_gtf(file, as_dict=False):
     return features
 
 
-def write_gtf(data, file):
+def write_gtf(
+        data: Union[List[Union[GtfFeature, GenericFeature]],
+                    Dict[str, Union[GtfFeature, GenericFeature]]],
+        file: str):
     """
     Take the data in the format returned by read_gtf()
         and write it into a new GTF file
@@ -134,33 +141,36 @@ def write_gtf(data, file):
     Args:
         data: list of GtfFeature objects, or dict
 
-        file: str, path-like
+        file: path-like
             The output GTF file
     """
     with GtfWriter(file) as writer:
         if type(data) is dict:
             for feature_arr in data.values():
                 for feature in feature_arr:
-                    if feature.__class__.__name__ == 'GenericFeature':
-                        feature = feature.to_gtf_feature()
+                    if type(feature) is GenericFeature:
+                        feature = generic_to_gtf_feature(feature)
                     writer.write(feature)
         elif type(data) is list:
             for feature in data:
-                if feature.__class__.__name__ == 'GenericFeature':
-                    feature = feature.to_gtf_feature()
+                if type(feature) is GenericFeature:
+                    feature = generic_to_gtf_feature(feature)
                 writer.write(feature)
 
 
-def subset_gtf(file, seqname, output):
+def subset_gtf(
+        file: str,
+        seqname: Union[str, List[str]],
+        output: str):
     """
     Args:
-        file: str, path-like
+        file: path-like
             The input GTF file
 
-        seqname: str, or list of str
+        seqname:
             Each str is a seqname (chromosome name) to be included
 
-        output: str, path-like
+        output: path-like
             The output GTF file
     """
     if isinstance(seqname, str):
@@ -173,12 +183,12 @@ def subset_gtf(file, seqname, output):
                     writer.write(feature)
 
 
-def print_gtf(feature=None):
+def print_gtf(feature: Optional[GtfFeature] = None):
     """
     Pretty print a feature (namedtuple) from GTF or GFF file
 
     Args:
-        feature: namedtuple, tuple or list
+        feature:
             Containing 9 fields of a feature from GTF or GFF file
     """
     if feature is None:
@@ -196,7 +206,16 @@ def print_gtf(feature=None):
         printf(text)
 
     else:
-        fields = ['seqname  ', 'source   ', 'feature  ', 'start    ', 'end      ',
-                  'score    ', 'strand   ', 'frame    ', 'attribute']
+        fields = [
+            'seqname  ',
+            'source   ',
+            'feature  ',
+            'start    ',
+            'end      ',
+            'score    ',
+            'strand   ',
+            'frame    ',
+            'attribute',
+        ]
         for i in range(9):
             printf(f"{i}\t{fields[i]}\t{feature[i]}")

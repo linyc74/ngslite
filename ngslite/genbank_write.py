@@ -1,15 +1,17 @@
 from datetime import date
 from .fasta_gtf import read_fasta_gtf
 from .dnatools import translate, rev_comp
-from .genbank_parse import GenbankItem
+from .genbank_parse import GenbankText
 
 
-class GenbankWriter:
-    def __init__(self, file, mode='w'):
+class GenbankTextWriter:
+    def __init__(self, file: str, mode: str = 'w'):
         """
         Args
-            file: str, path-like object
-            mode: str, 'w' for write or 'a' for append
+            file: path-like
+
+            mode:
+                'w' for write or 'a' for append
         """
         self.__gbk = open(file, mode)
 
@@ -19,20 +21,20 @@ class GenbankWriter:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def write(self, genbank_item):
+    def write(self, genbank_text: GenbankText):
         """
         Args:
-            genbank_item: namedtuple GenbankItem
+            genbank_text: namedtuple GenbankItem
         """
         for i in range(3):
-            self.__gbk.write(genbank_item[i].rstrip() + '\n')
+            self.__gbk.write(genbank_text[i].rstrip() + '\n')
         self.__gbk.write('//\n')
 
     def close(self):
         self.__gbk.close()
 
 
-def _today():
+def get_today() -> str:
     """
     Returns: str,
         Today, e.g. '20-JUN-2006'
@@ -44,7 +46,7 @@ def _today():
     return f"{day}-{month}-{year}"
 
 
-def _wrap_line_by_word(line, length, indent, sep=' ', keep_sep=False):
+def wrap_line_by_word(line, length, indent, sep=' ', keep_sep=False) -> str:
     """
     Wraps a line (not containing any '\n') by word
     The returned line does not end with '\n'
@@ -93,7 +95,7 @@ def _wrap_line_by_word(line, length, indent, sep=' ', keep_sep=False):
     return text
 
 
-def _wrap_line_by_char(line, length, indent):
+def wrap_line_by_char(line, length, indent) -> str:
     """
     Wraps a line (not containing any '\n') by character
     The returned line does not end with '\n'
@@ -117,7 +119,7 @@ def _wrap_line_by_char(line, length, indent):
     return text
 
 
-def _generic_feature_to_genbank_text(feature):
+def generic_feature_to_genbank_text(feature):
     """
     Use the information in a GenericFeature object to write a genbank feature
         text section, for example:
@@ -172,11 +174,11 @@ def _generic_feature_to_genbank_text(feature):
     for i, line in enumerate(lines):
         if i == 0:
             # Wrap the first line (regions) by ',' and keep ','
-            text += _wrap_line_by_word(line, length=79, indent=21, sep=',', keep_sep=True)
+            text += wrap_line_by_word(line, length=79, indent=21, sep=',', keep_sep=True)
         elif line.startswith('/translation'):
-            text += _wrap_line_by_char(line, length=79, indent=21)
+            text += wrap_line_by_char(line, length=79, indent=21)
         else:
-            text += _wrap_line_by_word(line, length=79, indent=21, sep=' ', keep_sep=False)
+            text += wrap_line_by_word(line, length=79, indent=21, sep=' ', keep_sep=False)
         text += '\n'
 
     # Fill in the feature type, e.g. 'CDS'
@@ -186,8 +188,16 @@ def _generic_feature_to_genbank_text(feature):
     return text
 
 
-def _make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
-                 SOURCE, ORGANISM, division='ENV'):
+def make_header(
+        molecule,
+        length,
+        shape,
+        ACCESSION,
+        DEFINITION,
+        KEYWORDS,
+        SOURCE,
+        ORGANISM,
+        division='ENV') -> str:
     """
     Create a header section of a genbank file
 
@@ -215,10 +225,10 @@ def _make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
     SOURCE     = SOURCE.replace('\n', ' ')
 
     # Wrap and then remove the indent of the first line
-    ACCESSION  = _wrap_line_by_word(ACCESSION , length=79, indent=12).lstrip()
-    DEFINITION = _wrap_line_by_word(DEFINITION, length=79, indent=12).lstrip()
-    KEYWORDS   = _wrap_line_by_word(KEYWORDS  , length=79, indent=12).lstrip()
-    SOURCE     = _wrap_line_by_word(SOURCE    , length=79, indent=12).lstrip()
+    ACCESSION  = wrap_line_by_word(ACCESSION, length=79, indent=12).lstrip()
+    DEFINITION = wrap_line_by_word(DEFINITION, length=79, indent=12).lstrip()
+    KEYWORDS   = wrap_line_by_word(KEYWORDS, length=79, indent=12).lstrip()
+    SOURCE     = wrap_line_by_word(SOURCE, length=79, indent=12).lstrip()
 
     # If there are multiple lines in ORGANISM
     if '\n' in ORGANISM:
@@ -229,7 +239,7 @@ def _make_header(molecule, length, shape, ACCESSION, DEFINITION, KEYWORDS,
         ORGANISM = lines[0] + '\n' + ' ' * 12 + ''.join(lines[1:])
 
     header = f"""\
-LOCUS       {ACCESSION}        {length} bp    {molecule}    {shape}   {division} {_today()}
+LOCUS       {ACCESSION}        {length} bp    {molecule}    {shape}   {division} {get_today()}
 DEFINITION  {DEFINITION}
 ACCESSION   {ACCESSION}
 KEYWORDS    {KEYWORDS}
@@ -239,7 +249,7 @@ SOURCE      {SOURCE}
     return header
 
 
-def _init_feature(length, organism, mol_type='genomic DNA'):
+def init_feature(length, organism, mol_type='genomic DNA') -> str:
     """
     Initialize a feature section of genbank file.
     The feature section always start with the mandatory 'source' feature
@@ -261,7 +271,7 @@ FEATURES             Location/Qualifiers
     return text
 
 
-def _translate_feature(feature, sequence):
+def translate_feature(feature, sequence) -> str:
     """
     Args:
         feature: GenericFeature object
@@ -294,7 +304,7 @@ def _translate_feature(feature, sequence):
         return 'M' + translation[1:]  # full protein --> start with 'M'
 
 
-def _format_ref_seq(seq):
+def format_ref_seq(seq) -> str:
     """
     Take a DNA sequence (str) and format it to the ORIGIN section of genbank file.
 
@@ -321,8 +331,15 @@ def _format_ref_seq(seq):
     return 'ORIGIN\n' + '\n'.join(lines) + '\n'
 
 
-def write_genbank(data, file, DEFINITION='.', KEYWORDS='.', SOURCE='.',
-                  ORGANISM='.', genbank_division='ENV'):
+def write_genbank(
+        data,
+        file,
+        DEFINITION='.',
+        KEYWORDS='.',
+        SOURCE='.',
+        ORGANISM='.',
+        genbank_division='ENV',
+        use_locus_text=True):
     """
     Write <data> into a new genbank <file>
 
@@ -353,20 +370,25 @@ def write_genbank(data, file, DEFINITION='.', KEYWORDS='.', SOURCE='.',
         ORGANISM: str
             The "ORGANISM" field in the genbank file
 
-        genbank_division: str,
-            The three-letter tag for one of the 18 divisions in the GenBank database.
+        genbank_division: str
+            The three-letter tag for one of the 18 divisions in the GenBank database
             Default 'ENV' for environmental sampling sequences
+
+        use_locus_text: bool
+            Use the genbank_locus_text from the original input gbk file for the LOCUS section
     """
     if type(data) is dict:
         data = data.values()
 
-    with GenbankWriter(file) as writer:
+    with GenbankTextWriter(file) as writer:
         for chromosome in data:
             sequence = chromosome.sequence
 
             # --- LOCUS text section --- #
-            if chromosome.genbank_LOCUS == '':
-                LOCUS = _make_header(
+            if use_locus_text:
+                locus_text = chromosome.genbank_locus_text
+            else:
+                locus_text = make_header(
                     molecule='DNA',
                     length=len(sequence),
                     shape=['linear', 'circular'][chromosome.circular],
@@ -377,11 +399,9 @@ def write_genbank(data, file, DEFINITION='.', KEYWORDS='.', SOURCE='.',
                     ORGANISM=ORGANISM,
                     division=genbank_division
                 )
-            else:
-                LOCUS = chromosome.genbank_LOCUS
 
             # --- FEATURES text section --- #
-            FEATURES = _init_feature(
+            features_text = init_feature(
                 length=len(sequence),
                 organism=ORGANISM.split('\n')[0]
             )
@@ -394,28 +414,36 @@ def write_genbank(data, file, DEFINITION='.', KEYWORDS='.', SOURCE='.',
                 # For CDS, make 'translation', 'codon_start' if absent
                 if f.type == 'CDS':
                     if f.get_attribute('translation') is None:
-                        aa = _translate_feature(feature=f, sequence=sequence)
+                        aa = translate_feature(feature=f, sequence=sequence)
                         f.add_attribute('translation', aa)
                     if f.get_attribute('codon_start') is None:
                         f.set_attribute('codon_start', f.frame)
 
-                FEATURES += _generic_feature_to_genbank_text(feature=f)
+                features_text += generic_feature_to_genbank_text(feature=f)
 
             # --- ORIGIN text sections --- #
-            ORIGIN = _format_ref_seq(sequence)
+            origin_text = format_ref_seq(sequence)
 
             # --- Write into file --- #
             writer.write(
-                GenbankItem(
-                    LOCUS=LOCUS,
-                    FEATURES=FEATURES,
-                    ORIGIN=ORIGIN
+                GenbankText(
+                    locus_text=locus_text,
+                    features_text=features_text,
+                    origin_text=origin_text
                 )
             )
 
 
-def make_genbank(fasta, gtf, output, shape='linear', DEFINITION='.',
-                 KEYWORDS='.', SOURCE='.', ORGANISM='.', genbank_division='ENV'):
+def make_genbank(
+        fasta,
+        gtf,
+        output,
+        shape='linear',
+        DEFINITION='.',
+        KEYWORDS='.',
+        SOURCE='.',
+        ORGANISM='.',
+        genbank_division='ENV'):
     """
     Merge a fasta file and a GTF file into a genbank file, in which
         the fasta file provides the genome sequence and

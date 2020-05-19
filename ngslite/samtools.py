@@ -1,38 +1,39 @@
-from .lowlevel import _call, printf
+from typing import List, Union, Optional, Tuple, Dict
+from .lowlevel import call, printf
 from .file_conversion import sam_to_bam
 
 
-def sort_bam(file, keep=False):
+def sort_bam(file: str, keep: bool = False):
     """
     Args:
-        file: str, path-like
+        file: path-like
 
-        keep: bool
+        keep:
             Keep the input file or not
     """
     file_out = f"{file[:-4]}_sorted.{file[-3:]}"
-    _call(f"samtools sort {file} > {file_out}")
+    call(f"samtools sort {file} > {file_out}")
     if not keep:
-        _call(f"rm {file}")
-        _call(f"mv {file_out} {file}")
+        call(f"rm {file}")
+        call(f"mv {file_out} {file}")
 
 
-def index_bam(file):
+def index_bam(file: str):
     """
     Args:
-        file: str, path-like
+        file: path-like
     """
     cmd = f"samtools index {file}"
-    _call(cmd)
+    call(cmd)
 
 
-def sam_to_indexed_bam(file, keep=True):
+def sam_to_indexed_bam(file: str, keep: bool = True):
     """
     Args:
-        file: str, path-like
+        file: path-like
             The input sam file
 
-        keep: bool
+        keep:
             Keep the input file or not
     """
     sam_to_bam(file, keep=keep)
@@ -41,22 +42,26 @@ def sam_to_indexed_bam(file, keep=True):
     index_bam(bam)
 
 
-def subset_bam_regions(file, regions, output=None, keep=True):
+def subset_bam_regions(
+        file: str,
+        regions: List[str],
+        output: Optional[str] = None,
+        keep: bool = True):
     """
     Args:
-        file: str, path-like
+        file: path-like
             The input bam file
 
-        regions: list of str
+        regions:
             Each str is a region of the reference genome, e.g.
                 chr1            chromosome 1
                 chr3:1000-2000  chromosome 3 from 1000th (inclusive) to 2000th (inclusive) base
 
-        output: str, path-like
+        output: path-like
             The output bam file
             If None, add subscript '_subset' to the input bam file
 
-        keep: bool
+        keep:
             If False, delete the input <file> and rename the output as the input <file>
             Overrides the <output> file name
     """
@@ -69,23 +74,23 @@ def subset_bam_regions(file, regions, output=None, keep=True):
 
     # -b: output is a bam
     # -h: include header section
-    _call(f"samtools view -b -h {file}{regions} > {output}")
+    call(f"samtools view -b -h {file}{regions} > {output}")
 
     if not keep:
-        _call(f"rm {file}")
-        _call(f"mv {output} {file}")
+        call(f"rm {file}")
+        call(f"mv {output} {file}")
 
 
-def remove_unmapped(file, keep=True):
+def remove_unmapped(file: str, keep: bool = True):
     """
     Remove unmapped reads from an input SAM/BAM file
         by using the option '-F 4' of 'samtools view' command
 
     Args:
-        file: str, path-like
+        file: path-like
             The input sam/bam file
 
-        keep: bool
+        keep:
             Keep the input file or not
     """
     b = ['', '-b '][file.endswith('.bam')]  # Output file is bam or not
@@ -94,23 +99,23 @@ def remove_unmapped(file, keep=True):
     # -b: output is a bam
     # -h: include header section
     # -F 4: NOT including the flag 'read unmapped'
-    _call(f"samtools view -h -F 4 {b}{file} > {file_out}")
+    call(f"samtools view -h -F 4 {b}{file} > {file_out}")
 
     if not keep:
-        _call(f"rm {file}")
-        _call(f"mv {file_out} {file}")
+        call(f"rm {file}")
+        call(f"mv {file_out} {file}")
 
 
 class SamParser:
     """
     A SAM file parser
     """
-    def __init__(self, file):
+    def __init__(self, file: str):
         """
         The header section is parsed upon instantiation.
 
         Args:
-            file: str, path-like object
+            file: path-like
         """
         self.__sam = open(file, 'r')
         header = ''
@@ -150,7 +155,7 @@ class SamParser:
         else:  # r is None
             raise StopIteration
 
-    def next(self):
+    def next(self) -> Optional[Tuple[Union[str, int]]]:
         """
         Each line of the SAM file has at least 11 fields
 
@@ -168,13 +173,13 @@ class SamParser:
         10  11  QUAL    String  ASCII of Phred-scaled base QUALity+33
         11  12  optional fields...
 
-        Returns: tuple of str or int
+        Returns:
             The length of tuple might be > 11,
               depending of the presence of additional optional fields
         """
         line = self.__sam.readline().rstrip()
         if line:
-            fields = line.split('\t')
+            fields: List[Union[str, int]] = line.split('\t')
             for i in (1, 3, 4, 7, 8):
                 fields[i] = int(fields[i])
             return tuple(fields)
@@ -186,17 +191,18 @@ class SamParser:
 
 
 class SamWriter:
-    def __init__(self, file, header, mode='w'):
+    def __init__(self, file: str, header: str, mode: str = 'w'):
         """
         The header section should be written in upon instantiation.
 
         Args:
-            file: str, path-like object
+            file: path-like
 
-            header: str
+            header:
                 The header section
 
-            mode: str, 'w' or 'a'
+            mode:
+                The file mode: 'w' or 'a'
         """
         self.__sam = open(file, mode)
         if not header == '':
@@ -209,10 +215,10 @@ class SamWriter:
         self.close()
         return
 
-    def write(self, read):
+    def write(self, read: Tuple[Union[str, int]]):
         """
         Args:
-            read: tuple of str or int
+            read:
                 Containing 11 (at least) fields of a line of SAM file
         """
         self.__sam.write('\t'.join(map(str, read)) + '\n')
@@ -237,7 +243,7 @@ FLAGS_PROPERTIES = (
 )
 
 
-def decode_flag(flag, return_tuple=False):
+def decode_flag(flag: Union[int, str], return_tuple: bool = False):
     """
     The flag in SAM files is a decimal integer of 12 bits for 12 properties.
     The range of the integer is 0 - 4095 (2^12 -1)
@@ -259,10 +265,10 @@ def decode_flag(flag, return_tuple=False):
     supplementary alignment
 
     Args:
-        flag: int or str
+        flag:
             decimal flag, ranging from 0 - 4095
 
-        return_tuple: bool
+        return_tuple:
             If True, returns a tuple of True/False, to speed up the function
 
     Returns:
@@ -282,12 +288,12 @@ def decode_flag(flag, return_tuple=False):
     return {key: val for key, val in zip(FLAGS_PROPERTIES, bin_tuple)}
 
 
-def encode_flag(flag_dict, return_str=False):
+def encode_flag(flag_dict: Dict[str, bool], return_str: bool = False):
     """
     Encode a dictionary of flags into an int, which represents the 12-bit binary string
 
     Args:
-        flag_dict: dict
+        flag_dict:
             For example:
 
             {'first in pair': True,
@@ -315,16 +321,19 @@ def encode_flag(flag_dict, return_str=False):
     return int(bits, 2)  # Binary string -> int
 
 
-def filter_sam_by_flag(file_in, file_out, flag_sets):
+def filter_sam_by_flag(
+        file_in: str,
+        file_out: str,
+        flag_sets: List[Dict[str, bool]]):
     """
     Args:
-        file_in: str, path-like object
+        file_in: path-like
             The input SAM file
 
-        file_out: str, path-like object
+        file_out: path-like
             The output SAM file
 
-        flag_sets: list of dictionary
+        flag_sets:
             Each dictionary is a set of flags that have to be completely satisfied.
             There could be more than one set of flags, therefore many dictionaries.
             If a read satisfies any one of the dictionary, then it is included, so other
@@ -347,7 +356,7 @@ def filter_sam_by_flag(file_in, file_out, flag_sets):
             These two sets of flags indicate the DNA insert is from the forward strand.
     """
     parser = SamParser(file_in)
-    writer = SamWriter(file_out, header=parser.get_header())
+    writer = SamWriter(file_out, header=parser.header)
 
     for A in parser:
         decoded_flag = decode_flag(A[1])  # FLAG is the second field of each line
@@ -374,7 +383,7 @@ def filter_sam_by_flag(file_in, file_out, flag_sets):
     writer.close()
 
 
-def print_flag(flag=None):
+def print_flag(flag: Optional[Union[int, Dict[str, bool]]] = None):
     """
     Decode (int -> dict) or encode (dict -> int) a flag and then print it
 
@@ -405,12 +414,12 @@ def print_flag(flag=None):
     printf(t)
 
 
-def print_sam(read=None):
+def print_sam(read: Tuple[Union[str, int]] = None):
     """
     Pretty print a read (tuple) from sam file
 
     Args:
-        read: tuple or list of str or int
+        read:
             Containing (at least) 11 fields of a read from sam file
     """
     if read is None:

@@ -55,7 +55,7 @@ class TestFeatureArray(unittest.TestCase):
             self.feature_list.append(f)
 
         self.feature_array = FeatureArray(
-            seqname='seqname', genome_size='100',
+            seqname='seqname', genome_size=100,
             features=self.feature_list, circular=True
         )
 
@@ -75,23 +75,23 @@ class TestFeatureArray(unittest.TestCase):
 
     def test___add__(self):
         new_feature = GenericFeature(
-                seqname='seqname', type_='CDS',
-                start=11, end=15, strand='+',
-            )
+            seqname='seqname', type_='CDS',
+            start=11, end=15, strand='+',
+        )
 
         new_array = FeatureArray(
-            seqname='seqname',
-            genome_size='100',
-            features=[new_feature],
-            circular=True
+            seqname='seqname', genome_size=100,
+            features=[new_feature], circular=True
         )
 
         new_array = self.feature_array + new_array
 
         self.assertNotEqual(id(new_array), id(self.feature_array))
-        for i in range(5):
-            self.assertEqual(id(new_array[i]), id(self.feature_array[i]))
-        self.assertEqual(id(new_array[5]), id(new_feature))
+        self.assertEqual(id(new_array[0]), id(self.feature_array[0]))
+        self.assertEqual(id(new_array[2]), id(self.feature_array[1]))
+        self.assertEqual(id(new_array[3]), id(self.feature_array[2]))
+        self.assertEqual(id(new_array[4]), id(self.feature_array[3]))
+        self.assertEqual(id(new_array[5]), id(self.feature_array[4]))
 
     def test_sort(self):
         pass

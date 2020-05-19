@@ -1,9 +1,10 @@
-from .fasta import FastaParser, FastaWriter, read_fasta
+from typing import Optional
+from .lowlevel import call, gzip, printf
 from .dnatools import translate, rev_comp
-from .lowlevel import _call, _gzip, printf
+from .fasta import FastaParser, FastaWriter, read_fasta
 
 
-def _is_dna(fasta):
+def _is_dna(fasta: str) -> bool:
     """
     Returns 'True' if the first sequence of the <fasta> file is a DNA
     """
@@ -16,20 +17,24 @@ def _is_dna(fasta):
     return is_dna
 
 
-def _translate_dna_database(fasta):
+def _translate_dna_database(fasta: str) -> str:
     """
     Translate the input fasta file in six frames
     Append ';frame=<frame>' in the header line
     Write a new '<fasta>_translated.fa' file
 
     Args:
-        fasta: str, path-like
+        fasta: path-like
 
-    Returns: str,
+    Returns:
         The written fasta name '<fasta>_translated.fa'
     """
-    if fasta.endswith('.fa'): output = fasta[:-3] + '_translated.fa'
-    elif fasta.endswith('.fasta'): output = fasta[:-6] + '_translated.fa'
+    if fasta.endswith('.fa'):
+        output = fasta[:-3] + '_translated.fa'
+    elif fasta.endswith('.fasta'):
+        output = fasta[:-6] + '_translated.fa'
+    else:
+        output = fasta + '_translated.fa'
 
     with FastaParser(fasta) as parser:
         with FastaWriter(output, 'w') as writer:
@@ -48,14 +53,9 @@ def _translate_dna_database(fasta):
     return output
 
 
-def _check_fasta_header(fasta):
+def _check_fasta_header(fasta: str) -> bool:
     """
     Fasta headers should NOT contain ' '. This function checks if it's correct
-
-    Args:
-        fasta: str, path-like
-
-    Returns: bool
     """
     is_correct = True
     with FastaParser(fasta) as parser:
@@ -66,33 +66,33 @@ def _check_fasta_header(fasta):
     return is_correct
 
 
-def hmmsearch(hmm, database, output, cpu=2):
+def hmmsearch(hmm: str, database: str, output: str, cpu: int = 2):
     """
     Args:
-        hmm: str, path-like
+        hmm: path-like
             The .hmm file built by the command "hmmbuild",
                 e.g. "hmmbuild -o Pfam-A_summary.txt Pfam-A.hmm Pfam-A.seed"
             Also accepts .gz format
 
-        database: str, path-like
+        database: path-like
             The fasta database to be searched against
             Also accepts .gz format
 
-        output: str, path-like
+        output: path-like
             The output text file reported by the command "hmmsearch"
 
-        cpu: int,
+        cpu:
             Number of CPUs, 2 is the default in hmmsearch
     """
     db_is_gz = False
     if database.endswith('.gz'):
-        _gzip(database, keep=True)
+        gzip(database, keep=True)
         database = database[:-len('.gz')]
         db_is_gz = True
 
     hmm_is_gz = False
     if hmm.endswith('.gz'):
-        _gzip(hmm, keep=True)
+        gzip(hmm, keep=True)
         hmm = hmm[:-len('.gz')]
         hmm_is_gz = True
 
@@ -106,31 +106,32 @@ def hmmsearch(hmm, database, output, cpu=2):
         return
 
     # Run hmmsearch
-    _call(f"hmmsearch --cpu {cpu} {hmm} {database} > {output}")
+    call(f"hmmsearch --cpu {cpu} {hmm} {database} > {output}")
 
     if db_is_gz or db_is_dna:
-        _call(f"rm {database}")
+        call(f"rm {database}")
     if hmm_is_gz:
-        _call(f"rm {hmm}")
+        call(f"rm {hmm}")
 
 
-def hmmbuild(seed, hmm):
+def hmmbuild(seed: str, hmm: str):
     """
     Args:
-        seed: str, path-like
+        seed: path-like
             The input .seed file
 
-        hmm: str, path-like
+        hmm: path-like
             The output .hmm file
     """
     if not hmm.endswith('.hmm'):
         hmm = hmm + '.hmm'
     summary = hmm[:-len('.hmm')] + '_summary.txt'
 
-    _call(f"hmmbuild -o {summary} {hmm} {seed}")
+    call(f"hmmbuild -o {summary} {hmm} {seed}")
 
 
-def parse_hmmsearch_result(file, output, database=None):
+def parse_hmmsearch_result(
+        file: str, output: str, database: Optional[str] = None):
     """
     Parse the result reported by HMMER, to create a GTF file
 
@@ -158,13 +159,13 @@ def parse_hmmsearch_result(file, output, database=None):
                 9   attribute   name "<query_name>";accession "<query_accession>";description "<query_description>";E_value "<E_value>"
 
     Args:
-        file: str, path-like
+        file: path-like
             The text file reported by "hmmsearch"
 
-        output: str, path-like
+        output: path-like
             The output GTF file
 
-        database: str, path-like
+        database: path-like
             The fasta database used for hmmsearch
             This is used to get the contig length
             If None, then use the contig name in the input <file> to get contig length
@@ -286,7 +287,8 @@ def parse_hmmsearch_result(file, output, database=None):
     printf('There are totally {} hits exported into the GTF file "{}".'.format(gtf_line_count, output))
 
 
-def validate_hmm_parse_result(gtf, dna_database, output):
+def validate_hmm_parse_result(
+        gtf: str, dna_database: str, output: str):
     """
     Parsing the HMMER result was very complicated
     In particular, the amino acid positions were converted back to the nucleotide positions
@@ -302,13 +304,13 @@ def validate_hmm_parse_result(gtf, dna_database, output):
     I went into the HMMER result file and found there was indeed stop codon within the predicted domain
 
     Args:
-        gtf: str, path-like
+        gtf: path-like
             The GTF file exported by parse_hmmsearch_result()
 
-        dna_database: str, path-like
+        dna_database: path-like
             The original DNA database (fasta) used from hmmsearch
 
-        output: str, path-like
+        output: path-like
             The output text file summarizing the validation result
     """
     contigs = read_fasta(dna_database)

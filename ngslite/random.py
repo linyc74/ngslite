@@ -1,19 +1,20 @@
 import os
 import random
-from .lowlevel import _call, _gzip
+from .lowlevel import call, gzip
 
 
-def _sample_fq(file, fraction, output):
+def _sample_fq(file: str, fraction: float, output: str):
     """
     Randomly subsample the input fastq file
 
     Args:
-        file: str, path-like
+        file: path-like
             The input fastq file
 
-        fraction: float, fraction of reads or sequences to be retrieved
+        fraction:
+            Fraction of reads or sequences to be retrieved
 
-        output: str, path-like
+        output: path-like
             The output file name
     """
     fh_in = open(file, 'r')
@@ -56,17 +57,18 @@ def _sample_fq(file, fraction, output):
     fh_out.close()
 
 
-def _sample_fa(file, fraction, output):
+def _sample_fa(file: str, fraction: float, output: str):
     """
     Randomly subsample the input fasta file
 
     Args:
-        file: str, path-like
+        file: path-like
             The input fasta file
 
-        fraction: float, fraction of reads or sequences to be retrieved
+        fraction:
+            Fraction of reads or sequences to be retrieved
 
-        output: str, path-like
+        output: path-like
             The output file name
     """
     fh_in = open(file, 'r')
@@ -125,23 +127,29 @@ def _sample_fa(file, fraction, output):
     fh_out.close()
 
 
-def _sample_fq_pair(file1, file2, fraction, output1, output2):
+def _sample_fq_pair(
+        file1: str,
+        file2: str,
+        fraction: float,
+        output1: str,
+        output2: str):
     """
     Randomly subsample the input fastq file pair
 
     Args:
-        file1: str, path-like
+        file1: path-like
             The input fastq file 1
 
-        file2: str, path-like
+        file2: path-like
             The input fastq file 2
 
-        fraction: float, fraction of reads or sequences to be retrieved
+        fraction:
+            Fraction of reads or sequences to be retrieved
 
-        output1: str, path-like
+        output1: path-like
             The output fastq file 1
 
-        output2: str, path-like
+        output2: path-like
             The output fastq file 2
     """
 
@@ -192,17 +200,18 @@ def _sample_fq_pair(file1, file2, fraction, output1, output2):
     fh_out2.close()
 
 
-def _sample_sam(file, fraction, output):
+def _sample_sam(file: str, fraction: float, output: str):
     """
     Randomly subsample the input SAM or BAM file
 
     Args:
-        file: str, path-like
+        file: path-like
             The input SAM or BAM file
 
-        fraction: float, fraction of reads or sequences to be retrieved
+        fraction:
+            Fraction of reads or sequences to be retrieved
 
-        output: str, path-like
+        output: path-like
             The output file name
     """
     # The output file format (SAM or BAM) depends on the input format
@@ -211,10 +220,15 @@ def _sample_sam(file, fraction, output):
     else:  # file ends with '.sam' or others
         output_bam = ''
 
-    _call(f"samtools view -s {fraction} {output_bam}{file} > {output}")
+    call(f"samtools view -s {fraction} {output_bam}{file} > {output}")
 
 
-def random_sample(file, fraction, file2='', output='', output2=''):
+def random_sample(
+        file: str,
+        fraction: float,
+        file2: str = '',
+        output: str = '',
+        output2: str = ''):
     """
     Randomly subsample the reads in the input <file>, and write them into the <output> file
 
@@ -229,33 +243,33 @@ def random_sample(file, fraction, file2='', output='', output2=''):
     Supports compressed input files (automatically detects .gz file name)
 
     Args:
-        file: str, path-like
+        file: path-like
             The input file (fastq, fasta, sam, bam)
 
-        fraction: float
+        fraction:
             Fraction of reads or sequences to be randomly sampled
 
-        file2: str, path-like
+        file2: path-like
             The filename of the second fastq file for paired-end
 
-        output: str, path-like
+        output: path-like
             The output file name
             If '', then add the input <file> with prefix 'subset_' as the <output> file name
 
-        output2: str, path-like
+        output2: path-like
             The output file name for <file2> of paired-end fastq
             If '', then add the input <file2> with prefix 'subset_' as the <output2> file name
     """
     # Unzip the input file if endswith '.gz'
     if file.endswith('.gz'):
-        _gzip(file, keep=True)
+        gzip(file, keep=True)
         file = file[:-3]  # Remove '.gz' suffix
         is_gz = True
     else:
         is_gz = False
 
     if file2.endswith('.gz'):
-        _gzip(file2, keep=True)
+        gzip(file2, keep=True)
         file2 = file2[:-3]  # Remove '.gz' suffix
         is_gz2 = True
     else:

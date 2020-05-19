@@ -1,15 +1,12 @@
+from typing import List
 from .gtftools import read_gtf, write_gtf
-from .dataclass import FeatureArray
+from .dataclass import FeatureArray, GenericFeature
 
 
-def _pfam_in_orf(pfam, orf):
+def _pfam_in_orf(
+        pfam: GenericFeature, orf: GenericFeature) -> bool:
     """
-    Args:
-        pfam: GenericFeature object
-
-        orf: GenericFeature object
-
-    Returns: bool
+    Returns:
         Whether the pfam domain is part of the orf
     """
     return pfam.start >= orf.start and \
@@ -18,16 +15,11 @@ def _pfam_in_orf(pfam, orf):
         (pfam.start - orf.start) % 3 == 0  # in-frame
 
 
-def _merge_pfam_arr_to_orf_arr(pfam_arr, orf_arr):
+def _merge_pfam_arr_to_orf_arr(
+        pfam_arr: FeatureArray,
+        orf_arr: FeatureArray) -> List[GenericFeature]:
     """
-    Args:
-        pfam_arr: list of GenericFeature
-            Each GenericFeature is a Pfam domain
-
-        orf_arr: list of GenericFeature
-            Each GenericFeature is an ORF
-
-    Returns: list of GenericFeature
+    Returns:
         Each GenericFeature is an ORF with Pfam information appended
     """
     merge_arr = []
@@ -67,16 +59,16 @@ def _merge_pfam_arr_to_orf_arr(pfam_arr, orf_arr):
     return merge_arr
 
 
-def merge_pfam_into_orf(pfam, orf, output):
+def merge_pfam_into_orf(pfam: str, orf: str, output: str):
     """
     Args:
-        pfam: str, path-like
+        pfam: path-like
             The input GTF containing Pfam annotation
 
-        orf: str, path-like
+        orf: path-like
             The input GTF containing ORFs
 
-        output: str, path-like
+        output: path-like
             The output GTF in which Pfam is merged into ORFs
     """
     pfam_dict = read_gtf(file=pfam, as_dict=True)
@@ -87,19 +79,17 @@ def merge_pfam_into_orf(pfam, orf, output):
     for seqname in orf_dict.keys():
 
         orf_arr = FeatureArray(
-            seqname,
-            genome_size=1e6,
+            seqname=seqname,
+            genome_size=int(1e6),
             features=orf_dict[seqname],
-            circular=False
-        )
+            circular=False)
         orf_arr.sort()
 
         pfam_arr = FeatureArray(
-            seqname,
-            genome_size=1e6,
+            seqname=seqname,
+            genome_size=int(1e6),
             features=pfam_dict.get(seqname, []),
-            circular=False
-        )
+            circular=False)
         pfam_arr.sort()
 
         merge_dict[seqname] = _merge_pfam_arr_to_orf_arr(pfam_arr, orf_arr)
