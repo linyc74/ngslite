@@ -11,6 +11,8 @@
 
 Read fasta files:
 
+    from ngslite import FastaParser, read_fasta
+
     with FastaParser('file.fa') as parser:
         for header, sequence in parser:
             print(header, sequence)
@@ -21,12 +23,16 @@ Read fasta files:
 
 Write fasta files:
 
+    from ngslite import FastaWriter
+
     with FastaWriter('file.fa') as writer:
         writer.write(header, sequence)
 
 ### GFF
 
 Read GFF files:
+
+    from ngslite import GffParser
 
     with GffParser('file.gff') as parser:
        for feature in parser:
@@ -36,6 +42,8 @@ Read GFF files:
                  feature.attributes)
 
 Write GFF files:
+
+    from ngslite import GffFeature, GffWriter
 
     feature = GffFeature(
         seqid='chr1',
@@ -56,7 +64,13 @@ Write GFF files:
 
 Read Genbank files:
 
-    with ...
+    from ngslite import read_genbank
+
+    chromosomes = read_genbank('file.gbk')
+    for chromosome in chromosomes:
+        print(chromosome.seqname)
+        for feature in chromosome.features:
+            print(feature) 
     
 Write Genbank files:
 
