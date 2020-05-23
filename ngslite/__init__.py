@@ -6,7 +6,7 @@ Python functions for manipulating NGS and genomics data
 """
 
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 
 from .cmd_toolkit import bedtools_multicov, bowtie2_mapping, bwa_mapping, \

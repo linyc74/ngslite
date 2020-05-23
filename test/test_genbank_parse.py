@@ -118,6 +118,13 @@ feature_text_2 = '''\
 '''
 
 
+feature_text_3 = '''\
+     gene            complement(join(<4335793,1..188))
+                     /locus_tag="IX87_RS00005"
+                     /pseudo
+'''
+
+
 origin_text = '''\
 ORIGIN      
         1 tgaatggttc attatctaaa aacttgttag caaccttaga tcaggttgaa gctgaggata
@@ -170,6 +177,15 @@ class TestGenbankParse(unittest.TestCase):
         self.assertEqual((488000, 489000, '-'), regions[2])
         self.assertTrue(partial_start)
         self.assertTrue(partial_end)
+
+        start, end, strand, regions, partial_start, partial_end = get_feature_location(feature_text_3)
+        self.assertEqual(4335793, start)
+        self.assertEqual(188, end)
+        self.assertEqual('-', strand)
+        self.assertEqual((4335793, 4335793, '-'), regions[0])
+        self.assertEqual((1, 188, '-'), regions[1])
+        self.assertTrue(partial_start)
+        self.assertFalse(partial_end)
 
     def test_get_feature_attributes(self):
         attr = get_feature_attributes(feature_text_2)

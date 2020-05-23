@@ -184,13 +184,16 @@ def get_feature_location(feature_text: str) -> Tuple[int, int, str, List, bool, 
 
         # First start has '<' --> partial start
         if i == 0 and a.startswith('<'):
-            a = a[1:]
             partial_start = True
 
         # Last end has '>' --> partial end
         if i == len(loclist) - 1 and b.startswith('>'):
-            b = b[1:]
             partial_end = True
+
+        if a.startswith('<') or a.startswith('>'):
+            a = a[1:]
+        if b.startswith('<') or b.startswith('>'):
+            b = b[1:]
 
         a, b = int(a), int(b)
 
@@ -199,7 +202,6 @@ def get_feature_location(feature_text: str) -> Tuple[int, int, str, List, bool, 
 
         regions.append((a, b, c))
 
-    regions = sorted(regions, key=lambda x: x[0])
     start, end, strand = regions[0][0], regions[-1][1], regions[0][2]
 
     return start, end, strand, regions, partial_start, partial_end
