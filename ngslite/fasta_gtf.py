@@ -50,7 +50,7 @@ def read_fasta_gtf(
 
             features = FeatureArray(
                 seqname=seqname,
-                genome_size=len(sequence),
+                chromosome_size=len(sequence),
                 features=gtf_features,
                 circular=circular)
 

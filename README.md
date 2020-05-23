@@ -5,19 +5,35 @@
 
     pip install ngslite
 
-## Handling common files
+## Common tools
+
+Common wrapper functions for command-line tools
+
+    import ngslite as ngs
+
+    ngs.sort_bam('path/to/sam')
+    
+    ngs.index_bam('path/to/bam')
+
+    ngs.sam_to_indexed_bam('path/to/sam')
+
+## Handling files
 
 ### Fasta
 
 Read fasta files:
 
-    from ngslite import FastaParser, read_fasta
+    from ngslite import FastaParser
 
     with FastaParser('file.fa') as parser:
         for header, sequence in parser:
             print(header, sequence)
 
-    fasta_data = read_fasta('file.fa')  # Read the whole fasta file at once
+Read the whole fasta file at once
+
+    from ngslite import read_fasta
+    
+    fasta_data = read_fasta('file.fa')
     header, sequence = fasta_data[0]
     print(header, sequence)
 
@@ -70,14 +86,4 @@ Read Genbank files:
     for chromosome in chromosomes:
         print(chromosome.seqname)
         for feature in chromosome.features:
-            print(feature) 
-    
-Write Genbank files:
-
-    with ...
-
-### SAM
-
-Read SAM files:
-
-    with ...
+            print(feature)

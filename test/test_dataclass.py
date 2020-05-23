@@ -6,16 +6,30 @@ class TestGenericFeature(unittest.TestCase):
 
     def setUp(self):
         self.feature = GenericFeature(
-            seqname='seqname', type_='DNA',
-            start=1, end=1000, strand='+',
+            seqname='seqname',
+            type_='DNA',
+            start=1,
+            end=1000,
+            strand='+',
             attributes=[('key_1', 'val_1'), ('key_2', 'val_2.0'), ('key_2', 'val_2.1')],
             tags=None,
             regions=[(1, 100, '+'), (200, 300, '+'), (900, 1000, '+')],
-            frame=2, partial_start=True, partial_end=False
-        )
+            frame=2,
+            partial_start=True,
+            partial_end=False)
 
     def test___len__(self):
-        self.assertEqual(len(self.feature), 1000)
+        self.assertEqual(1000, len(self.feature))
+
+        feature = GenericFeature(
+            seqname='seqname',
+            type_='DNA',
+            start=999,
+            end=10,
+            strand='+',
+            chromosome_size=1000)
+
+        self.assertEqual(12, len(feature))
 
     def test_get_attribute(self):
         self.assertEqual(self.feature.get_attribute('key_1'), 'val_1')
@@ -55,7 +69,7 @@ class TestFeatureArray(unittest.TestCase):
             self.feature_list.append(f)
 
         self.feature_array = FeatureArray(
-            seqname='seqname', genome_size=100,
+            seqname='seqname', chromosome_size=100,
             features=self.feature_list, circular=True
         )
 
@@ -80,7 +94,7 @@ class TestFeatureArray(unittest.TestCase):
         )
 
         new_array = FeatureArray(
-            seqname='seqname', genome_size=100,
+            seqname='seqname', chromosome_size=100,
             features=[new_feature], circular=True
         )
 

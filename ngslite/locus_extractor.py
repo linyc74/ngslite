@@ -69,7 +69,7 @@ def locus_extractor(fasta, gtf, keywords, flank, fasta_out, gtf_out):
         gtf_features = gtf_dict.get(seqname, [])
         if len(gtf_features) == 0: continue  # no annotation, skip this contig
 
-        feature_array = FeatureArray(seqname=seqname, genome_size=len(sequence), features=gtf_features, circular=False)
+        feature_array = FeatureArray(seqname=seqname, chromosome_size=len(sequence), features=gtf_features, circular=False)
 
         seed = _find_feature(feature_array, keywords)
         if seed is None: continue  # seed not found, skip this contig
@@ -122,10 +122,10 @@ def genbank_locus_extractor(genbank, keywords, flank, output):
     # Iterate through each contig
     for chromosome in read_genbank(genbank):  # read_genbank() -> list of Chromosome objects
         seqname = chromosome.seqname
-        feature_array = chromosome.feature_array
+        features = chromosome.features
         sequence = chromosome.sequence
 
-        seed = _find_feature(feature_array, keywords)
+        seed = _find_feature(features, keywords)
         if seed is None:
             continue  # seed not found, skip this chromosome
 
@@ -142,18 +142,18 @@ def genbank_locus_extractor(genbank, keywords, flank, output):
         sequence = sequence[region_start-1: region_end]
 
         # Crop features from the feature array
-        feature_array.crop(region_start, region_end)
+        features.crop(region_start, region_end)
 
         # Reverse sequence and features if seed is on the reverse strand
         if seed.strand == '-':
             sequence = rev_comp(sequence)
-            feature_array.reverse()
+            features.reverse()
 
         loci.append(
             Chromosome(
                 seqname=seqname,
                 sequence=sequence,
-                feature_array=feature_array,
+                features=features,
                 circular=False  # Must be linear molecule after locus extraction
             )
         )

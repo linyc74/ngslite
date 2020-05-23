@@ -10,7 +10,8 @@ from .feature_conversion import generic_to_gtf_feature, generic_to_gff_feature
 GenbankText = namedtuple('GenbankText', 'locus_text features_text origin_text')
 
 
-def get_seqname(locus_text: str) -> str:
+def get_seqname(
+        locus_text: str) -> str:
     """
     Args:
         locus_text:
@@ -23,7 +24,8 @@ def get_seqname(locus_text: str) -> str:
     return line1[len('LOCUS'):].lstrip().split(' '*3)[0]
 
 
-def get_circular(locus_text: str) -> bool:
+def get_circular(
+        locus_text: str) -> bool:
     """
     Args:
         locus_text:
@@ -34,7 +36,8 @@ def get_circular(locus_text: str) -> bool:
     return False
 
 
-def split_features_text(features_text: str) -> List[str]:
+def split_features_text(
+        features_text: str) -> List[str]:
     """
     Args:
         features_text:
@@ -76,7 +79,8 @@ def split_features_text(features_text: str) -> List[str]:
     return list_
 
 
-def get_feature_type(feature_text: str) -> str:
+def get_feature_type(
+        feature_text: str) -> str:
     """
     Args:
         feature_text: endswith '\n'
@@ -93,7 +97,8 @@ def get_feature_type(feature_text: str) -> str:
     return line1.strip().split()[0]
 
 
-def get_location_string(feature_text: str) -> str:
+def get_location_string(
+        feature_text: str) -> str:
     """
     Args:
         feature_text: endswith '\n'
@@ -121,7 +126,8 @@ def get_location_string(feature_text: str) -> str:
     return ret
 
 
-def get_feature_location(feature_text: str) -> Tuple[int, int, str, List, bool, bool]:
+def get_feature_location(
+        feature_text: str) -> Tuple[int, int, str, List, bool, bool]:
     """
     Args:
         feature_text: endswith '\n'
@@ -207,7 +213,8 @@ def get_feature_location(feature_text: str) -> Tuple[int, int, str, List, bool, 
     return start, end, strand, regions, partial_start, partial_end
 
 
-def get_feature_attributes(feature_text: str) -> List[Tuple[str, str]]:
+def get_feature_attributes(
+        feature_text: str) -> List[Tuple[str, str]]:
     """
     Args:
         feature_text: endswith '\n'
@@ -268,7 +275,10 @@ def get_feature_attributes(feature_text: str) -> List[Tuple[str, str]]:
     return attr_list
 
 
-def construct_generic_feature(feature_text: str, seqname: str) -> GenericFeature:
+def construct_generic_feature(
+        feature_text: str,
+        seqname: str,
+        chromosome_size: int) -> GenericFeature:
     """
     Construct a GenericFeature object from a single feature text
     Introns (joined regions) are supported
@@ -281,7 +291,8 @@ def construct_generic_feature(feature_text: str, seqname: str) -> GenericFeature
             '                     /locus_tag="T4p001"
             '                     /db_xref="GeneID:1258593"
 
-        seqname: str
+        seqname
+        chromosome_size
     """
 
     start, end, strand, regions, partial_start, partial_end = get_feature_location(feature_text)
@@ -296,12 +307,15 @@ def construct_generic_feature(feature_text: str, seqname: str) -> GenericFeature
         frame=1,
         attributes=get_feature_attributes(feature_text),
         partial_start=partial_start,
-        partial_end=partial_end
-    )
+        partial_end=partial_end,
+        chromosome_size=chromosome_size)
 
 
 def contruct_feature_array(
-        features_text: str, seqname: str, genome_size: int, circular: bool) -> FeatureArray:
+        features_text: str,
+        seqname: str,
+        chromosome_size: int,
+        circular: bool) -> FeatureArray:
     """
     Construct a FeatureArray from the complete FEATURES section of genbank file
 
@@ -320,26 +334,29 @@ def contruct_feature_array(
             '                     /locus_tag="T4p001"
             '                     /db_xref="GeneID:1258593"
 
-        seqname: str
-
-        genome_size: int
-
-        circular: bool
+        seqname
+        chromosome_size
+        circular
     """
     features = []
 
     for feature_text in split_features_text(features_text):
 
-        features.append(
-            construct_generic_feature(feature_text, seqname)
-        )
+        f = construct_generic_feature(
+            feature_text=feature_text,
+            seqname=seqname,
+            chromosome_size=chromosome_size)
+        features.append(f)
 
     return FeatureArray(
-        seqname=seqname, genome_size=genome_size,
-        features=features, circular=circular)
+        seqname=seqname,
+        chromosome_size=chromosome_size,
+        features=features,
+        circular=circular)
 
 
-def get_sequence(origin_text: str) -> str:
+def get_sequence(
+        origin_text: str) -> str:
     """
     Args:
         origin_text: str
@@ -405,7 +422,7 @@ def construct_chromosome(genbank_text: GenbankText) -> Chromosome:
     features = contruct_feature_array(
         features_text=features_text,
         seqname=seqname,
-        genome_size=len(sequence),
+        chromosome_size=len(sequence),
         circular=circular)
 
     return Chromosome(
