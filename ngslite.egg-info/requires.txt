@@ -1,5 +1,0 @@
-numpy
-pandas
-biopython
-scipy
-dna_features_viewer
