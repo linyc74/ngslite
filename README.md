@@ -51,3 +51,19 @@ Write GFF files:
 
     with GffWriter('file.gff') as writer:
         writer.write(feature)
+
+### Genbank
+
+Read Genbank files:
+
+    with ...
+    
+Write Genbank files:
+
+    with ...
+
+### SAM
+
+Read SAM files:
+
+    with ...
