@@ -1,5 +1,14 @@
-*.pyc
-__pycache__
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Packaging
+ngslite.egg-info/
+
+# PyCharm
 .idea/
-data
+
+# Data / misc
+data/
 run.py
+todo.txt
