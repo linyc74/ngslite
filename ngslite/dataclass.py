@@ -434,8 +434,12 @@ class Chromosome:
     genbank_locus_text: str
 
     def __init__(
-            self, seqname: str, sequence: str, features: FeatureArray,
-            circular: bool = False, genbank_locus_text: str = ''):
+            self,
+            seqname: str,
+            sequence: str,
+            features: FeatureArray,
+            circular: bool = False,
+            genbank_locus_text: str = ''):
 
         self.seqname = seqname
         self.sequence = sequence

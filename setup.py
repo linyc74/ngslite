@@ -12,7 +12,13 @@ setup(
     license='MIT',
     packages=['ngslite'],
     python_requires='>3.6',
-    install_requires=['numpy', 'pandas', 'biopython', 'scipy', 'dna_features_viewer'],
+    install_requires=[
+        'numpy',
+        'matplotlib',
+        'pandas',
+        'biopython',
+        'scipy',
+        'dna_features_viewer'],
     zip_safe=False
 )
 
