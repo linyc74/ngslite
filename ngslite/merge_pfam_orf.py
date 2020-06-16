@@ -80,14 +80,14 @@ def merge_pfam_into_orf(pfam: str, orf: str, output: str):
 
         orf_arr = FeatureArray(
             seqname=seqname,
-            genome_size=int(1e6),
+            chromosome_size=int(1e6),
             features=orf_dict[seqname],
             circular=False)
         orf_arr.sort()
 
         pfam_arr = FeatureArray(
             seqname=seqname,
-            genome_size=int(1e6),
+            chromosome_size=int(1e6),
             features=pfam_dict.get(seqname, []),
             circular=False)
         pfam_arr.sort()

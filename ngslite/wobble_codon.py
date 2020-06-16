@@ -1,5 +1,6 @@
 from itertools import combinations
 
+
 IUPAC = {
     ('A', 'C'): 'M',
     ('G', 'T'): 'K',
@@ -13,6 +14,7 @@ IUPAC = {
     ('A', 'C', 'T'): 'H',
     ('A', 'C', 'G', 'T'): 'N',
 }
+
 
 CODON = {
     'ATT': 'I', 'ATC': 'I', 'ATA': 'I',

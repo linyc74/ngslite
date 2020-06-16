@@ -51,11 +51,19 @@ class GenericFeature:
     """
 
     def __init__(
-            self, seqname: str, type_: str, start: int, end: int, strand: str,
+            self,
+            seqname: str,
+            type_: str,
+            start: int,
+            end: int,
+            strand: str,
             attributes: Optional[List[Tuple[str, Union[str, int, float]]]] = None,
             tags: Optional[List[str]] = None,
             regions: Optional[List[Tuple[int, int, str]]] = None,
-            frame: int = 1, partial_start: bool = False, partial_end: bool = False):
+            frame: int = 1,
+            partial_start: bool = False,
+            partial_end: bool = False,
+            chromosome_size: Optional[int] = None):
 
         self.seqname = seqname
         self.type = type_
@@ -65,6 +73,7 @@ class GenericFeature:
         self.frame = frame
         self.partial_start = partial_start
         self.partial_end = partial_end
+        self.chromosome_size = chromosome_size
 
         if attributes is None:
             attributes = []
@@ -79,7 +88,12 @@ class GenericFeature:
         self.regions = regions
 
     def __len__(self):
-        return self.end - self.start + 1
+        if self.end >= self.start:
+            return self.end - self.start + 1
+        else:
+            assert self.chromosome_size is not None, \
+                f'Cannot get len(feature) because end < start but chromosome_size is None'
+            return self.chromosome_size - self.start + 1 + self.end
 
     def __str__(self):
         ps = ['', ' (partial)'][self.partial_start]
@@ -161,7 +175,7 @@ class FeatureArray:
     """
 
     seqname: str
-    genome_size: int
+    chromosome_size: int
     circular: bool
     __pos: int
 
@@ -169,12 +183,14 @@ class FeatureArray:
     __arr: List[GenericFeature]
 
     def __init__(
-            self, seqname: str, genome_size: int,
+            self,
+            seqname: str,
+            chromosome_size: int,
             features: Optional[Union[GenericFeature, List[GenericFeature]]] = None,
             circular: bool = False):
 
         self.seqname = seqname
-        self.genome_size = genome_size
+        self.chromosome_size = chromosome_size
         self.circular = circular
         self.__pos = 0
 
@@ -191,8 +207,11 @@ class FeatureArray:
         if isinstance(item, int):
             return self.__arr[item]
         elif isinstance(item, slice):
-            return FeatureArray(seqname=self.seqname, genome_size=self.genome_size, features=self.__arr[item],
-                                circular=self.circular)
+            return FeatureArray(
+                seqname=self.seqname,
+                chromosome_size=self.chromosome_size,
+                features=self.__arr[item],
+                circular=self.circular)
         else:
             raise TypeError('FeatureArray indices must be integers or slices')
 
@@ -200,13 +219,14 @@ class FeatureArray:
         if type(other) is not FeatureArray:
             raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
 
-        for attr in ['seqname', 'genome_size', 'circular']:
+        for attr in ['seqname', 'chromosome_size', 'circular']:
             assert getattr(self, attr) == getattr(other, attr), f'where attr = \'{attr}\''
 
         return FeatureArray(
-            seqname=self.seqname, genome_size=self.genome_size,
-            features=self.__arr + other.__arr, circular=self.circular
-        )
+            seqname=self.seqname,
+            chromosome_size=self.chromosome_size,
+            features=self.__arr + other.__arr,
+            circular=self.circular)
 
     def __iter__(self):
         self.__pos = 0
@@ -229,19 +249,20 @@ class FeatureArray:
         return f'''\
 FeatureArray
   seqname: '{self.seqname}'
-  genome size: {self.genome_size} bp ({shape})
+  genome size: {self.chromosome_size} bp ({shape})
   number of features: {len(self.__arr)}'''
 
     def __repr__(self):
-        return f"""FeatureArray(seqname={self.seqname}, genome_size=\
-{self.genome_size}, features={repr(self.__arr)}, circular={self.circular})"""
+        return f'''\
+FeatureArray(seqname={self.seqname}, genome_size=\
+{self.chromosome_size}, features={repr(self.__arr)}, circular={self.circular})'''
 
     def __wrap(self):
         """
         For circular genomes the feature range can be out of bound (< 1 or > genome_size)
         This method wraps those positions back between 1..genome_size
         """
-        size = self.genome_size
+        size = self.chromosome_size
         for f in self.__arr:
             if f.start > size:
                 f.start -= size
@@ -298,14 +319,14 @@ FeatureArray
 
         # Circular range -> Set end to greater than genome_size
         if end < start:
-            end += self.genome_size
+            end += self.chromosome_size
 
         arr = []
         for f in self.__arr:
             fs, fe = f.start, f.end
             # Circular feature -> Set feature end to greater than genome_size
             if fe < fs:
-                fe += self.genome_size
+                fe += self.chromosome_size
             # Main criteria to be satisfied
             if start <= fs and fe <= end:
                 arr.append(f)
@@ -315,7 +336,7 @@ FeatureArray
         """
         Offset (move) each feature in self.__arr
         """
-        size = self.genome_size
+        size = self.chromosome_size
         for f in self.__arr:
             f.start += offset
             f.end += offset
@@ -345,7 +366,7 @@ FeatureArray
                 1-based, inclusive
         """
         # Covers whole genome -> Do not subset
-        if start == 1 and end == self.genome_size:
+        if start == 1 and end == self.chromosome_size:
             return
 
         if not self.circular and end < start:
@@ -354,15 +375,15 @@ FeatureArray
         self.subset(start, end)
         self.offset(-start + 1)
 
-        self.genome_size = \
-            min(end, self.genome_size) - max(start, 1) + 1
+        self.chromosome_size = \
+            min(end, self.chromosome_size) - max(start, 1) + 1
 
     def reverse(self):
         """
         Reverse the features for reverse complementary of the genome sequence,
             which simply makes start as end, and end as start
         """
-        size = self.genome_size
+        size = self.chromosome_size
         for f in self.__arr:
             # Simultaneously update start and end
             f.start, f.end = (size - f.end + 1), (size - f.start + 1)
@@ -413,8 +434,12 @@ class Chromosome:
     genbank_locus_text: str
 
     def __init__(
-            self, seqname: str, sequence: str, features: FeatureArray,
-            circular: bool = False, genbank_locus_text: str = ''):
+            self,
+            seqname: str,
+            sequence: str,
+            features: FeatureArray,
+            circular: bool = False,
+            genbank_locus_text: str = ''):
 
         self.seqname = seqname
         self.sequence = sequence

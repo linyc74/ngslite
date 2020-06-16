@@ -1,7 +1,9 @@
+from typing import List, Union, Dict
 from datetime import date
 from .fasta_gtf import read_fasta_gtf
-from .dnatools import translate, rev_comp
 from .genbank_parse import GenbankText
+from .dnatools import translate, rev_comp
+from .dataclass import GenericFeature, Chromosome
 
 
 class GenbankTextWriter:
@@ -46,25 +48,28 @@ def get_today() -> str:
     return f"{day}-{month}-{year}"
 
 
-def wrap_line_by_word(line, length, indent, sep=' ', keep_sep=False) -> str:
+def wrap_line_by_word(
+        line: str,
+        length: int,
+        indent: int,
+        sep: str = ' ',
+        keep_sep: bool = False) -> str:
     """
     Wraps a line (not containing any '\n') by word
     The returned line does not end with '\n'
 
     Args:
-        line: str
+        line
 
-        length: int
+        length
 
-        indent: int
+        indent
 
-        sep: str
+        sep:
             The separator of words, usually ' '
 
-        keep_sep: bool
+        keep_sep:
             When wrapping, whether or not to keep the separator attached to the word
-
-    Returns: str
     """
     words = line.split(sep)
     if keep_sep:
@@ -95,19 +100,13 @@ def wrap_line_by_word(line, length, indent, sep=' ', keep_sep=False) -> str:
     return text
 
 
-def wrap_line_by_char(line, length, indent) -> str:
+def wrap_line_by_char(
+        line: str,
+        length: int,
+        indent: int) -> str:
     """
     Wraps a line (not containing any '\n') by character
     The returned line does not end with '\n'
-
-    Args:
-        line: str
-
-        length: int
-
-        indent: int
-
-    Returns: str
     """
     text = ' ' * indent
     for char in line:
@@ -119,7 +118,8 @@ def wrap_line_by_char(line, length, indent) -> str:
     return text
 
 
-def generic_feature_to_genbank_text(feature):
+def generic_feature_to_genbank_text(
+        feature: GenericFeature) -> str:
     """
     Use the information in a GenericFeature object to write a genbank feature
         text section, for example:
@@ -137,11 +137,6 @@ def generic_feature_to_genbank_text(feature):
     `                     VVEEKVDERLDGGDFDNVKSVSQMDQHLGITTEPEFDPKKPKMCTTCERRLCDCIIRP
     `                     CNHQFCNVCIKRLDEAGDTEQSVQQARHWKCPTCNSPVSHVAGFSAPMNLPGEERLLR
     `                     TKVPVHVLKIEDGRMRLSSMQTSRV"
-
-    Args:
-        feature: GenericFeature object
-
-    Returns: str
     """
     f = feature
 
@@ -189,33 +184,30 @@ def generic_feature_to_genbank_text(feature):
 
 
 def make_header(
-        molecule,
-        length,
-        shape,
-        ACCESSION,
-        DEFINITION,
-        KEYWORDS,
-        SOURCE,
-        ORGANISM,
-        division='ENV') -> str:
+        molecule: str,
+        length: int,
+        shape: str,
+        ACCESSION: str,
+        DEFINITION: str,
+        KEYWORDS: str,
+        SOURCE: str,
+        ORGANISM: str,
+        division: str = 'ENV') -> str:
     """
     Create a header section of a genbank file
 
     Args:
-        molecule: str, e.g. 'DNA', 'mRNA'
-        length: int
-        shape: str, 'linear' or 'circular'
-        ACCESSION: str
-        DEFINITION: str
-        KEYWORDS: str
-        SOURCE: str
-        ORGANISM: str
-        division: str,
+        molecule: e.g. 'DNA', 'mRNA'
+        length
+        shape: {'linear', 'circular'}
+        ACCESSION
+        DEFINITION
+        KEYWORDS
+        SOURCE
+        ORGANISM
+        division:
             The three-letter tag for one of the 18 divisions in the GenBank database.
             Default 'ENV' for environmental sampling sequences
-
-    Returns: str
-        Text of genbank header
     """
 
     # Replace all '\n' with ' ' to become single line
@@ -249,35 +241,28 @@ SOURCE      {SOURCE}
     return header
 
 
-def init_feature(length, organism, mol_type='genomic DNA') -> str:
+def init_feature(
+        chromosome_size: int,
+        organism: str,
+        mol_type: str = 'genomic DNA') -> str:
     """
     Initialize a feature section of genbank file.
     The feature section always start with the mandatory 'source' feature
-
-    Args:
-        length: int
-            Length of the genome
-
-        organism: str
-
-        mol_type: str
-            Usually 'genomic DNA'
     """
     text = f'''\
 FEATURES             Location/Qualifiers
-     source          1..{length}
+     source          1..{chromosome_size}
                      /mol_type="{mol_type}"
                      /organism="{organism}"\n'''
     return text
 
 
-def translate_feature(feature, sequence) -> str:
+def translate_feature(
+        feature: GenericFeature,
+        sequence: str) -> str:
     """
-    Args:
-        feature: GenericFeature object
-
-        sequence: str
-            DNA sequence to which the feature belongs
+    sequence:
+        DNA sequence to which the feature belongs
     """
     # Build CDS by concatenating introns
     cds = ''
@@ -304,14 +289,9 @@ def translate_feature(feature, sequence) -> str:
         return 'M' + translation[1:]  # full protein --> start with 'M'
 
 
-def format_ref_seq(seq) -> str:
+def format_ref_seq(seq: str) -> str:
     """
     Take a DNA sequence (str) and format it to the ORIGIN section of genbank file.
-
-    Args:
-        seq: str
-
-    Returns: str
     """
     # Remove all ' ' and '\n'
     seq = seq.replace(' ', '').replace('\n', '')
@@ -332,14 +312,14 @@ def format_ref_seq(seq) -> str:
 
 
 def write_genbank(
-        data,
-        file,
-        DEFINITION='.',
-        KEYWORDS='.',
-        SOURCE='.',
-        ORGANISM='.',
-        genbank_division='ENV',
-        use_locus_text=True):
+        data: Union[List[Chromosome], Dict[str, Chromosome]],
+        file: str,
+        DEFINITION: str = '.',
+        KEYWORDS: str = '.',
+        SOURCE: str = '.',
+        ORGANISM: str = '.',
+        genbank_division: str = 'ENV',
+        use_locus_text: bool = True):
     """
     Write <data> into a new genbank <file>
 
@@ -355,26 +335,26 @@ def write_genbank(
                 Chromosome_2.seqname: Chromosome_2, ...
             }
 
-        file: str, path-like
-            The output genbank file
+        file:
+            The output genbank file path
 
-        DEFINITION: str
+        DEFINITION:
             The "DEFINITION" field in the genbank file
 
-        KEYWORDS: str
+        KEYWORDS:
             The "KEYWORDS" field in the genbank file
 
-        SOURCE: str
+        SOURCE:
             The "SOURCE" field in the genbank file
 
-        ORGANISM: str
+        ORGANISM:
             The "ORGANISM" field in the genbank file
 
-        genbank_division: str
+        genbank_division:
             The three-letter tag for one of the 18 divisions in the GenBank database
             Default 'ENV' for environmental sampling sequences
 
-        use_locus_text: bool
+        use_locus_text:
             Use the genbank_locus_text from the original input gbk file for the LOCUS section
     """
     if type(data) is dict:
@@ -385,7 +365,7 @@ def write_genbank(
             sequence = chromosome.sequence
 
             # --- LOCUS text section --- #
-            if use_locus_text:
+            if use_locus_text and chromosome.genbank_locus_text:
                 locus_text = chromosome.genbank_locus_text
             else:
                 locus_text = make_header(
@@ -402,7 +382,7 @@ def write_genbank(
 
             # --- FEATURES text section --- #
             features_text = init_feature(
-                length=len(sequence),
+                chromosome_size=len(sequence),
                 organism=ORGANISM.split('\n')[0]
             )
 
@@ -435,15 +415,15 @@ def write_genbank(
 
 
 def make_genbank(
-        fasta,
-        gtf,
-        output,
-        shape='linear',
-        DEFINITION='.',
-        KEYWORDS='.',
-        SOURCE='.',
-        ORGANISM='.',
-        genbank_division='ENV'):
+        fasta: str,
+        gtf: str,
+        output: str,
+        shape: str = 'linear',
+        DEFINITION: str = '.',
+        KEYWORDS: str = '.',
+        SOURCE: str = '.',
+        ORGANISM: str = '.',
+        genbank_division: str = 'ENV'):
     """
     Merge a fasta file and a GTF file into a genbank file, in which
         the fasta file provides the genome sequence and
@@ -455,31 +435,31 @@ def make_genbank(
     GFF and GTF formats are both supported.
 
     Args:
-        fasta: str, path-like
+        fasta: path-like
             The input fasta file
 
-        gtf: str, path-like
+        gtf: path-like
             The input GTF (or GFF) file
 
-        output: str, path-like
+        output: path-like
             The output genbank file
 
-        shape: str
+        shape:
             The shape of DNA or RNA, either 'linear' or 'circular'
 
-        DEFINITION: str
+        DEFINITION:
             The "DEFINITION" field in the genbank file
 
-        KEYWORDS: str
+        KEYWORDS:
             The "KEYWORDS" field in the genbank file
 
-        SOURCE: str
+        SOURCE:
             The "SOURCE" field in the genbank file
 
-        ORGANISM: str
+        ORGANISM:
             The "ORGANISM" field in the genbank file
 
-        genbank_division: str,
+        genbank_division:
             The three-letter tag for one of the 18 divisions in the GenBank database.
             Default 'ENV' for environmental sampling sequences
     """
