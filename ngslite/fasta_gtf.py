@@ -2,6 +2,7 @@ from typing import Dict, List, Union
 from .fasta import FastaParser
 from .gtftools import read_gtf
 from .dataclass import Chromosome, FeatureArray
+from .feature_conversion import gtf_to_generic_feature
 
 
 def read_fasta_gtf(
@@ -48,10 +49,12 @@ def read_fasta_gtf(
 
             gtf_features = feature_dict.get(seqname, [])
 
+            features = list(map(gtf_to_generic_feature, gtf_features))
+
             features = FeatureArray(
                 seqname=seqname,
                 chromosome_size=len(sequence),
-                features=gtf_features,
+                features=features,
                 circular=circular)
 
             c = Chromosome(

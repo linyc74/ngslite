@@ -365,7 +365,7 @@ def write_genbank(
             sequence = chromosome.sequence
 
             # --- LOCUS text section --- #
-            if use_locus_text:
+            if use_locus_text and chromosome.genbank_locus_text:
                 locus_text = chromosome.genbank_locus_text
             else:
                 locus_text = make_header(
