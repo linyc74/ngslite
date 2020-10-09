@@ -22,7 +22,3 @@ class TestDnaTools(unittest.TestCase):
             ('T', 0.2), ('t', 0.2),
         ]:
             self.assertEqual(content, base_content(seq=dna, base=base))
-
-
-if __name__ == '__main__':
-    unittest.main()

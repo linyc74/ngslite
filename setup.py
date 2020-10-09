@@ -1,26 +1,30 @@
 from setuptools import setup
-import ngslite
 
 
-setup(
-    name='ngslite',
-    version=ngslite.__version__,
-    description='Light-weight functions for next-generation sequencing (NGS) data analysis',
-    url='https://github.com/linyc74/ngslite',
-    author='Yu-Cheng Lin',
-    author_email='yclin.python@gmail.com',
-    license='MIT',
-    packages=['ngslite'],
-    python_requires='>3.6',
-    install_requires=[
-        'numpy',
-        'matplotlib',
-        'pandas',
-        'biopython',
-        'scipy',
-        'dna_features_viewer'],
-    zip_safe=False
-)
+def main():
+    setup(
+        name='ngslite',
+        version='1.1.4',
+        description='Light-weight functions for next-generation sequencing (NGS) data analysis',
+        url='https://github.com/linyc74/ngslite',
+        author='Yu-Cheng Lin',
+        author_email='yclin.python@gmail.com',
+        license='MIT',
+        packages=['ngslite'],
+        python_requires='>3.6',
+        install_requires=[
+            'numpy>=1.18',
+            'matplotlib>=3.2',
+            'pandas>=1.0',
+            'biopython>=1.77',
+            'scipy>=1.5',
+            'dna_features_viewer>=3.0',
+        ],
+        zip_safe=False
+    )
 
 
-# In command line type in: "python setup.py sdist"
+if __name__ == '__main__':
+    main()
+
+    # In command line type in: "python setup.py sdist"

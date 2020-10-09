@@ -111,8 +111,3 @@ MVLLGSNALAPLNVGSLLLSAKVTSGQQVESVFLLVHGAVGKVESDTGDE'''
             translation,
             translate_feature(feature=feature, sequence=sequence)
         )
-
-
-if __name__ == '__main__':
-    unittest.main()
-

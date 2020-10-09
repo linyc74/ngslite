@@ -1,15 +1,17 @@
-import numpy as np
 import re
-from random import randint
+import random
+import numpy as np
+import matplotlib.pyplot as plt
 from itertools import combinations
 from scipy.cluster import hierarchy
+from typing import Optional, Union, List, Dict
 from .fasta_gtf import read_fasta_gtf
 from .genbank_parse import read_genbank
 from .genbank_write import write_genbank
-from .dataclass import GenericFeature
+from .dataclass import Chromosome, FeatureArray, GenericFeature
 
 
-score = {
+SCORE = {
     'gap': -1,
     'feature_intergenic': -1,
     'different_feature': -2,
@@ -18,217 +20,358 @@ score = {
     'common_tag': +100
 }
 
-score_scalar = 0.01
+
+SCORE_SCALAR = 0.01
 
 
-def _tag_feature(feature, qualifiers, skip='orf[0-9]+'):
-    """
-    Use all of the words in the <qualifiers> to tag the feature
+class Aligner:
 
-    Args:
-        feature: GenericFeature object
-
-        qualifiers: str, or list of str
-
-        skip: str, regex pattern
-            Attribute words matching this pattern will be skipped
-            Usually we want to skip very generic patterns like 'orf#####'
-    """
-    for key, val in feature.attributes:
-        if key in qualifiers:
-            for word in re.split('[|]|[;]|[,]', str(val)):
-                if not re.search(skip, word):
-                    feature.tags.append(word.strip())
-    # Remove duplicates and make the same combination of words always identical
-    feature.tags = list(set(feature.tags))
-
-
-def _has_common_tag(tags1, tags2, skip='orf[0-9]+'):
-    """
-    Args:
-        tags1: list of str
-
-        tags2: list of str
-
-        skip: str, regex pattern
+    def has_common_tag(
+            self,
+            tags1: List[str],
+            tags2: List[str],
+            skip: str = 'orf[0-9]+') -> bool:
+        """
+        skip: regex pattern
             Tags matching this pattern will be skipped
             Usually we want to skip very generic patterns like 'orf#####'
+        """
+        for t in tags1:
+            if t in tags2:
+                if not re.search(skip, t):
+                    return True
+        return False
 
-    Returns: bool
-    """
-    for t in tags1:
-        if t in tags2:
-            if not re.search(skip, t):
-                return True
-    return False
+    def compare(
+            self,
+            feature1: Optional[GenericFeature],
+            feature2: Optional[GenericFeature]) -> float:
 
+        X, Y = feature1, feature2
 
-def _make_color_dict(chromosome_dict):
-    """
-    From all Feature objects of all Chromosome objects,
-        use tags to build a color dictionary, which has the following data structure:
-        {
-            tuple(feature.tags): color, ...
-        {
+        if X is None:
+            return SCORE['gap']
 
-        in which color is str and has the format: #ffffff (white)
+        if Y is None:
+            return SCORE['gap']
 
-    Args:
-        chromosome_dict: dict
-        {
-            chromosome1.seqname: chromosome1,
-            chromosome2.seqname: chromosome2, ...
-        }
+        if X.type == Y.type == 'intergenic':
+            return 0
 
-    Returns: dict
-    """
-    color_dict = {}
-    for chromosome in chromosome_dict.values():
-        for feature in chromosome.feature_array:
-            # no tag -> skip
-            if len(feature.tags) == 0: continue
-            # feature.tags is list, convert to tuple for hashing
-            key = tuple(feature.tags)
-            color_dict.setdefault(key, f'#{randint(0, 256**3):06x}')
-    return color_dict
+        if X.type == 'intergenic' or Y.type == 'intergenic':
+            return SCORE['feature_intergenic']
 
+        if X.type != Y.type:
+            return SCORE['different_feature']
 
-def _set_feature_color(chromosome_dict, color_dict):
-    """
-    For each feature, use its tag to get a color from color_dict
-        and set the color attribute with key='Color', val=color
+        else:  # X.type == Y.type but not 'intergenic'
 
-    For example, red color = #ff0000
+            if X.strand == Y.strand:
 
-    Args:
-        chromosome_dict: dict
+                if self.has_common_tag(X.tags, Y.tags):
+                    return SCORE['common_tag']
+                else:
+                    return SCORE['same_feature_same_strand']
 
-        color_dict: dict
-    """
-    for chromosome in chromosome_dict.values():
-        for feature in chromosome.feature_array:
-            if len(feature.tags) == 0:
-                # no tag -> default white color
-                color = '#ffffff'
-            else:
-                # Get color with tag
-                color = color_dict[tuple(feature.tags)]
-            # Genieous format: /Color="#ff0000"
-            # Old color (if any) will be replaced
-            feature.set_attribute(key='Color', val=color)
+            else:  # X.strand != Y.strand
+                return SCORE['same_feature_opposite_strand']
 
+    def run(self,
+            arr1: FeatureArray,
+            arr2: FeatureArray) -> float:
 
-def _compare(feature1, feature2):
-    """
-    Args:
-        feature1: GenericFeature object
+        L1 = arr1
+        L2 = arr2
 
-        feature2: GenericFeature object
+        M = np.zeros((len(L1) + 1, len(L2) + 1), dtype=np.int)
 
-    Returns: float
-    """
-    X, Y = feature1, feature2
+        for r in range(len(L1)):
+            M[r + 1, 0] = M[r, 0] + SCORE['gap']
 
-    if X is None:
-        return score['gap']
-
-    if Y is None:
-        return score['gap']
-
-    if X.type == Y.type == 'intergenic':
-        return 0
-
-    if X.type == 'intergenic' or Y.type == 'intergenic':
-        return score['feature_intergenic']
-
-    if X.type != Y.type:
-        return score['different_feature']
-
-    else: # X.type == Y.type but not 'intergenic'
-
-        if X.strand == Y.strand:
-
-            if _has_common_tag(X.tags, Y.tags):
-                return score['common_tag']
-            else:
-                return score['same_feature_same_strand']
-
-        else: # X.strand != Y.strand
-            return score['same_feature_opposite_strand']
-
-
-def _align(feature_array_1, feature_array_2):
-    """
-    Aligns two FeatureArray objects and return the optimal score of alignment
-
-    Args:
-        feature_array_1: FeatureArray object
-
-        feature_array_2: FeatureArray object
-
-    Returns: float
-    """
-    L1 = feature_array_1
-    L2 = feature_array_2
-
-    M = np.zeros((len(L1)+1, len(L2)+1), dtype=np.int)
-
-    for r in range(len(L1)):
-        M[r+1, 0] = M[r, 0] + score['gap']
-
-    for c in range(len(L2)):
-        M[0, c+1] = M[0, c] + score['gap']
-
-    for r in range(len(L1)):
         for c in range(len(L2)):
-            down_right = M[r, c] + _compare(L1[r], L2[c])
-            right = M[r+1, c] + _compare(None, L2[c])
-            down = M[r, c+1] + _compare(L1[r], None)
+            M[0, c + 1] = M[0, c] + SCORE['gap']
 
-            M[r+1, c+1] = max(down_right, right, down)
+        for r in range(len(L1)):
+            for c in range(len(L2)):
+                down_right = M[r, c] + self.compare(L1[r], L2[c])
+                right = M[r + 1, c] + self.compare(None, L2[c])
+                down = M[r, c + 1] + self.compare(L1[r], None)
 
-    return M[-1, -1]
+                M[r + 1, c + 1] = max(down_right, right, down)
+
+        return M[-1, -1]
 
 
-def _insert_intergenic(feature_array, seqname):
-    """
-    Args:
-        feature_array: FeatureArray object
+class Synteny:
 
-        seqname: str
-    """
-    L = []
-    last_pos = 0
-    for f in feature_array:
-        if f.start > last_pos + 1:
-            L.append(
-                GenericFeature(
-                    seqname=seqname,
+    genbank: Optional[str] = None
+    fasta: Optional[str] = None
+    gtf: Optional[str] = None
+    output: str = 'synteny.gb'
+    ax: Optional[plt.Axes] = None
+    qualifiers: List[str] = ['name', 'gene', 'label']
+
+    chromosome_dict: Dict[str, Chromosome]
+
+    skip_pattern: str = 'orf[0-9]+'
+    default_color = '#ffffff'
+
+    def set_output(self, output: Optional[str]):
+        if output is not None:
+            self.output = output
+
+    def set_qualifiers(
+            self,
+            qualifiers: Optional[Union[str, List[str]]]):
+
+        if qualifiers is None:
+            return
+
+        if type(self.qualifiers) is str:
+            self.qualifiers = [qualifiers]
+        else:
+            self.qualifiers = qualifiers
+
+    def set_chromosome_dict(self):
+
+        if self.fasta is not None and self.gtf is not None:
+            self.chromosome_dict = read_fasta_gtf(
+                fasta=self.fasta,
+                gtf=self.gtf,
+                as_dict=True,
+                circular=False)
+        else:
+            self.chromosome_dict = read_genbank(
+                file=self.genbank,
+                as_dict=True)
+
+    def __tag(self, feature: GenericFeature):
+
+        for key, val in feature.attributes:
+            if key in self.qualifiers:
+                for word in re.split('[|]|[;]|[,]', str(val)):
+                    if not re.search(self.skip_pattern, word):
+                        feature.tags.append(word.strip())
+
+        feature.tags = list(set(feature.tags))
+
+    def tag_features(self):
+        for seqname, chromosome in self.chromosome_dict.items():
+            for feature in chromosome.feature_array:
+                self.__tag(feature=feature)
+
+    def __get_color_dict(self) -> Dict[tuple, str]:
+
+        random.seed(1)
+
+        color_dict = {}
+
+        for chromosome in self.chromosome_dict.values():
+            for feature in chromosome.feature_array:
+                if len(feature.tags) == 0:  # no tag -> skip
+                    continue
+                key = tuple(set(feature.tags))
+                color = f'#{random.randint(0, 256 ** 3):06x}'
+                color_dict[key] = color
+
+        return color_dict
+
+    def set_feature_color(self):
+
+        color_dict = self.__get_color_dict()
+
+        for chromosome in self.chromosome_dict.values():
+            for feature in chromosome.features:
+                key = tuple(set(feature.tags))
+                color = color_dict.get(key, self.default_color)
+                feature.set_attribute(key='Color', val=color)  # Genieous format: /Color="#ff0000"
+
+    def __insert_intergenic(
+            self, feature_array: FeatureArray) -> FeatureArray:
+
+        features = []
+
+        last_pos = 0
+        for f in feature_array:
+            intergenic_gap = f.start > last_pos + 1
+            if intergenic_gap:
+                intergenic_feature = GenericFeature(
+                    seqname=feature_array.seqname,
                     type_='intergenic',
                     start=last_pos + 1,
                     end=f.start - 1,
-                    strand='+',
-                )
-            )
-            L.append(f)
-        else:  # feature.start <= last_pos + 1
-            L.append(f)
+                    strand='+')
+                features.append(intergenic_feature)
+                features.append(f)
+            else:
+                features.append(f)
 
-        last_pos = f.end
-    return L
+            last_pos = f.end
+
+        return FeatureArray(
+            features=features,
+            seqname=feature_array.seqname,
+            chromosome_size=feature_array.chromosome_size,
+            circular=False)
+
+    def get_score_matrix(self) -> np.ndarray:
+
+        d = self.chromosome_dict
+
+        seqnames = list(d.keys())
+
+        # score_matrix is in the format of condensed distance matrix
+        #   which is an 1-D array of seqname pairs following the order given by combinations()
+        score_matrix = []
+
+        for seqname1, seqname2 in combinations(seqnames, 2):
+            chromosome1 = d[seqname1]
+            chromosome2 = d[seqname2]
+
+            arr1 = chromosome1.feature_array
+            arr2 = chromosome2.feature_array
+
+            arr1 = self.__insert_intergenic(feature_array=arr1)
+            arr2 = self.__insert_intergenic(feature_array=arr2)
+
+            score = Aligner().run(arr1=arr1, arr2=arr2)
+
+            score_matrix.append(score)
+
+        return np.array(score_matrix)
+
+    def get_distance_matrix(
+            self, score_matrix: np.ndarray) -> np.ndarray:
+        # Distance must > 0
+        # Define distance = e^(-score), the higher the score, the shorter the distance
+        return np.exp(- score_matrix * SCORE_SCALAR)
+
+    def plot_tree_and_get_idx_order(
+            self, linkage_matrix: np.ndarray) -> List[int]:
+
+        idx_order = hierarchy.dendrogram(
+            Z=linkage_matrix,
+            ax=self.ax,
+            orientation='top'  # root on top
+        )['ivl']  # 'ivl': a list of labels corresponding to the leaf nodes
+
+        return idx_order
+
+    def get_ordered_seqnames(
+            self, idx_order: List[int]) -> List[str]:
+
+        seqnames = list(self.chromosome_dict.keys())
+
+        return [seqnames[int(i)] for i in idx_order]
+
+    def get_ordered_chromosomes(
+            self, ordered_seqnames: List[str]) -> List[Chromosome]:
+
+        ordered_chromosomes = [
+            self.chromosome_dict[seqname] for seqname in ordered_seqnames]
+
+        return ordered_chromosomes
+
+    def set_x_axis_contig_labels(self, labels: List[str]):
+        if self.ax is not None:
+            self.ax.set_xticklabels(
+                labels,
+                rotation=90,
+                horizontalalignment='right')
+
+    def main(
+            self,
+            genbank: Optional[str] = None,
+            fasta: Optional[str] = None,
+            gtf: Optional[str] = None,
+            output: Optional[str] = None,
+            ax: Optional[plt.Axes] = None,
+            qualifiers: Optional[Union[str, List[str]]] = None) -> List[str]:
+
+        self.genbank = genbank
+        self.fasta = fasta
+        self.gtf = gtf
+        self.set_output(output=output)
+        self.ax = ax
+        self.set_qualifiers(qualifiers=qualifiers)
+
+        self.set_chromosome_dict()
+
+        self.tag_features()
+
+        self.set_feature_color()
+
+        score_matrix = self.get_score_matrix()
+
+        distance_matrix = self.get_distance_matrix(score_matrix=score_matrix)
+
+        linkage_matrix = hierarchy.linkage(distance_matrix, 'average')
+
+        idx_order = self.plot_tree_and_get_idx_order(
+            linkage_matrix=linkage_matrix)
+
+        ordered_seqnames = self.get_ordered_seqnames(idx_order=idx_order)
+
+        ordered_chromosomes = self.get_ordered_chromosomes(
+            ordered_seqnames=ordered_seqnames)
+
+        self.set_x_axis_contig_labels(labels=ordered_seqnames)
+
+        write_genbank(data=ordered_chromosomes, file=self.output)
+
+        return ordered_seqnames
 
 
-def get_qualifier(genbank, keywords):
+def synteny(
+        genbank: Optional[str] = None,
+        fasta: Optional[str] = None,
+        gtf: Optional[str] = None,
+        output: Optional[str] = None,
+        ax: Optional[plt.Axes] = None,
+        qualifiers: Optional[Union[str, List[str]]] = None) -> List[str]:
+    """
+    Args:
+        genbank: path-like
+
+        fasta: path-like
+            fasta and gtf together overrides genbank
+
+        gtf: path-like
+
+        output: path-like
+            The output genbank file
+            Has to be genbank file because the order of chromosomes is
+                the only thing that matters for graphic display
+
+        ax: matplotlib Axes instance
+
+        qualifiers:
+            Qualifiers (e.g. gene, db_xref) of the genbank feature to be used
+                to tag and align features
+
+    Returns:
+        The order of seqname after synteny alignment and clustering
+    """
+    return Synteny().main(
+        genbank=genbank,
+        fasta=fasta,
+        gtf=gtf,
+        output=output,
+        ax=ax,
+        qualifiers=qualifiers)
+
+
+def get_qualifiers(
+        genbank: str,
+        keywords: Union[str, List[str]]) -> List[str]:
     """
     From a <genbank> file, get the qualifiers that contain <keywords>
 
     Args:
-        genbank: str, path-like
+        genbank: path-like
             The input genbank file
 
-        keywords: str, or list of str
-
-    Returns: list of str
+        keywords
     """
     if type(keywords) is str:
         keywords = [keywords]
@@ -238,103 +381,9 @@ def get_qualifier(genbank, keywords):
         for feature in chromosome.feature_array:
             for qualifier, content in feature.attributes:
                 # No need to look for keywords if content is not str
-                if type(content) is not str: continue
+                if type(content) is not str:
+                    continue
                 for word in keywords:
                     if word in content:
                         qualifiers.setdefault(qualifier, True)
     return list(qualifiers.keys())
-
-
-def synteny(genbank=None, fasta=None, gtf=None, output=None, ax=None, qualifiers=('name', 'gene', 'label')):
-    """
-    Args:
-        genbank: str, path-like
-
-        fasta: str, path-like
-            fasta and gtf together overrides genbank
-
-        gtf: str, path-like
-
-        output: str, path-like
-            The output genbank file
-            Has to be genbank file because the order of chromosomes is
-                the only thing that matters for graphic display
-
-        ax: matplotlib Axes instance
-
-        qualifiers: str or list of str
-            Qualifiers (e.g. gene, db_xref) of the genbank feature to be used
-                to tag and align features
-
-    Returns: list of str
-        The order of seqname after synteny alignment and clustering
-    """
-    if fasta is not None and gtf is not None:
-        chromosome_dict = read_fasta_gtf(fasta, gtf, as_dict=True, circular=False)
-    else:
-        chromosome_dict = read_genbank(genbank, as_dict=True)
-
-    # For each feature, tag it with its own attributes using the <qualifiers>
-    if type(qualifiers) is str:
-        qualifiers = [qualifiers]
-    for seqname, chromosome in chromosome_dict.items():
-        for feature in chromosome.feature_array:
-            _tag_feature(feature, qualifiers)
-
-    # Generate a color dictionary from all features of all chromosomes
-    # Each unique tag or combination of tags gets a unique color
-    # Tags (keys) are hashed by tuple, colors are represented by hexadecimal strings, e.g.
-    # {
-    #   ('zinc finger', 'DNA binding'): #0f0f0f
-    # }
-    color_dict = _make_color_dict(chromosome_dict)
-
-    # Set the color of each feature using the color_dict
-    _set_feature_color(chromosome_dict, color_dict)
-
-    # simply get a list of seqnames
-    seqname_list = list(chromosome_dict.keys())
-
-    # scores is in the format of condensed distance matrix
-    #   which is an 1-D array of seqname pairs following the order given by combinations()
-    scores = []
-    for seqname1, seqname2 in combinations(seqname_list, 2):
-
-        arr1 = chromosome_dict[seqname1].feature_array
-        arr2 = chromosome_dict[seqname2].feature_array
-
-        arr1 = _insert_intergenic(arr1, seqname1)
-        arr2 = _insert_intergenic(arr2, seqname2)
-
-        scores.append(_align(arr1, arr2))  # compute alignment score
-
-    # Condensed distance matrix, which is literally a list of distance (must be positive)
-    # distance = e^(-score), the higher the score, the shorter the distance
-    dist_mat = np.exp(
-        -np.array(scores) * score_scalar
-    )
-
-    # Compute linkage matrix
-    linkage_matrix = hierarchy.linkage(dist_mat, 'average')
-
-    # Plot dendrogram and get id order
-    id_order = hierarchy.dendrogram(
-        Z=linkage_matrix,
-        ax=ax,
-        orientation='top' # root on top
-    )['ivl'] # 'ivl': a list of labels corresponding to the leaf nodes
-
-    # Get actual seqname order with id order
-    seqname_order = [seqname_list[int(i)] for i in id_order]
-
-    # Set the contig labels on the x axis
-    if ax is not None:
-        ax.set_xticklabels(seqname_order, rotation=90, horizontalalignment='right')
-
-    # Re-order Chromosome objects in a list
-    data = [chromosome_dict[seqname] for seqname in seqname_order]
-
-    if output is None: output = 'synteny.gb'
-    write_genbank(data=data, file=output)
-
-    return seqname_order

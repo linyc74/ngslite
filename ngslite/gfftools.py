@@ -80,6 +80,8 @@ class GffWriter:
                 The file mode: 'w' or 'a'
         """
         self.__gff = open(file, mode)
+        if mode == 'w':
+            self.__gff.write('##gff-version 3\n')
 
     def __enter__(self):
         return self

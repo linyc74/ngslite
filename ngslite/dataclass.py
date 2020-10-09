@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import List, Tuple, Optional, Union
 from collections import namedtuple
 from .dnatools import rev_comp
@@ -203,7 +204,7 @@ class FeatureArray:
 
         self.sort()
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Union[int, slice]):
         if isinstance(item, int):
             return self.__arr[item]
         elif isinstance(item, slice):
@@ -220,7 +221,7 @@ class FeatureArray:
             raise TypeError(f"unsupported operand type(s) for +: '{type(self)}' and '{type(other)}'")
 
         for attr in ['seqname', 'chromosome_size', 'circular']:
-            assert getattr(self, attr) == getattr(other, attr), f'where attr = \'{attr}\''
+            assert getattr(self, attr) == getattr(other, attr), f"where attr = '{attr}'"
 
         return FeatureArray(
             seqname=self.seqname,
@@ -291,20 +292,20 @@ FeatureArray(seqname={self.seqname}, genome_size=\
 
     def sort(self):
         """
-        Sort the features in self.__arr by start positions
+        Sort features by each feature's start position
         """
         self.__arr = sorted(self.__arr, key=lambda f: f.start)
 
     def append(self, feature: GenericFeature):
         """
-        Append a new GenericFeature
+        Append a new feature
         """
         self.__arr.append(feature)
         self.sort()
 
     def subset(self, start: int, end: int):
         """
-        Subset (or filter) the features in self.__arr without changing their positions
+        Subset (or filter) features without changing their positions
 
         Args:
             start:
@@ -334,7 +335,7 @@ FeatureArray(seqname={self.seqname}, genome_size=\
 
     def offset(self, offset: int):
         """
-        Offset (move) each feature in self.__arr
+        Offset (shift) features by bp
         """
         size = self.chromosome_size
         for f in self.__arr:
@@ -355,14 +356,14 @@ FeatureArray(seqname={self.seqname}, genome_size=\
 
     def crop(self, start: int, end: int):
         """
-        Crop the features in self.__arr from <start> to <end>,
+        Crop features from <start> to <end>,
             which resets positions of features and the genome size
 
         Args:
-            start: int
+            start:
                 1-based, inclusive
 
-            end: int
+            end:
                 1-based, inclusive
         """
         # Covers whole genome -> Do not subset
@@ -375,13 +376,12 @@ FeatureArray(seqname={self.seqname}, genome_size=\
         self.subset(start, end)
         self.offset(-start + 1)
 
-        self.chromosome_size = \
-            min(end, self.chromosome_size) - max(start, 1) + 1
+        self.chromosome_size = min(end, self.chromosome_size) - max(start, 1) + 1
 
     def reverse(self):
         """
-        Reverse the features for reverse complementary of the genome sequence,
-            which simply makes start as end, and end as start
+        Reverse features for reverse complementary of the genome sequence,
+            which makes start as end, and end as start
         """
         size = self.chromosome_size
         for f in self.__arr:
@@ -402,9 +402,17 @@ FeatureArray(seqname={self.seqname}, genome_size=\
 
     def pop(self, index: int = -1):
         """
-        Pop out a feature in the self.__arr
+        Pop out a feature
         """
         return self.__arr.pop(index)
+
+    def set_seqname(self, seqname: str):
+        self.seqname = seqname
+        for f in self.__arr:
+            f.seqname = seqname
+
+    def copy(self):
+        return deepcopy(self)
 
 
 class Chromosome:
@@ -448,6 +456,11 @@ class Chromosome:
         self.circular = circular
         self.genbank_locus_text = genbank_locus_text
 
+    def __repr__(self):
+        return f"""Chromosome(seqname='{self.seqname}', sequence='{self.sequence}'\
+, features={repr(self.features)}, circular={self.circular}, genbank_locus_text=\
+'{self.genbank_locus_text})'"""
+
     def crop(self, start: int, end: int):
         """
         Args:
@@ -473,7 +486,9 @@ class Chromosome:
         self.sequence = rev_comp(self.sequence)
         self.features.reverse()
 
-    def __repr__(self):
-        return f"""Chromosome(seqname='{self.seqname}', sequence='{self.sequence}'\
-, features={repr(self.features)}, circular={self.circular}, genbank_locus_text=\
-'{self.genbank_locus_text})'"""
+    def set_seqname(self, seqname: str):
+        self.seqname = seqname
+        self.features.set_seqname(seqname=seqname)
+        
+    def copy(self):
+        return deepcopy(self)

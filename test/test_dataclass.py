@@ -60,18 +60,29 @@ class TestGenericFeature(unittest.TestCase):
 class TestFeatureArray(unittest.TestCase):
 
     def setUp(self):
+        self.seqname = 'seqname'
+        self.chromosome_size = 100
+
         self.feature_list = []
-        for i in range(5):
+
+        for start, end in [
+            (1, 10),
+            (21, 30),
+            (41, 50),
+        ]:
             f = GenericFeature(
-                seqname='seqname', type_='CDS',
-                start=i*20+1, end=i*20+10, strand='+',
-            )
+                seqname=self.seqname,
+                type_='CDS',
+                start=start,
+                end=end,
+                strand='+')
             self.feature_list.append(f)
 
         self.feature_array = FeatureArray(
-            seqname='seqname', chromosome_size=100,
-            features=self.feature_list, circular=True
-        )
+            seqname=self.seqname,
+            chromosome_size=self.chromosome_size,
+            features=self.feature_list,
+            circular=True)
 
     def test___getitem__(self):
         self.assertEqual(
@@ -89,32 +100,50 @@ class TestFeatureArray(unittest.TestCase):
 
     def test___add__(self):
         new_feature = GenericFeature(
-            seqname='seqname', type_='CDS',
-            start=11, end=15, strand='+',
-        )
+            seqname=self.seqname,
+            type_='CDS',
+            start=11,
+            end=15,
+            strand='+')
 
         new_array = FeatureArray(
-            seqname='seqname', chromosome_size=100,
-            features=[new_feature], circular=True
-        )
+            seqname=self.seqname,
+            chromosome_size=self.chromosome_size,
+            features=new_feature,
+            circular=True)
 
         new_array = self.feature_array + new_array
 
         self.assertNotEqual(id(new_array), id(self.feature_array))
+        self.assertEqual(4, len(new_array))
+
         self.assertEqual(id(new_array[0]), id(self.feature_array[0]))
         self.assertEqual(id(new_array[2]), id(self.feature_array[1]))
         self.assertEqual(id(new_array[3]), id(self.feature_array[2]))
-        self.assertEqual(id(new_array[4]), id(self.feature_array[3]))
-        self.assertEqual(id(new_array[5]), id(self.feature_array[4]))
 
-    def test_sort(self):
-        pass
+    def test_append_and_sort(self):
+        feature = GenericFeature(
+            seqname=self.seqname,
+            type_='CDS',
+            start=11,
+            end=15,
+            strand='+')
 
-    def test_append(self):
-        pass
+        self.feature_array.append(feature=feature)  # append includes sort
+
+        self.assertEqual(4, len(self.feature_array))
+
+        start_positions = [f.start for f in self.feature_array]
+        self.assertListEqual(sorted(start_positions), start_positions)
 
     def test_subset(self):
-        pass
+        self.feature_array.subset(start=20, end=51)
+
+        self.assertEqual(21, self.feature_array[0].start)
+        self.assertEqual(30, self.feature_array[0].end)
+
+        self.assertEqual(41, self.feature_array[1].start)
+        self.assertEqual(50, self.feature_array[1].end)
 
     def test_offset(self):
         pass
@@ -128,7 +157,12 @@ class TestFeatureArray(unittest.TestCase):
     def test_pop(self):
         pass
 
+    def test_set_seqname(self):
+        oldname = self.feature_array.seqname
 
-if __name__ == '__main__':
-    unittest.main()
+        self.feature_array.set_seqname(seqname=f'{oldname}+')
 
+        self.assertEqual(f'{oldname}+', self.feature_array.seqname)
+
+        for feature in self.feature_array:
+            self.assertEqual(f'{oldname}+', feature.seqname)
