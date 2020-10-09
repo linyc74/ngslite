@@ -8,7 +8,7 @@ from .fasta_gtf import read_fasta_gtf
 from .fasta_gff import read_fasta_gff
 from .fastq import FastqParser, FastqWriter, interleave
 from .file_conversion import sam_to_bam, bam_to_sam, fq_to_fa, vcf_to_bcf, bcf_to_vcf
-from .filetools import get_files, change_extension, change_prefix, concat, zip_broadcast
+from .filetools import get_files, get_dirs, concat, zip_broadcast
 from .genbank_parse import read_genbank, genbank_to_fasta, genbank_to_gtf, genbank_to_gff
 from .genbank_write import write_genbank, make_genbank
 from .gfftools import GffParser, GffWriter, read_gff, write_gff, subset_gff, print_gff
