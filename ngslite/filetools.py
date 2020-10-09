@@ -68,60 +68,6 @@ def get_dirs(
     return ret
 
 
-def change_extension(files: List[str], old: str, new: str) -> List[str]:
-    """
-    Change suffix of a list of file names
-
-    If a file does not have the specified old suffix, then it is not included
-    in the returned list
-
-    Args
-        files:
-            Paths of files
-
-        old:
-            The old suffix
-
-        new:
-            The new suffix
-
-    Returns:
-        A list of file names with new suffices
-    """
-    ret = []
-    for f in files:
-        if f.endswith(old):
-            ret.append(f[:-len(old)] + new)
-    return ret
-
-
-def change_prefix(files: List[str], old: str, new: str) -> List[str]:
-    """
-    Change prefix of a list of file names
-
-    If a file does not have the specified old suffix, then it is not included
-    in the returned list
-
-    Args
-        files:
-            Paths of files
-
-        old:
-            The old prefix
-
-        new:
-            The new prefix
-
-    Returns:
-        A list of file names with new suffices
-    """
-    ret = []
-    for f in files:
-        if f.startswith(old):
-            ret.append(new + f[len(old):])
-    return ret
-
-
 def concat(files: List[str], output: str):
     """
     Args:
@@ -133,7 +79,7 @@ def concat(files: List[str], output: str):
     call(f"cat {' '.join(files)} > {output}")
 
 
-def zip_broadcast(*lists):
+def zip_broadcast(*lists) -> List[tuple]:
     """
     This is a broadcasting version of the built-in zip() function
     """

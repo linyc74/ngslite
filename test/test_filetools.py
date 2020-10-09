@@ -1,5 +1,5 @@
 import shutil
-from ngslite.filetools import get_files, get_dirs
+from ngslite.filetools import get_files, get_dirs, zip_broadcast
 from .setup import setup_dirs, TestCase
 
 
@@ -35,3 +35,14 @@ class TestCmdToolkit(TestCase):
         expected = ['1', '2']
 
         self.assertListEqual(expected, files)
+
+    def test_zip_broadcast(self):
+
+        list_1 = [1, 2, 3, 4, 0]
+        list_2 = [5, 6]
+
+        zipped = zip_broadcast(list_1, list_2)
+
+        expected = [(1, 5), (2, 6), (3, 5), (4, 6), (0, 5)]
+
+        self.assertListEqual(expected, zipped)
