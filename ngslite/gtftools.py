@@ -1,6 +1,6 @@
 from typing import List, Union, Optional, Dict
 from .lowlevel import printf
-from .dataclass import GenericFeature, GtfFeature
+from .dataclass import GenericFeature, GtfFeature, FeatureArray
 from .feature_conversion import generic_to_gtf_feature
 
 
@@ -128,9 +128,15 @@ def read_gtf(
     return features
 
 
+FEATURES = Union[
+    List[GtfFeature],
+    List[GenericFeature],
+    FeatureArray,
+]
+
+
 def write_gtf(
-        data: Union[List[Union[GtfFeature, GenericFeature]],
-                    Dict[str, Union[GtfFeature, GenericFeature]]],
+        data: Union[FEATURES, Dict[str, FEATURES]],
         file: str):
     """
     Take the data in the format returned by read_gtf()

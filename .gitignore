@@ -4,6 +4,7 @@ __pycache__/
 
 # Packaging
 ngslite.egg-info/
+.eggs/
 
 # PyCharm
 .idea/
@@ -12,3 +13,5 @@ ngslite.egg-info/
 data/
 run.py
 todo.txt
+.coverage
+.coveralls.yml

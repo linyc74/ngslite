@@ -1,117 +1,8 @@
-from typing import Optional
+import os
+from typing import Optional, Dict, List, Tuple, Any
 from .lowlevel import call, gzip, printf
 from .dnatools import translate, rev_comp
 from .fasta import FastaParser, FastaWriter, read_fasta
-
-
-def _is_dna(fasta: str) -> bool:
-    """
-    Returns 'True' if the first sequence of the <fasta> file is a DNA
-    """
-    with FastaParser(fasta) as parser:
-        is_dna = True
-        for char in set(parser.next()[1]):
-            if not char in ('A', 'C', 'G', 'T'):
-                is_dna = False
-                break
-    return is_dna
-
-
-def _translate_dna_database(fasta: str) -> str:
-    """
-    Translate the input fasta file in six frames
-    Append ';frame=<frame>' in the header line
-    Write a new '<fasta>_translated.fa' file
-
-    Args:
-        fasta: path-like
-
-    Returns:
-        The written fasta name '<fasta>_translated.fa'
-    """
-    if fasta.endswith('.fa'):
-        output = fasta[:-3] + '_translated.fa'
-    elif fasta.endswith('.fasta'):
-        output = fasta[:-6] + '_translated.fa'
-    else:
-        output = fasta + '_translated.fa'
-
-    with FastaParser(fasta) as parser:
-        with FastaWriter(output, 'w') as writer:
-            for head, seq in parser:
-                for frame in (1, 2, 3):
-                    new_head = f"{head};frame={frame}"
-                    aa_seq = translate(seq[frame-1:])
-                    writer.write(new_head, aa_seq)
-
-                for frame in (-1, -2, -3):
-                    new_head = f"{head};frame={frame}"
-                    rc_seq = rev_comp(seq)
-                    aa_seq = translate(rc_seq[-frame-1:])
-                    writer.write(new_head, aa_seq)
-
-    return output
-
-
-def _check_fasta_header(fasta: str) -> bool:
-    """
-    Fasta headers should NOT contain ' '. This function checks if it's correct
-    """
-    is_correct = True
-    with FastaParser(fasta) as parser:
-        for head, seq in parser:
-            if ' ' in head:
-                is_correct = False
-                break
-    return is_correct
-
-
-def hmmsearch(hmm: str, database: str, output: str, cpu: int = 2):
-    """
-    Args:
-        hmm: path-like
-            The .hmm file built by the command "hmmbuild",
-                e.g. "hmmbuild -o Pfam-A_summary.txt Pfam-A.hmm Pfam-A.seed"
-            Also accepts .gz format
-
-        database: path-like
-            The fasta database to be searched against
-            Also accepts .gz format
-
-        output: path-like
-            The output text file reported by the command "hmmsearch"
-
-        cpu:
-            Number of CPUs, 2 is the default in hmmsearch
-    """
-    db_is_gz = False
-    if database.endswith('.gz'):
-        gzip(database, keep=True)
-        database = database[:-len('.gz')]
-        db_is_gz = True
-
-    hmm_is_gz = False
-    if hmm.endswith('.gz'):
-        gzip(hmm, keep=True)
-        hmm = hmm[:-len('.gz')]
-        hmm_is_gz = True
-
-    db_is_dna = False
-    if _is_dna(database):
-        database = _translate_dna_database(database)
-        db_is_dna = True
-
-    if not _check_fasta_header(database):
-        printf(f"Because the database '{database}' contains blank space in headers, hmmsearch is aborted")
-        return
-
-    # Run hmmsearch
-    call(f"hmmsearch --cpu {cpu} {hmm} {database} > {output}")
-
-    if db_is_gz or db_is_dna:
-        call(f"rm {database}")
-    if hmm_is_gz:
-        call(f"rm {hmm}")
 
 
 def hmmbuild(seed: str, hmm: str):
@@ -128,6 +19,388 @@ def hmmbuild(seed: str, hmm: str):
     summary = hmm[:-len('.hmm')] + '_summary.txt'
 
     call(f"hmmbuild -o {summary} {hmm} {seed}")
+
+
+class Hmmsearch:
+
+    hmm: str
+    database: str
+    output: str
+    cpu: int
+
+    unzipped_hmm: Optional[str] = None
+    unzipped_db: Optional[str] = None
+    translated_db: Optional[str] = None
+
+    def __is_dna(self, fasta: str) -> bool:
+        dna_chars = ('A', 'C', 'G', 'T', 'N', 'a', 'c', 'g', 't', 'n')
+
+        with FastaParser(fasta) as parser:
+            is_dna = True
+            for char in set(parser.next()[1]):
+                if char not in dna_chars:
+                    is_dna = False
+                    break
+        return is_dna
+
+    def __six_frame_translate(self, fna: str) -> str:
+
+        output = fna + '_translated.fa'
+
+        with FastaParser(fna) as parser:
+            with FastaWriter(output, 'w') as writer:
+                for head, seq in parser:
+                    for frame in (1, 2, 3):
+                        new_head = f"{head};frame={frame}"
+                        aa_seq = translate(seq[frame - 1:])
+                        writer.write(new_head, aa_seq)
+
+                    for frame in (-1, -2, -3):
+                        new_head = f"{head};frame={frame}"
+                        rc_seq = rev_comp(seq)
+                        aa_seq = translate(rc_seq[-frame - 1:])
+                        writer.write(new_head, aa_seq)
+
+        return output
+
+    def set_hmm(self, hmm: str):
+
+        if hmm.endswith('.gz'):
+            gzip(hmm, keep=True)
+            hmm = hmm[:-len('.gz')]
+            self.unzipped_hmm = hmm  # capture the intermediate file
+
+        self.hmm = hmm
+
+    def set_database(self, database: str):
+
+        if database.endswith('.gz'):
+            gzip(database, keep=True)
+            database = database[:-len('.gz')]
+            self.unzipped_db = database  # capture the intermediate file
+
+        if self.__is_dna(fasta=database):
+            database = self.__six_frame_translate(fna=database)
+            self.translated_db = database  # capture the intermediate file
+
+        self.database = database
+
+    def not_correct_header(self) -> bool:
+
+        with FastaParser(self.database) as parser:
+            for head, seq in parser:
+                if ' ' in head:
+                    return True
+
+        return False
+
+    def print_error_message(self):
+        printf(f"Because the database '{self.database}' contains blank space in headers, hmmsearch is aborted")
+
+    def execute(self):
+        cmd = f'hmmsearch --cpu {self.cpu} {self.hmm} {self.database} > {self.output}'
+        call(cmd)
+
+    def clean_up(self):
+        if self.unzipped_hmm is not None:
+            os.remove(self.unzipped_hmm)
+
+        if self.unzipped_db is not None:
+            os.remove(self.unzipped_db)
+
+        if self.translated_db is not None:
+            os.remove(self.translated_db)
+
+    def main(
+            self,
+            hmm: str,
+            database: str,
+            output: str,
+            cpu: int):
+
+        self.cpu = cpu
+        self.output = output
+
+        self.set_hmm(hmm=hmm)
+        self.set_database(database=database)
+
+        if self.not_correct_header():
+            self.print_error_message()
+            return
+
+        self.execute()
+
+        self.clean_up()
+
+
+def hmmsearch(hmm: str, database: str, output: str, cpu: int = 2):
+    """
+    Args:
+        hmm: path-like
+            .hmm file, .gz format accepted
+
+        database: path-like
+            The fasta database to be searched against, .gz format accepted
+
+        output: path-like
+            The output text file reported by the command "hmmsearch"
+
+        cpu:
+            Number of CPUs
+    """
+
+    Hmmsearch().main(
+        hmm=hmm, database=database, output=output, cpu=cpu)
+
+
+class ParseSixFrameTranslationHmmsearchTxt:
+
+    file: str
+    output: str
+    database: str
+
+    contig_len_dict: Dict[str, int]
+
+    gtf: Any  # file io object
+    gtf_line_count: int
+
+    def __remove_header(self, full_text: str) -> str:
+        t = full_text
+        return t[t.find('\n\n') + 2:]
+
+    def get_full_text(self) -> str:
+        with open(self.file) as fh:
+            ret = self.__remove_header(full_text=fh.read())
+        return ret
+
+    def set_contig_len_dict(self):
+
+        if self.database is None:
+            self.contig_len_dict = {}
+
+        else:
+            with FastaParser(self.database) as parser:
+                self.contig_len_dict = {
+                    head: len(seq) for head, seq in parser}
+
+    def get_query_blocks(self, full_text: str) -> List[str]:
+
+        blocks = full_text.split('\n//\n')[:-1]
+
+        string = '[No hits detected that satisfy reporting thresholds]'
+        blocks = [b for b in blocks if string not in b]
+
+        return blocks
+
+    def get_pfam_info(self, query_block: str) -> Tuple[str, str, str]:
+
+        line1, line2, line3 = query_block.splitlines()[:3]
+
+        pfam_name = line1.split(':')[1].strip()
+        pfam_accession = line2.split(':')[1].strip()
+        pfam_description = line3.split(':')[1].strip()
+
+        return pfam_name, pfam_accession, pfam_description
+
+    def get_contig_blocks(self, query_block: str) -> List[str]:
+
+        x = 'Domain annotation for each sequence (and alignments):\n'
+        y = 'Internal pipeline statistics summary:'
+
+        text_between_x_and_y = query_block.split(x)[1].split(y)[0]
+
+        contig_blocks = text_between_x_and_y.split('>> ')[1:]
+
+        message = '[No individual domains that satisfy reporting thresholds (although complete target did)]'
+        contig_blocks = [c for c in contig_blocks if message not in c]
+
+        return contig_blocks
+
+    def get_table_block(self, contig_block: str) -> str:
+        return contig_block.split('\n\n  Alignments for each domain:')[0]
+
+    def __get_contig_length(self, contig_id: str) -> int:
+        if self.contig_len_dict:
+            return self.contig_len_dict[contig_id]
+        else:
+            return int(contig_id.split('len=')[1])
+
+    def get_contig_info(self, table_block: str) -> Tuple[str, int, int, str]:
+
+        title = table_block.splitlines()[0]
+
+        contig_id, signed_frame = title.split(';frame=')
+        signed_frame = int(signed_frame)
+
+        contig_length = self.__get_contig_length(contig_id=contig_id)
+        frame = abs(signed_frame)
+        strand = '+' if signed_frame > 0 else '-'
+
+        return contig_id, contig_length, frame, strand
+
+    def get_hit_lines(self, table_block: str) -> List[str]:
+
+        hit_lines = []
+        for line in table_block.splitlines()[3:]:  # from the 4th line, each line is a hit
+            symbol = line.split()[1]
+
+            # Satisfies both per-sequence (contig) and per-domain (query) inclusion thresholds
+            if symbol == '!':
+                hit_lines.append(line)
+
+        return hit_lines
+
+    def get_hit_info(self, hit_line: str) -> Tuple[int, int, float]:
+        items = hit_line.split()
+
+        start_aa = int(items[9])
+        end_aa = int(items[10])
+        independent_evalue = float(items[5])
+
+        return start_aa, end_aa, independent_evalue
+
+    def __get_reverse_strand_positions(
+            self,
+            contig_length: int,
+            start: int,
+            end: int) -> Tuple[int, int]:
+
+        start, end = contig_length - end + 1, contig_length - start + 1
+
+        return start, end
+
+    def aa_to_bp_positions(self, contig_length: int, strand: str, frame: int, start_aa: int, end_aa: int) -> Tuple[int, int]:
+
+        # start_aa: 1-based, inclusive
+        # end_bp: 1-based, inclusive
+        # bp index for GTF files are 1-based, inclusive
+        start_bp = ((start_aa - 1) * 3 + 1) + (frame - 1)
+        end_bp = (end_aa * 3) + (frame - 1)
+
+        if strand == '-':
+            start_bp, end_bp = self.__get_reverse_strand_positions(
+                contig_length=contig_length,
+                start=start_bp,
+                end=end_bp)
+
+        return start_bp, end_bp
+
+    def get_gtf_attribute(
+            self,
+            name: str,
+            accession: str,
+            description: str,
+            evalue: float) -> str:
+
+        attribute = f'name "{name}";accession "{accession}";description "{description}";E_value "{evalue}"'
+
+        return attribute
+
+    def write_gtf_line(
+            self,
+            seqname: str,
+            start: int,
+            end: int,
+            strand: str,
+            attribute: str):
+
+        source = '.'
+        feature = 'CDS'
+        score = '.'
+        frame = 0
+
+        items = [
+            seqname,
+            source,
+            feature,
+            start,
+            end,
+            score,
+            strand,
+            frame,
+            attribute,
+        ]
+
+        line = '\t'.join(map(str, items)) + '\n'
+
+        self.gtf.write(line)
+        self.gtf_line_count += 1
+
+    def log(self):
+        printf(f'There are totally {self.gtf_line_count} hits exported into the GTF file "{self.output}".')
+
+    def main(
+            self,
+            file: str,
+            output: str,
+            database: Optional[str]):
+
+        self.file = file
+        self.output = output
+        self.database = database
+
+        full_text = self.get_full_text()
+
+        self.set_contig_len_dict()
+
+        self.gtf = open(output, 'w')
+        self.gtf_line_count = 0
+
+        query_blocks = self.get_query_blocks(full_text=full_text)  # each query = Pfam domain
+
+        for query_block in query_blocks:
+
+            pfam_name, pfam_accession, pfam_description = self.get_pfam_info(
+                query_block=query_block)
+
+            contig_blocks = self.get_contig_blocks(
+                query_block=query_block)
+
+            for contig_block in contig_blocks:
+
+                table_block = self.get_table_block(
+                    contig_block=contig_block)
+
+                contig_id, contig_length, frame, strand = self.get_contig_info(
+                    table_block=table_block)
+
+                hit_lines = self.get_hit_lines(table_block=table_block)
+
+                for hit_line in hit_lines:
+
+                    start_aa, end_aa, independent_evalue = self.get_hit_info(
+                        hit_line=hit_line)
+
+                    start_bp, end_bp = self.aa_to_bp_positions(
+                        contig_length=contig_length,
+                        strand=strand,
+                        frame=frame,
+                        start_aa=start_aa,
+                        end_aa=end_aa)
+
+                    attribute = self.get_gtf_attribute(
+                        name=pfam_name,
+                        accession=pfam_accession,
+                        description=pfam_description,
+                        evalue=independent_evalue)
+
+                    self.write_gtf_line(
+                        seqname=contig_id,
+                        start=start_bp,
+                        end=end_bp,
+                        strand=strand,
+                        attribute=attribute)
+
+        self.gtf.close()
+
+        self.log()
+
+
+def parse_six_frame_translation_hmmsearch_result(
+        file: str, output: str, database: Optional[str] = None):
+
+    ParseSixFrameTranslationHmmsearchTxt().main(
+        file=file, output=output, database=database)
 
 
 def parse_hmmsearch_result(
@@ -170,121 +443,9 @@ def parse_hmmsearch_result(
             This is used to get the contig length
             If None, then use the contig name in the input <file> to get contig length
     """
-    # Read the hmmsearch result
-    with open(file, 'r') as fh:
-        text = fh.read()
 
-    # Set up a dictionary of contig lengths
-    if database:
-        with FastaParser(database) as parser:
-            contig_length_dict = {head: len(seq) for head, seq in parser}
-    else:
-        contig_length_dict = {}
-
-    # The output GTF file
-    gtf = open(output, 'w')
-    gtf_line_count = 0
-
-    # Remove the document header
-    text = text[text.find('\n\n') + 2:]
-
-    # Use '//' to split into queries, each query is the result from a particular Pfam-A domain
-    all_queries = text.split('\n//\n')[:-1]
-
-    # Remove the sections without hits
-    queries = []
-    for query in all_queries:
-        if not '[No hits detected that satisfy reporting thresholds]' in query:
-            queries.append(query)
-
-    # First layer of for loop: Each hmm query is a section
-    for query in queries:
-        # Get the first three lines
-        line1, line2, line3 = query.splitlines()[:3]
-
-        ### Three variables for the query ###
-        query_name = line1.split(':')[1].strip()
-        query_accession = line2.split(':')[1].strip()
-        query_description = line3.split(':')[1].strip()
-        ### Three variables for the query ###
-
-        # Get the text between 'Domain annotation for...' and 'Internal pipeline...'
-        text = query.split('Domain annotation for each sequence (and alignments):\n')[1].split(
-            'Internal pipeline statistics summary:')[0]
-
-        # Use '>> ' to split into translated contigs
-        translated_contigs = text.split('>> ')[1:]
-
-        # Second layer of for loop: Each translated contig hit by the query
-        for contig in translated_contigs:
-            # Very corner case where there's no table
-            if '[No individual domains that satisfy reporting thresholds (although complete target did)]' in contig:
-                continue
-
-            # Get the table appearing before 'Alignments for each domain'
-            table = contig.split('\n\n  Alignments for each domain:')[0]
-
-            # line1 is the header line for the translated contig
-            line1 = table.splitlines()[0]
-            contig_id, frame = line1.split(';frame=')
-            frame = int(frame)
-            if contig_length_dict:
-                contig_length_bp = contig_length_dict[contig_id]
-            else:
-                contig_length_bp = int(contig_id.split('len=')[1])
-
-            # From the 4th line, each line is a hit
-            hits = table.splitlines()[3:]
-
-            # Third layer of for loop: each hit of a query within the translated contig
-            for hit in hits:
-                number, satisfied, score, \
-                bias, c_Evalue, i_Evalue, \
-                hmm_from, hmm_to, symbol_1, \
-                ali_from, ali_to, symbol_2, \
-                env_from, env_to, symbol_3, acc = hit.split()
-
-                # '!' means: The hit satisfies both per-sequence (contig) and per-domain (query) inclusion thresholds
-                if satisfied == '!':
-                    # Both <start_aa> and <end_aa> are 1-based index
-                    start_aa = int(ali_from)  # aligned from
-                    end_aa = int(ali_to)  # aligned to
-                    i_Evalue = float(i_Evalue)  # independent E-value
-
-                    # All the bp index are 1-based for GTF files
-                    # If frame = 1 or -1, then add (abs(frame) - 1) = 0
-                    # Do NOT forget to take absolute value of frame! I spent hours on this bug.
-                    start_bp = ((start_aa - 1) * 3 + 1) + (abs(frame) - 1)
-                    end_bp = (end_aa * 3) + (abs(frame) - 1)
-
-                    # If + strand, then do nothing to the start_bp and end_bp
-                    if frame > 0:
-                        strand = '+'
-                    # If - strand, then invert it from the - strand positions to the + strand positions
-                    else:
-                        strand = '-'
-                        start_bp, end_bp = contig_length_bp - end_bp + 1, contig_length_bp - start_bp + 1
-
-                    # Get attributes for the particular query, i.e. the Pfam domain
-                    attribute = 'name "{}";accession "{}";description "{}";E_value "{}"'.format(
-                        query_name, query_accession, query_description, i_Evalue)
-
-                    line = '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
-                        contig_id,  # seqname
-                        '.',        # source
-                        'CDS',      # feature
-                        start_bp,   # start
-                        end_bp,     # end
-                        '.',        # score
-                        strand,     # strand
-                        0,          # frame
-                        attribute)  # attribute
-
-                    gtf.write(line)
-                    gtf_line_count += 1
-
-    gtf.close()
-    printf('There are totally {} hits exported into the GTF file "{}".'.format(gtf_line_count, output))
+    parse_six_frame_translation_hmmsearch_result(
+        file=file, output=output, database=database)
 
 
 def validate_hmm_parse_result(

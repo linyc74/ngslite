@@ -12,7 +12,3 @@ class TestArrfunc(unittest.TestCase):
         arr2 = np.array([100, 1, 100, 2, 100, 3, 100])
         diff = arr1 - arr2
         self.assertEqual(np.sum(diff), 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

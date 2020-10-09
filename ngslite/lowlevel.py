@@ -34,9 +34,9 @@ def check_output(cmd: str) -> Optional[str]:
         return None
 
 
-def _temp(prefix: str = 'temp', suffix: str = '') -> str:
+def _temp(prefix: str = 'temp', suffix: str = '', dstdir: str = '.') -> str:
     """
-    Returns a temp file name that does not exist in the current folder, i.e. temp000.sam
+    Returns a temp file name that does not exist in the dstdir, i.e. temp000.txt
 
     Args:
         prefix
@@ -46,15 +46,18 @@ def _temp(prefix: str = 'temp', suffix: str = '') -> str:
     """
     i = 0
     while True:
-        name = f"{prefix}{i:03}{suffix}"
-        if not os.path.exists(name):
-            return name
+        fpath = os.path.join(dstdir, f'{prefix}{i:03}{suffix}')
+        if not os.path.exists(fpath):
+            return fpath
         i += 1
+
+
+get_temp_fname = _temp
 
 
 def gzip(file: str, keep: bool = True):
     """
-    Call the "gzip" command to zip or unzip files.
+    gzip or gunzip files
 
     Args:
         file: path-like
@@ -76,7 +79,7 @@ def gzip(file: str, keep: bool = True):
         stdout = ''
         output = ''
 
-    call(f"gzip {decompress}{stdout}{file}{output}")
+    call(f'gzip {decompress}{stdout}{file}{output}')
 
 
 def printf(s: str):

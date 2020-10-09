@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/linyc74/ngslite/badge.svg)](https://coveralls.io/github/linyc74/ngslite)
+
 # ngslite
 **Light-weight functions for next-generation sequencing (NGS) data analysis**
 

@@ -1,5 +1,4 @@
 import shutil
-import unittest
 from ngslite.fasta import FastaParser
 from ngslite.dataclass import GenericFeature
 from ngslite.genbank_parse import get_seqname, get_circular, \
@@ -7,7 +6,7 @@ from ngslite.genbank_parse import get_seqname, get_circular, \
     get_feature_attributes, get_sequence, is_valid_first_line_of_feature, \
     construct_chromosome, genbank_to_fasta, genbank_to_gff, genbank_to_gtf, \
     read_genbank, GenbankTextParser
-from .setup_dirs import setup_dirs
+from .setup import setup_dirs, TestCase
 
 
 locus_text = '''\
@@ -133,10 +132,10 @@ ORIGIN
 '''
 
 
-class TestGenbankParse(unittest.TestCase):
+class TestGenbankParse(TestCase):
 
     def setUp(self):
-        self.testdir, self.datadir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
 
     def tearDown(self):
         shutil.rmtree(self.workdir)
@@ -259,7 +258,7 @@ MIQNPVYDVVKLPENWKELFEMLMGDNADLRKEWMSQ')
             partial_end=False
         )
 
-        with GenbankTextParser(file=f'{self.datadir}/NC_000866.gbk') as parser:
+        with GenbankTextParser(file=f'{self.indir}/NC_000866.gbk') as parser:
             genbank_text = parser.next()
             chromosome = construct_chromosome(genbank_text=genbank_text)
 
@@ -272,12 +271,12 @@ MIQNPVYDVVKLPENWKELFEMLMGDNADLRKEWMSQ')
     def test_genbank_to_fasta(self):
         fname = 'NC_000866'
         genbank_to_fasta(
-            file=f'{self.datadir}/{fname}.gbk',
+            file=f'{self.indir}/{fname}.gbk',
             output=f'{self.outdir}/{fname}.fna'
         )
 
         parser1 = FastaParser(f'{self.outdir}/{fname}.fna')
-        parser2 = FastaParser(f'{self.datadir}/{fname}.fna')
+        parser2 = FastaParser(f'{self.indir}/{fname}.fna')
 
         for item1, item2 in zip(parser1, parser2):
             _, seq1 = item1
@@ -290,7 +289,7 @@ MIQNPVYDVVKLPENWKELFEMLMGDNADLRKEWMSQ')
     def test_genbank_to_gtf(self):
         fname = 'NC_000866'
         genbank_to_gtf(
-            file=f'{self.datadir}/{fname}.gbk',
+            file=f'{self.indir}/{fname}.gbk',
             output=f'{self.outdir}/{fname}.gtf',
             skip_types=''
         )
@@ -298,7 +297,7 @@ MIQNPVYDVVKLPENWKELFEMLMGDNADLRKEWMSQ')
     def test_genbank_to_gff(self):
         fname = 'NC_000866'
         genbank_to_gff(
-            file=f'{self.datadir}/{fname}.gbk',
+            file=f'{self.indir}/{fname}.gbk',
             output=f'{self.outdir}/{fname}.gff3',
             skip_types=''
         )
@@ -332,14 +331,10 @@ MIQNPVYDVVKLPENWKELFEMLMGDNADLRKEWMSQ')
         )
 
         fname = 'NC_000866'
-        chromosomes = read_genbank(file=f'{self.datadir}/{fname}.gbk')
+        chromosomes = read_genbank(file=f'{self.indir}/{fname}.gbk')
         for chromosome in chromosomes:
             for feature in chromosome.features:
                 locus_tag = feature.get_attribute('locus_tag')
                 if feature.type == 'CDS' and locus_tag == 'T4p003':
                     self.assertEqual(repr(feature), repr(target_feature))
                     break
-
-
-if __name__ == '__main__':
-    unittest.main()
