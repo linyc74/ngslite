@@ -157,7 +157,3 @@ def pretty_print_wobble_codon_dict():
         text += f'{char0}{wobble_codon}: {aa},'
 
     print(text + '\n}')
-
-
-if __name__ == '__main__':
-    pretty_print_wobble_codon_dict()
