@@ -220,7 +220,7 @@ def _sample_sam(file: str, fraction: float, output: str):
     else:  # file ends with '.sam' or others
         output_bam = ''
 
-    call(f"samtools view -s {fraction} {output_bam}{file} > {output}")
+    call(f"samtools view -h -s {fraction} {output_bam}{file} > {output}")
 
 
 def random_sample(

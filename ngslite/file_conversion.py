@@ -1,7 +1,10 @@
 from .lowlevel import call
 
 
-def sam_to_bam(file: str, keep: bool = True):
+def sam_to_bam(
+        file: str,
+        keep: bool = True,
+        output: str = None) -> str:
     """
     Wrapper function of "samtools view" to convert sam into bam
 
@@ -10,16 +13,28 @@ def sam_to_bam(file: str, keep: bool = True):
 
         keep:
             Keep the input file or not
+
+        output: path-like
     """
+    if output is None:
+        output = f'{file[:-4]}.bam'
+
     # -S: input is a sam
     # -b: output is a bam
     # -h: include header section
-    call(f"samtools view -S -b -h {file} > {file[:-4]}.bam")
+    cmd = f'samtools view -S -b -h {file} > {output}'
+    call(cmd)
+
     if not keep:
-        call(f"rm {file}")
+        call(f'rm {file}')
+
+    return output
 
 
-def bam_to_sam(file: str, keep: bool = True):
+def bam_to_sam(
+        file: str,
+        keep: bool = True,
+        output: str = None) -> str:
     """
     Wrapper function of "samtools view" to convert bam into sam
 
@@ -28,11 +43,18 @@ def bam_to_sam(file: str, keep: bool = True):
 
         keep:
             Keep the input file or not
+
+        output: path-like
     """
+    if output is None:
+        output = f'{file[:-4]}.sam'
+
     # -h: include header section
-    call(f"samtools view -h {file} > {file[:-4]}.sam")
+    call(f'samtools view -h {file} > {output}')
     if not keep:
         call(f"rm {file}")
+
+    return output
 
 
 def fq_to_fa(file: str, keep: bool = True):
