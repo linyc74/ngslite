@@ -17,25 +17,63 @@ class TestFileConversion(TestCase):
 
     def test_sam_to_bam(self):
 
-        infile = f'{self.indir}/example.sam'
-        outfile = f'{self.outdir}/example.bam'
-        checkfile = f'{self.indir}/example.bam'
+        file = f'{self.indir}/example.sam'
+        output = f'{self.outdir}/example.bam'
+        correct_output = f'{self.indir}/example.bam'
 
-        path = sam_to_bam(file=infile, keep=True, output=outfile)
+        path = sam_to_bam(file=file, keep=True, output=output)
 
         self.assertTrue(os.path.exists(path))
 
-        with open(outfile, 'rb') as fh1:
-            with open(checkfile, 'rb') as fh2:
+        with open(output, 'rb') as fh1:
+            with open(correct_output, 'rb') as fh2:
                 self.assertTrue(fh1.read(), fh2.read())
 
     def test_bam_to_sam(self):
-        infile = f'{self.indir}/example.bam'
-        outfile = f'{self.outdir}/example.sam'
-        checkfile = f'{self.indir}/example.sam'
 
-        path = bam_to_sam(file=infile, keep=True, output=outfile)
+        file = f'{self.indir}/example.bam'
+        output = f'{self.outdir}/example.sam'
+        correct_output = f'{self.indir}/example.sam'
+
+        path = bam_to_sam(file=file, keep=True, output=output)
 
         self.assertTrue(os.path.exists(path))
 
-        self.assertFileEqual(file1=outfile, file2=checkfile)
+        self.assertFileEqual(file1=output, file2=correct_output)
+
+    def test_fq_to_fa(self):
+
+        file = f'{self.indir}/example.1.fq'
+        output = f'{self.outdir}/example.1.fa'
+        correct_output = f'{self.indir}/example.1.fa'
+
+        path = fq_to_fa(file=file, keep=True, output=output)
+
+        self.assertTrue(os.path.exists(path))
+
+        self.assertFileEqual(file1=output, file2=correct_output)
+
+    def test_vcf_to_bcf(self):
+
+        file = f'{self.indir}/example.vcf'
+        output = f'{self.outdir}/example.bcf'
+        correct_output = f'{self.indir}/example.bcf'
+
+        path = vcf_to_bcf(file=file, keep=True, output=output)
+
+        self.assertTrue(os.path.exists(path))
+
+        with open(output, 'rb') as fh1:
+            with open(correct_output, 'rb') as fh2:
+                self.assertTrue(fh1.read(), fh2.read())
+
+    def test_bcf_to_vcf(self):
+        file = f'{self.indir}/example.bcf'
+        output = f'{self.outdir}/example.vcf'
+        correct_output = f'{self.indir}/example.vcf'
+
+        path = bcf_to_vcf(file=file, keep=True, output=output)
+
+        self.assertTrue(os.path.exists(path))
+
+        self.assertFileEqual(file1=output, file2=correct_output)
