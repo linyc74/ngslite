@@ -1,8 +1,6 @@
 import os
 import shutil
 from ngslite.file_conversion import sam_to_bam, bam_to_sam, fq_to_fa, vcf_to_bcf, bcf_to_vcf
-from ngslite.random import random_sample
-from ngslite.count import count_reads
 from .setup import setup_dirs, TestCase
 
 

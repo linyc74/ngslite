@@ -55,7 +55,10 @@ def _temp(prefix: str = 'temp', suffix: str = '', dstdir: str = '.') -> str:
 get_temp_fname = _temp
 
 
-def gzip(file: str, keep: bool = True):
+def gzip(
+        file: str,
+        keep: bool = True,
+        output: Optional[str] = None) -> str:
     """
     gzip or gunzip files
 
@@ -64,22 +67,29 @@ def gzip(file: str, keep: bool = True):
 
         keep:
             Keep the input file or not
+
+        output: path-like
     """
     is_gz = file.endswith('.gz')
+    decompress = '--decompress' if is_gz else ''
 
-    decompress = '--decompress ' if is_gz else ''
-
-    if keep:
-        stdout = '--stdout '
+    if output is None:
         if is_gz:
-            output = f' > {file[:-3]}'
+            output = f'{file[:-3]}'
         else:
-            output = f' > {file}.gz'
-    else:
-        stdout = ''
-        output = ''
+            output = f'{file}.gz'
 
-    call(f'gzip {decompress}{stdout}{file}{output}')
+    args = [
+        'gzip', decompress, '--stdout', f'"{file}"', ">", f'"{output}"'
+    ]
+
+    cmd = ' '.join(args)
+    call(cmd=cmd)
+
+    if not keep:
+        os.remove(file)
+
+    return output
 
 
 def printf(s: str):
