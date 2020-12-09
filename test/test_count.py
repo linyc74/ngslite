@@ -1,4 +1,3 @@
-import os
 import shutil
 from ngslite.count import count_reads
 from .setup import setup_dirs, TestCase
