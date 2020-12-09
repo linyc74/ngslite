@@ -12,7 +12,7 @@ class TestCmdToolkit(TestCase):
         shutil.rmtree(self.workdir)
         shutil.rmtree(self.outdir)
 
-    def test_faa(self):
+    def test_trim_galore(self):
 
         fq1 = f'{self.indir}/sample.1.fq'
         fq2 = f'{self.indir}/sample.2.fq'

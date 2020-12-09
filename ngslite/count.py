@@ -1,6 +1,20 @@
 import os
 import subprocess
 from .lowlevel import gzip, printf
+from .filetools import get_temp_path
+
+
+def _unzip(file: str) -> str:
+
+    file_type = file[:-3].split('.')[-1]
+
+    temp = get_temp_path(
+        prefix=f'{file[:-3]}_count',
+        suffix=f'.{file_type}')
+
+    file = gzip(file=file, keep=True, output=temp)
+
+    return file
 
 
 def count_reads(file: str, mapped: bool = True) -> int:
@@ -19,11 +33,11 @@ def count_reads(file: str, mapped: bool = True) -> int:
     Returns:
         The number of reads or sequences contained in the input file
     """
-    is_gz = False
-    if file.endswith('.gz'):
-        gzip(file, keep=True)
-        file = file[:-3]
-        is_gz = True
+
+    is_gz = file.endswith('.gz')
+
+    if is_gz:
+        file = _unzip(file=file)
 
     ftypes = ['fq', 'fastq', 'fa', 'fasta', 'sam', 'bam']
     assert file.split('.')[-1] in ftypes, 'Invalid input file extention.'
@@ -58,4 +72,3 @@ def count_reads(file: str, mapped: bool = True) -> int:
         os.remove(file)
 
     return count
-

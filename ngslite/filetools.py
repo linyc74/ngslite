@@ -68,6 +68,20 @@ def get_dirs(
     return ret
 
 
+def get_temp_path(
+        prefix: str = 'temp',
+        suffix: str = '') -> str:
+
+    i = 0
+    while True:
+        i += 1
+        path = f'{prefix}{i}{suffix}'
+        if not os.path.exists(path):
+            break
+
+    return path
+
+
 def concat(files: List[str], output: str):
     """
     Args:

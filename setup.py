@@ -12,14 +12,7 @@ def main():
         license='MIT',
         packages=['ngslite'],
         python_requires='>3.6',
-        install_requires=[
-            'numpy>=1.18',
-            'matplotlib>=3.2',
-            'pandas>=1.0',
-            'biopython>=1.77',
-            'scipy>=1.5',
-            'dna_features_viewer>=3.0',
-        ],
+        install_requires=['numpy>=1.18'],
         zip_safe=False
     )
 

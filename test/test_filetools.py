@@ -1,9 +1,9 @@
 import shutil
-from ngslite.filetools import get_files, get_dirs, zip_broadcast
+from ngslite.filetools import get_files, get_dirs, get_temp_path, zip_broadcast
 from .setup import setup_dirs, TestCase
 
 
-class TestCmdToolkit(TestCase):
+class TestFiletools(TestCase):
 
     def setUp(self):
         self.indir, self.workdir, self.outdir = setup_dirs(__file__)
@@ -15,7 +15,7 @@ class TestCmdToolkit(TestCase):
     def test_get_files(self):
 
         files = get_files(
-            source=f'{self.indir}',
+            source=f'{self.indir}/test_get_files',
             startswith='',
             endswith='',
             isfullpath=False)
@@ -27,7 +27,7 @@ class TestCmdToolkit(TestCase):
     def test_get_dirs(self):
 
         files = get_dirs(
-            source=f'{self.indir}',
+            source=f'{self.indir}/test_get_dirs',
             startswith='',
             endswith='',
             isfullpath=False)
@@ -35,6 +35,17 @@ class TestCmdToolkit(TestCase):
         expected = ['1', '2']
 
         self.assertListEqual(expected, files)
+
+    def test_get_temp_path(self):
+
+        self.assertEqual('temp1', get_temp_path())
+
+        path = get_temp_path(
+            prefix=f'{self.indir}/temp',
+            suffix='.txt'
+        )
+        expected = f'{self.indir}/temp2.txt'
+        self.assertEqual(expected, path)
 
     def test_zip_broadcast(self):
 
