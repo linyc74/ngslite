@@ -1,8 +1,7 @@
 from typing import Dict, List, Union
-from .fasta import FastaParser
-from .gtftools import read_gtf
-from .dataclass import Chromosome, FeatureArray
-from .feature_conversion import gtf_to_generic_feature
+from ngslite.fasta import FastaParser
+from ngslite.legacy.gtf import read_gtf
+from ngslite.dataclass import Chromosome, FeatureArray, gtf_to_generic_feature
 
 
 def read_fasta_gtf(

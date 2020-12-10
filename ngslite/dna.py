@@ -77,10 +77,11 @@ def base_content(seq: str, base: str) -> float:
     Compute the fraction of <base> in the <seq>
 
     Args
-        seq
+        seq:
+            DNA sequence
 
         base:
-            e.g., 'A' gives the A content; 'GC' gives the GC content; 'ACGT' should give 1.0
+            'A' gives the A content; 'GC' gives the GC content
     """
     seq = seq.upper()
     base = base.upper()

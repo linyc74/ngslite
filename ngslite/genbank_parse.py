@@ -1,10 +1,8 @@
 from collections import namedtuple
 from typing import List, Tuple, Union, Dict, Optional
-from .gtftools import GtfWriter
-from .gfftools import GffWriter
+from .gff import GffWriter
 from .fasta import FastaWriter
-from .dataclass import GenericFeature, FeatureArray, Chromosome
-from .feature_conversion import generic_to_gtf_feature, generic_to_gff_feature
+from .dataclass import GenericFeature, FeatureArray, Chromosome, generic_to_gff_feature
 
 
 GenbankText = namedtuple('GenbankText', 'locus_text features_text origin_text')
@@ -577,48 +575,6 @@ def genbank_to_fasta(file: str, output: str):
 
 DEFAULT_SKIP_TYPES = ['source']
 DEFAULT_SKIP_ATTRIBUTES = ['translation', 'codon_start', 'transl_table']
-
-
-def genbank_to_gtf(
-        file: str, output: str,
-        skip_types: Optional[Union[str, List[str]]] = None,
-        skip_attributes: Optional[Union[str, List[str]]] = None):
-    """
-    Extract features in the genbank file and write them into a GTF file
-
-    Args:
-        file: path-like
-            Input genbank file
-
-        output: path-like
-            Output GTF file
-
-        skip_types:
-            Feature of types not to be included
-
-        skip_attributes:
-            Attributes not to be included
-    """
-    if skip_types is None:
-        skip_types = DEFAULT_SKIP_TYPES
-    elif type(skip_types) is str:
-        skip_types = [skip_types]
-
-    if skip_attributes is None:
-        skip_attributes = DEFAULT_SKIP_ATTRIBUTES
-    elif type(skip_attributes) is str:
-        skip_attributes = [skip_attributes]
-
-    with GtfWriter(output) as writer:
-        with GenbankParser(file) as parser:
-            for chromosome in parser:
-                for feature in chromosome.features:
-                    if feature.type in skip_types:
-                        continue
-                    for key in skip_attributes:
-                        feature.remove_attribute(key)
-                    gtf_feature = generic_to_gtf_feature(feature)
-                    writer.write(gtf_feature)
 
 
 def genbank_to_gff(

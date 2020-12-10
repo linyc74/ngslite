@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from ngslite.arrfunc import replace_zero_with
+from ngslite.legacy.arrfunc import replace_zero_with
 
 
 class TestArrfunc(unittest.TestCase):

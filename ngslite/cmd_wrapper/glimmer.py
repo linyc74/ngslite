@@ -1,8 +1,8 @@
 import os
 from typing import Optional
-from .gtftools import GtfWriter
-from .fasta import FastaParser, FastaWriter
-from .lowlevel import call, _temp, printf
+from ..legacy.gtf import GtfWriter
+from ..lowlevel import call, _temp, printf
+from ..fasta import FastaParser, FastaWriter
 
 
 def _remove_extension(file: str) -> str:

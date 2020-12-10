@@ -1,7 +1,6 @@
 from typing import List, Optional, Dict, Union
 from .lowlevel import printf
-from .dataclass import GenericFeature, GffFeature
-from .feature_conversion import generic_to_gff_feature
+from .dataclass import GenericFeature, GffFeature, generic_to_gff_feature
 
 
 class GffParser:

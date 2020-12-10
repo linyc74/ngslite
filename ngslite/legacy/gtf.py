@@ -1,7 +1,7 @@
 from typing import List, Union, Optional, Dict
-from .lowlevel import printf
-from .dataclass import GenericFeature, GtfFeature, FeatureArray
-from .feature_conversion import generic_to_gtf_feature
+from ..lowlevel import printf
+from ..genbank_parse import GenbankParser, DEFAULT_SKIP_TYPES, DEFAULT_SKIP_ATTRIBUTES
+from ..dataclass import GenericFeature, GtfFeature, FeatureArray, generic_to_gtf_feature
 
 
 class GtfParser:
@@ -225,3 +225,45 @@ def print_gtf(feature: Optional[GtfFeature] = None):
         ]
         for i in range(9):
             printf(f"{i}\t{fields[i]}\t{feature[i]}")
+
+
+def genbank_to_gtf(
+        file: str, output: str,
+        skip_types: Optional[Union[str, List[str]]] = None,
+        skip_attributes: Optional[Union[str, List[str]]] = None):
+    """
+    Extract features in the genbank file and write them into a GTF file
+
+    Args:
+        file: path-like
+            Input genbank file
+
+        output: path-like
+            Output GTF file
+
+        skip_types:
+            Feature of types not to be included
+
+        skip_attributes:
+            Attributes not to be included
+    """
+    if skip_types is None:
+        skip_types = DEFAULT_SKIP_TYPES
+    elif type(skip_types) is str:
+        skip_types = [skip_types]
+
+    if skip_attributes is None:
+        skip_attributes = DEFAULT_SKIP_ATTRIBUTES
+    elif type(skip_attributes) is str:
+        skip_attributes = [skip_attributes]
+
+    with GtfWriter(output) as writer:
+        with GenbankParser(file) as parser:
+            for chromosome in parser:
+                for feature in chromosome.features:
+                    if feature.type in skip_types:
+                        continue
+                    for key in skip_attributes:
+                        feature.remove_attribute(key)
+                    gtf_feature = generic_to_gtf_feature(feature)
+                    writer.write(gtf_feature)

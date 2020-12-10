@@ -1,8 +1,8 @@
 import os
 import shutil
-from ngslite.hmmer import hmmsearch, parse_hmmsearch_result
+from ngslite.cmd_wrapper.hmmer import hmmsearch, parse_hmmsearch_result
 from ngslite.lowlevel import gzip
-from .setup import setup_dirs, TestCase
+from test.setup import setup_dirs, TestCase
 
 
 class TestHmmer(TestCase):

@@ -1,8 +1,8 @@
 import unittest
-from ngslite.dnatools import rev_comp, translate, base_content
+from ngslite.dna import rev_comp, translate, base_content
 
 
-class TestDnaTools(unittest.TestCase):
+class TestDna(unittest.TestCase):
 
     def test_rev_comp(self):
         self.assertEqual('AGTCagct', rev_comp('agctGACT'))

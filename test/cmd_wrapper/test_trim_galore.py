@@ -1,9 +1,9 @@
 import shutil
-from ngslite.cmd_toolkit import trim_galore
-from .setup import setup_dirs, TestCase
+from ngslite.cmd_wrapper.trim_galore import trim_galore
+from test.setup import setup_dirs, TestCase
 
 
-class TestCmdToolkit(TestCase):
+class TestTrimGalore(TestCase):
 
     def setUp(self):
         self.indir, self.workdir, self.outdir = setup_dirs(__file__)

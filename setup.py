@@ -4,7 +4,7 @@ from setuptools import setup
 def main():
     setup(
         name='ngslite',
-        version='1.1.4',
+        version='1.2.0',
         description='Light-weight functions for next-generation sequencing (NGS) data analysis',
         url='https://github.com/linyc74/ngslite',
         author='Yu-Cheng Lin',

@@ -4,8 +4,8 @@ from ngslite.dataclass import GenericFeature
 from ngslite.genbank_parse import get_seqname, get_circular, \
     split_features_text, get_feature_type, get_feature_location, \
     get_feature_attributes, get_sequence, is_valid_first_line_of_feature, \
-    construct_chromosome, genbank_to_fasta, genbank_to_gff, genbank_to_gtf, \
-    read_genbank, GenbankTextParser
+    construct_chromosome, genbank_to_fasta, genbank_to_gff, read_genbank, GenbankTextParser
+from ngslite import genbank_to_gtf
 from .setup import setup_dirs, TestCase
 
 

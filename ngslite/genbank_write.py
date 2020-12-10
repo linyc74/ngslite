@@ -1,8 +1,8 @@
 from typing import List, Union, Dict
 from datetime import date
-from .fasta_gtf import read_fasta_gtf
+from ngslite.legacy.fasta_gtf import read_fasta_gtf
 from .genbank_parse import GenbankText
-from .dnatools import translate, rev_comp
+from .dna import translate, rev_comp
 from .dataclass import GenericFeature, Chromosome
 
 
