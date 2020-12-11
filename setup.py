@@ -12,7 +12,7 @@ def main():
         license='MIT',
         packages=['ngslite'],
         python_requires='>3.6',
-        install_requires=['numpy>=1.18'],
+        install_requires=['numpy', 'pandas'],
         zip_safe=False
     )
 
