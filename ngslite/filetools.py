@@ -68,20 +68,6 @@ def get_dirs(
     return ret
 
 
-def get_temp_path(
-        prefix: str = 'temp',
-        suffix: str = '') -> str:
-
-    i = 0
-    while True:
-        i += 1
-        path = f'{prefix}{i}{suffix}'
-        if not os.path.exists(path):
-            break
-
-    return path
-
-
 def concat(files: List[str], output: str):
     """
     Args:
@@ -215,3 +201,61 @@ def tar_list(file: str) -> List[str]:
     """
     stdout = check_output(f'tar -tf "{file}"')
     return stdout.strip().split('\n')
+
+
+def get_temp_path(
+        prefix: str = 'temp',
+        suffix: str = '') -> str:
+    """
+    Returns a temp file name that does not exist, i.e. temp000.txt
+
+    Args:
+        prefix:
+            Can include the path
+
+        suffix:
+            Usually the file extension
+    """
+    i = 1
+    while True:
+        fpath = f'{prefix}{i:03}{suffix}'
+        if not os.path.exists(fpath):
+            return fpath
+        i += 1
+
+
+def gzip(
+        file: str,
+        keep: bool = True,
+        output: Optional[str] = None) -> str:
+    """
+    gzip or gunzip files
+
+    Args:
+        file: path-like
+
+        keep:
+            Keep the input file or not
+
+        output: path-like
+    """
+    is_gz = file.endswith('.gz')
+    decompress = '--decompress' if is_gz else ''
+
+    if output is None:
+        if is_gz:
+            output = f'{file[:-3]}'
+        else:
+            output = f'{file}.gz'
+
+    args = [
+        'gzip', decompress, '--stdout', f'"{file}"', ">", f'"{output}"'
+    ]
+
+    cmd = ' '.join(args)
+    call(cmd=cmd)
+
+    if not keep:
+        os.remove(file)
+
+    return output

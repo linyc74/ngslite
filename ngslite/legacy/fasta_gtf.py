@@ -1,22 +1,22 @@
 from typing import Dict, List, Union
-from .fasta import FastaParser
-from .gff import read_gff
-from .dataclass import Chromosome, FeatureArray, gff_to_generic_feature
+from ngslite.fasta import FastaParser
+from ngslite.legacy.gtf import read_gtf
+from ngslite.dataclass import Chromosome, FeatureArray, gtf_to_generic_feature
 
 
-def read_fasta_gff(
+def read_fasta_gtf(
         fasta: str,
-        gff: str,
+        gtf: str,
         as_dict: bool = False,
         circular: bool = False) \
         -> Union[List[Chromosome], Dict[str, Chromosome]]:
     """
-    Read fasta and gff simultaneously into Chromosome objects, i.e. annotated genomes
+    Read fasta and gtf simultaneously into Chromosome objects, i.e. annotated genomes
 
     Args:
         fasta: path-like
 
-        gff: path-like
+        gtf: path-like
 
         as_dict:
             Return as dictionary or not
@@ -37,18 +37,18 @@ def read_fasta_gff(
     """
     chromosomes = []
 
-    feature_dict = read_gff(gff, as_dict=True)
+    feature_dict = read_gtf(gtf, as_dict=True)
     # feature_dict has the data structure:
     # {
-    #   seqname: [GffFeature, ...], ...
+    #   seqname: [GtfFeature, ...], ...
     # }
 
     with FastaParser(fasta) as parser:
         for seqname, sequence in parser:
 
-            gff_features = feature_dict.get(seqname, [])
+            gtf_features = feature_dict.get(seqname, [])
 
-            features = list(map(gff_to_generic_feature, gff_features))
+            features = list(map(gtf_to_generic_feature, gtf_features))
 
             features = FeatureArray(
                 seqname=seqname,

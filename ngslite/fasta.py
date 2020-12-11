@@ -167,17 +167,20 @@ def write_fasta(
             writer.write(header=head, sequence=seq)
 
 
-def subset_fasta(file, headers, output):
+def subset_fasta(
+        file: str,
+        headers: Union[str, List[str]],
+        output: str):
     """
     Args:
-        file: str, path-like
-            The input fasta file
+        file:
+            The input fasta file path
 
-        headers: str, or list of str
+        headers:
             Each str is a header to be included
 
-        output: str, path-like
-            The output fasta file
+        output:
+            The output fasta file path
     """
     if isinstance(headers, str):
         headers = [headers]

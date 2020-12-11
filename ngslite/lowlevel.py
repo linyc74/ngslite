@@ -1,6 +1,5 @@
-import os
 import subprocess
-from typing import Optional
+from typing import Optional, Any
 
 
 def call(cmd: str, print_cmd: bool = True):
@@ -34,63 +33,5 @@ def check_output(cmd: str) -> Optional[str]:
         return None
 
 
-def _temp(prefix: str = 'temp', suffix: str = '', dstdir: str = '.') -> str:
-    """
-    Returns a temp file name that does not exist in the dstdir, i.e. temp000.txt
-
-    Args:
-        prefix
-
-        suffix:
-            Usually the file extension
-    """
-    i = 0
-    while True:
-        fpath = os.path.join(dstdir, f'{prefix}{i:03}{suffix}')
-        if not os.path.exists(fpath):
-            return fpath
-        i += 1
-
-
-get_temp_fname = _temp
-
-
-def gzip(
-        file: str,
-        keep: bool = True,
-        output: Optional[str] = None) -> str:
-    """
-    gzip or gunzip files
-
-    Args:
-        file: path-like
-
-        keep:
-            Keep the input file or not
-
-        output: path-like
-    """
-    is_gz = file.endswith('.gz')
-    decompress = '--decompress' if is_gz else ''
-
-    if output is None:
-        if is_gz:
-            output = f'{file[:-3]}'
-        else:
-            output = f'{file}.gz'
-
-    args = [
-        'gzip', decompress, '--stdout', f'"{file}"', ">", f'"{output}"'
-    ]
-
-    cmd = ' '.join(args)
-    call(cmd=cmd)
-
-    if not keep:
-        os.remove(file)
-
-    return output
-
-
-def printf(s: str):
+def printf(s: Any):
     print(s, flush=True)
