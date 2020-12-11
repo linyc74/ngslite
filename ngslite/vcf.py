@@ -16,22 +16,15 @@ class VcfParser:
         self.__vcf = open(file, 'r')
         header = ''
         while True:
-            # Get the current position
             pos = self.__vcf.tell()
-            # Readline and move on to the next position
             line = self.__vcf.readline()
             if line.startswith('#'):
                 header = header + line
             else:
-                # If reaching the alignment section, that is,
-                #   the header section has been parsed completely,
-                #   then go back one line and break out the loop
                 self.__vcf.seek(pos)
-                # Remember where the first line of data is
                 self.pos_0 = pos
                 break
-        # Store the header string
-        self.header = header
+        self.header = header.rstrip()
 
     def __enter__(self):
         return self

@@ -16,6 +16,18 @@ class GffParser:
         line1 = self.__gff.readline().rstrip()
         assert line1 == '##gff-version 3', 'The first line is not "##gff-version 3"'
 
+        header = ''
+        while True:
+            pos = self.__gff.tell()
+            line = self.__gff.readline()
+            if line.startswith('#'):
+                header += line
+            else:
+                self.__gff.seek(pos)
+                self.pos_0 = pos
+                break
+        self.header = header.rstrip()
+
     def __enter__(self):
         return self
 
@@ -24,8 +36,7 @@ class GffParser:
         return
 
     def __iter__(self):
-        self.__gff.seek(0)  # 0 = first character
-        self.__gff.readline()
+        self.__gff.seek(self.pos_0)
         return self
 
     def __next__(self):
@@ -56,21 +67,25 @@ class GffParser:
         line = self.__gff.readline().rstrip()
         if line:
             fields: List[Union[str, int, float]] = line.split('\t')
+
+            if len(fields) < 9:
+                return None
+
             for i in (3, 4, 7):
                 if fields[i] != '.':
                     fields[i] = int(fields[i])
+
             if fields[5] != '.':
                 fields[5] = float(fields[5])
+
             return GffFeature._make(fields)
-        else:  # line == ''
-            return None
 
     def close(self):
         self.__gff.close()
 
 
 class GffWriter:
-    def __init__(self, file: str, mode: str = 'w'):
+    def __init__(self, file: str, header: str = '', mode: str = 'w'):
         """
         Args:
             file: path-like
@@ -81,6 +96,8 @@ class GffWriter:
         self.__gff = open(file, mode)
         if mode == 'w':
             self.__gff.write('##gff-version 3\n')
+            if not header == '':
+                self.__gff.write(header.rstrip() + '\n')
 
     def __enter__(self):
         return self

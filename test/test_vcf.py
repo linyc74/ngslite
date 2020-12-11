@@ -50,7 +50,7 @@ class TestVcfWriter(TestCase):
             '1/1:43:5:.,.',
         )
 
-        output = file=f'{self.outdir}/output.vcf'
+        output = f'{self.outdir}/output.vcf'
 
         with VcfWriter(file=output, header=header, mode='w') as writer:
             writer.write(variant=variant)
