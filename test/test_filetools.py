@@ -38,13 +38,13 @@ class TestFiletools(TestCase):
 
     def test_get_temp_path(self):
 
-        self.assertEqual('temp1', get_temp_path())
+        self.assertEqual('temp001', get_temp_path())
 
         path = get_temp_path(
-            prefix=f'{self.indir}/temp',
+            prefix=f'{self.indir}/existing',
             suffix='.txt'
         )
-        expected = f'{self.indir}/temp2.txt'
+        expected = f'{self.indir}/existing002.txt'
         self.assertEqual(expected, path)
 
     def test_zip_broadcast(self):

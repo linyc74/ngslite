@@ -1,5 +1,6 @@
 import os
-from ..lowlevel import call, get_temp_fname
+from ..lowlevel import call
+from ..filetools import get_temp_path
 from ..legacy.gtf import GtfWriter
 from ..fasta import FastaParser, FastaWriter
 
@@ -24,7 +25,7 @@ def orf_finder(
     # ORFfinder can only take fasta headers <= 50 characters
     # Create a temporary fasta file with short headers
     #   and a dictionary matching the short and the original headers
-    temp_fa = get_temp_fname('temp', '.fa')  # for example, temp000.fa
+    temp_fa = get_temp_path('temp', '.fa')  # for example, temp000.fa
     contig_dict = {}
     with FastaParser(fasta) as parser:
         with FastaWriter(temp_fa) as writer:
@@ -35,7 +36,7 @@ def orf_finder(
 
     # -outfmt 3: output format = feature table
     # -ml [int]: minimal length
-    temp_table = get_temp_fname('temp', '.table')  # for example, temp000.table
+    temp_table = get_temp_path('temp', '.table')  # for example, temp000.table
     call(f"ORFfinder -in {temp_fa} -out {temp_table} -outfmt 3 -ml {min_length}")
 
     os.remove(temp_fa)

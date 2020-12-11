@@ -34,27 +34,6 @@ def check_output(cmd: str) -> Optional[str]:
         return None
 
 
-def get_temp_fname(
-        prefix: str = 'temp',
-        suffix: str = '') -> str:
-    """
-    Returns a temp file name that does not exist, i.e. temp000.txt
-
-    Args:
-        prefix:
-            Can include the path
-
-        suffix:
-            Usually the file extension
-    """
-    i = 0
-    while True:
-        fpath = f'{prefix}{i:03}{suffix}'
-        if not os.path.exists(fpath):
-            return fpath
-        i += 1
-
-
 def gzip(
         file: str,
         keep: bool = True,

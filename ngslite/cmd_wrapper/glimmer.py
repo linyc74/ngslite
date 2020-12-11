@@ -1,7 +1,8 @@
 import os
 from typing import Optional
 from ..legacy.gtf import GtfWriter
-from ..lowlevel import call, get_temp_fname, printf
+from ..lowlevel import call, printf
+from ..filetools import get_temp_path
 from ..fasta import FastaParser, FastaWriter
 
 
@@ -127,7 +128,7 @@ def glimmer3(
         else:
             print_cmd = False
 
-        temp = get_temp_fname(prefix='temp', suffix='')
+        temp = get_temp_path(prefix='temp', suffix='')
         with FastaWriter(f"{temp}.fa") as writer:
             writer.write(head, seq)
 

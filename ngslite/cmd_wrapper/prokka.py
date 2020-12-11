@@ -1,7 +1,8 @@
 import os
 from typing import Optional, Dict
 from ..fasta import FastaParser, FastaWriter
-from ..lowlevel import call, get_temp_fname
+from ..lowlevel import call
+from ..filetools import get_temp_path
 
 
 def prokka(
@@ -52,7 +53,7 @@ def prokka(
     """
     # Create a temp fasta file to shorten the header because prokka does not take long headers
     # Also create a dictionary to index the shortened header
-    temp_fa = get_temp_fname('temp', '.fa')  # for example, temp000.fa
+    temp_fa = get_temp_path('temp', '.fa')  # for example, temp000.fa
     contig_dict = dict()
     with FastaParser(fasta) as parser:
         with FastaWriter(temp_fa) as writer:
@@ -106,7 +107,7 @@ def _rename_contig_id(
             {'contig_1_52671bp': 'assembly=control_contigs;id=NODE_400_length_52671_cov_411.055515;len=52671'}
                (short header)        (original header)
     """
-    temp_gb = get_temp_fname('temp', '.gb')  # for example, temp000.gb
+    temp_gb = get_temp_path('temp', '.gb')  # for example, temp000.gb
     with open(genbank) as reader:
         with open(temp_gb, 'w') as writer:
             for line in reader:
