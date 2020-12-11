@@ -10,19 +10,17 @@ def bwa_mapping(
         threads: int = 4,
         score: int = 30):
     """
-    Wrapper function of BWA mapping
-
     Args:
-        ref: path-like
+        ref:
             The reference fasta
 
-        fq1: path-like
+        fq1:
             The read-1 fastq
 
-        fq2: path-like
+        fq2:
             The read-2 fastq. If none, use <fq1> for unpaired mapping
 
-        sam: path-like
+        sam:
             The output SAM file
 
         threads:
@@ -31,16 +29,12 @@ def bwa_mapping(
         score:
             Don’t output alignment with score lower than <score>
     """
-    # Build index
-    call(f"bwa index {ref}")
+    call(f'bwa index {ref}')
 
     if fq2 is None:
-        # Unpaired
-        cmd = f"bwa mem -t {threads} -T {score} {ref} {fq1} > {sam}"
+        cmd = f'bwa mem -t {threads} -T {score} {ref} {fq1} > {sam}'  # unpaired
     else:
-        # Paired-end
-        cmd = f"bwa mem -t {threads} -T {score} {ref} {fq1} {fq2} > {sam}"
+        cmd = f'bwa mem -t {threads} -T {score} {ref} {fq1} {fq2} > {sam}'  # paired
     call(cmd)
 
-    # Remove the index files
     call('rm ref.*')

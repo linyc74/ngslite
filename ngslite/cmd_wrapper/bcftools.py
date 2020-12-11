@@ -48,16 +48,15 @@ def vcf_to_bcf(
         keep: bool = True,
         output: Optional[str] = None) -> str:
     """
-    Use cmd "bcftools view" to convert VCF into BCF
-
     Args:
         file:
-            VCF file
+            VCF file path
 
         keep:
             Keep the input file or not
 
-        output: path-like
+        output:
+            BCF file path
     """
     if output is None:
         output = f'{file[:-4]}.bcf'
@@ -78,16 +77,16 @@ def bcf_to_vcf(
         keep: bool = True,
         output: Optional[str] = None) -> str:
     """
-    Use cmd "bcftools view" to convert BCF into VCF
-
     Args:
         file:
-            VCF file path
+            BCF file path
 
         keep:
             Keep the input file or not
 
-        output: path-like
+        output:
+            VCF file path
+
     """
     if output is None:
         output = f'{file[:-4]}.vcf'
@@ -107,21 +106,19 @@ def sort_bcf(
         file: str,
         keep: bool = False):
     """
-    Wrapper function of "bcftools sort" to sort BCF and outputs a BCF file
-
     Args:
         file: path-like
 
         keep:
             Keep the input file or not
     """
-    file_out = f"{file[:-4]}_sorted.{file[-3:]}"
+    file_out = f'{file[:-4]}_sorted.{file[-3:]}'
     # -Ou: output uncompressed bcf
     # -o <file_out>
-    call(f"bcftools sort -Ou -o {file_out} {file}")
+    call(f'bcftools sort -Ou -o {file_out} {file}')
     if not keep:
-        call(f"rm {file}")
-        call(f"mv {file_out} {file}")
+        call(f'rm {file}')
+        call(f'mv {file_out} {file}')
 
 
 def subset_bcf_regions(
@@ -131,8 +128,8 @@ def subset_bcf_regions(
         keep: bool = True):
     """
     Args:
-        file: path-like
-            The input BCF file
+        file:
+            Input BCF file path
 
         regions:
             Each str is a region of the reference genome, e.g.
@@ -140,7 +137,7 @@ def subset_bcf_regions(
                 chr3:1000-2000  chromosome 3 from 1000th (inclusive) to 2000th (inclusive) base
 
         output:
-            The output BCF file
+            Output BCF file path
             If None, add subscript '_subset' to the input <file>
 
         keep: bool
@@ -156,8 +153,8 @@ def subset_bcf_regions(
 
     # -Ou: output uncompressed bcf
     # -o <file_out>
-    call(f"bcftools view -Ou -o {output} {file}{regions}")
+    call(f'bcftools view -Ou -o {output} {file}{regions}')
 
     if not keep:
-        call(f"rm {file}")
-        call(f"mv {output} {file}")
+        call(f'rm {file}')
+        call(f'mv {output} {file}')

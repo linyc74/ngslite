@@ -7,15 +7,15 @@ def fq_to_fa(
         keep: bool = True,
         output: Optional[str] = None) -> str:
     """
-    Use cmd "seqtk" to convert fastq into fasta
-
     Args:
-        file: path-like
+        file:
+            Fastq file path
 
         keep:
             Keep the input file or not
 
-        output: path-like
+        output:
+            Fasta file path
     """
     if output is None:
         if file.endswith('.fastq'):

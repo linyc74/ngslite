@@ -22,10 +22,10 @@ def prokka(
     This wrapper function takes a fasta and outputs a genbank file with the name <outdir>.gb
 
     Args
-        fasta: path-like
-            The input fasta to be annotated
+        fasta:
+            The nucleotide fasta to be annotated
 
-        outdir: path-like
+        outdir:
             The output directory and the genbank file name
 
         kingdom:

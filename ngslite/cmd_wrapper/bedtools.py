@@ -1,5 +1,6 @@
 from typing import Union, List
 from ..lowlevel import call
+from ..filetools import get_temp_path
 
 
 def bedtools_multicov(
@@ -11,34 +12,29 @@ def bedtools_multicov(
     Adds a header line to the <output> file
 
     Args:
-        bed: path-like
-            The bed file, or any other interval file accepted by the bedtools
+        bed:
+            The bed file path, or any other interval file accepted by the bedtools
 
-        bams: path-like or list of paths
+        bams:
+            One path or a list of paths
             The bam file, or any other mapped read files accepted by the bedtools
 
-        output: path-like
-            The output tab-separated file (tsv) with headers according to the input file type
-            Currently supports the header of the following file types:
-                bed file: chrom \t start \t end
-                gtf file: seqname \t source \t feature \t start \t end \t score \t strand \t frame \t attribute
+        output:
+            The output tab-separated file (tsv) with columns:
+                'chrom', 'start', 'end', BAM_FILE_1, BAM_FILE_2 ...
     """
-    if isinstance(bams, list):
-        bams = ' '.join(bams)
+    if type(bams) is str:
+        bams = [bams]
 
-    call(f"bedtools multicov -bams {bams} -bed {bed} > {output}")
+    bam_str = ' '.join(bams)
+    temp = get_temp_path(prefix='bedtools_multicov_')
+    call(f'bedtools multicov -bams {bam_str} -bed {bed} > {temp}')
 
-    # Read the data of the bedtools output
-    with open(output, 'r') as fh:
-        data = fh.read()
-    call(f"rm {output}")
+    # Write header line (columns)
+    with open(temp, 'r') as reader:
+        with open(output, 'w') as writer:
+            bam_columns = '\t'.join(bams)
+            writer.write(f'chrom\tstart\tend\t{bam_columns}\n')
+            writer.write(reader.read())
 
-    # Write the header line to the output file
-    with open(output, 'w') as fh:
-        # Replace ' ' with '\t'
-        bams = '\t'.join(bams.split(' '))
-        if bed.endswith('.bed'):
-            fh.write(f"chrom\tstart\tend\t{bams}\n")
-        if bed.endswith('.gtf'):
-            fh.write(f"seqname\tsource\tfeature\tstart\tend\tscore\tstrand\tframe\tattribute\t{bams}\n")
-        fh.write(data)
+    call(f'rm {temp}')

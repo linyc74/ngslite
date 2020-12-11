@@ -8,32 +8,27 @@ def bowtie2_mapping(
         sam: str,
         fq2: Optional[str] = None):
     """
-    Wrapper function of bowtie2 mapping
-
     Args:
-        ref: path-like
+        ref:
             The reference fasta
 
-        fq1: path-like
+        fq1:
             The read-1 fastq
 
-        fq2: path-like
-            The read-2 fastq. If none, use <fq1> for unpaired mapping
+        fq2:
+            The read-2 fastq
+            If none, use <fq1> for unpaired mapping
 
-        sam: path-like
-            The output SAM file
+        sam:
+            The output SAM
     """
-    # Build the .bt2 index files
-    call(f"bowtie2-build {ref} ref > {ref}_bowtie2_build.log")
+    call(f'bowtie2-build {ref} ref > {ref}_bowtie2_build.log')
 
     log = sam[:-4]+'.log'
     if fq2 is None:
-        # Unpaired mapping
-        cmd = f"bowtie2 -x ref -U {fq1} -S {sam} 2> {log}"
+        cmd = f'bowtie2 -x ref -U {fq1} -S {sam} 2> {log}'  # unpaired
     else:
-        # Paired-end mapping
-        cmd = f"bowtie2 -x ref -1 {fq1} -2 {fq2} -S {sam} 2> {log}"
+        cmd = f'bowtie2 -x ref -1 {fq1} -2 {fq2} -S {sam} 2> {log}'  # paired
     call(cmd)
 
-    # Remove the .bt2 index files
     call('rm *.bt2')

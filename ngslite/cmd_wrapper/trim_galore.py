@@ -9,16 +9,14 @@ def trim_galore(
         length: int = 20,
         log: str = 'trim_galore.log'):
     """
-    Wrapper function of "trim_galore"
-
     Use the default settings of "trim_galore",
         e.g. Illumina P5 and P7 adapter sequences are used to trim reads
 
     Args:
-        fq1: path-like
+        fq1:
             The read-1 fastq file
 
-        fq2: path-like
+        fq2:
             The read-2 fastq file
 
         quality:
@@ -30,8 +28,8 @@ def trim_galore(
         length:
             The minimal length (bp) of reads to be retained
 
-        log: path-like
-            Append the stderr of trim_galore to the <log> file
+        log:
+            Pipe stderr of trim_galore to the <log> file
     """
     gzip = ['', '--gzip '][gzip]
     call(f'trim_galore --paired --quality {quality} --phred33 --fastqc --illumina \
