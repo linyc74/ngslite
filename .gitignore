@@ -16,3 +16,4 @@ todo.txt
 .coverage
 .coveralls.yml
 htmlcov/
+script.sh

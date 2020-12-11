@@ -1,3 +1,5 @@
+__version__ = '1.2.1'
+
 from .cmd_wrapper.prokka import prokka
 from .cmd_wrapper.muscle import muscle
 from .cmd_wrapper.seqtk import fq_to_fa
