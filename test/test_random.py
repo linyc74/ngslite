@@ -12,7 +12,7 @@ class TestRandom(TestCase):
         shutil.rmtree(self.workdir)
         shutil.rmtree(self.outdir)
 
-    def test_faa(self):
+    def test_fa(self):
 
         file = f'{self.indir}/NC_000866.fa'
         fraction = 0.1

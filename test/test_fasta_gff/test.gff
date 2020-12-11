@@ -1,0 +1,4 @@
+##gff-version 3								
+##sequence-region SEQNAME 1 29								
+SEQNAME	.	CDS	1	9	.	+	0	key1=value 1;key2=value 2
+SEQNAME	.	CDS	21	29	.	+	0	key3=value 3;key4=value 4

@@ -16,22 +16,15 @@ class SamParser:
         self.__sam = open(file, 'r')
         header = ''
         while True:
-            # Get the current position
             pos = self.__sam.tell()
-            # Readline and move on to the next position
             line = self.__sam.readline()
             if line.startswith('@'):
                 header = header + line
             else:
-                # If reaching the alignment section, that is,
-                #   the header section has been parsed completely,
-                #   then go back one line and break out the loop
                 self.__sam.seek(pos)
-                # Remember where the first line of data is
                 self.pos_0 = pos
                 break
-        # Store the header string
-        self.header = header
+        self.header = header[:-1]
 
     def __enter__(self):
         return self
@@ -101,8 +94,9 @@ class SamWriter:
                 The file mode: 'w' or 'a'
         """
         self.__sam = open(file, mode)
-        if not header == '':
-            self.__sam.write(header.rstrip() + '\n')
+        if mode == 'w':
+            if not header == '':
+                self.__sam.write(header.rstrip() + '\n')
 
     def __enter__(self):
         return self
@@ -139,7 +133,9 @@ FLAGS_PROPERTIES = (
 )
 
 
-def decode_flag(flag: Union[int, str], return_tuple: bool = False):
+def decode_flag(
+        flag: Union[int, str],
+        return_tuple: bool = False) -> Union[Tuple[bool], Dict[str, bool]]:
     """
     The flag in SAM files is a decimal integer of 12 bits for 12 properties.
     The range of the integer is 0 - 4095 (2^12 -1)
@@ -184,7 +180,9 @@ def decode_flag(flag: Union[int, str], return_tuple: bool = False):
     return {key: val for key, val in zip(FLAGS_PROPERTIES, bin_tuple)}
 
 
-def encode_flag(flag_dict: Dict[str, bool], return_str: bool = False):
+def encode_flag(
+        flag_dict: Dict[str, bool],
+        return_str: bool = False) -> int:
     """
     Encode a dictionary of flags into an int, which represents the 12-bit binary string
 

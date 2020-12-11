@@ -1,5 +1,5 @@
 import subprocess
-from typing import Optional
+from typing import Optional, Any
 
 
 def call(cmd: str, print_cmd: bool = True):
@@ -33,5 +33,5 @@ def check_output(cmd: str) -> Optional[str]:
         return None
 
 
-def printf(s: str):
+def printf(s: Any):
     print(s, flush=True)

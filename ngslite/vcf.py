@@ -90,8 +90,9 @@ class VcfWriter:
                 File mode: 'w' or 'a'
         """
         self.__vcf = open(file, mode)
-        if not header == '':
-            self.__vcf.write(header.rstrip() + '\n')
+        if mode == 'w':
+            if not header == '':
+                self.__vcf.write(header.rstrip() + '\n')
 
     def __enter__(self):
         return self
