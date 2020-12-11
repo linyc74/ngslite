@@ -41,6 +41,6 @@ class TestFastaWriter(TestCase):
 
         a = 'M' * 80
         b = 'M'
-        expect = f'>{header}\n{a}\n{b}\n'
+        expected = f'>{header}\n{a}\n{b}\n'
         with open(output) as fh:
-            self.assertEqual(expect, fh.read())
+            self.assertEqual(expected, fh.read())
