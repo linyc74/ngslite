@@ -20,4 +20,7 @@ def main():
 if __name__ == '__main__':
     main()
 
-    # In command line type in: "python setup.py sdist"
+    # python setup.py sdist
+    # cd sdist
+    # twine upload --repository pypi ngslite-[VERSION].tar.gz
+
