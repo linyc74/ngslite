@@ -34,7 +34,10 @@ def check_output(cmd: str) -> Optional[str]:
         return None
 
 
-def _temp(prefix: str = 'temp', suffix: str = '', dstdir: str = '.') -> str:
+def _temp(
+        prefix: str = 'temp',
+        suffix: str = '',
+        dstdir: str = '.') -> str:
     """
     Returns a temp file name that does not exist in the dstdir, i.e. temp000.txt
 
@@ -52,7 +55,25 @@ def _temp(prefix: str = 'temp', suffix: str = '', dstdir: str = '.') -> str:
         i += 1
 
 
-get_temp_fname = _temp
+def get_temp_fname(
+        prefix: str = 'temp',
+        suffix: str = '') -> str:
+    """
+    Returns a temp file name that does not exist, i.e. temp000.txt
+
+    Args:
+        prefix:
+            Can include the path
+
+        suffix:
+            Usually the file extension
+    """
+    i = 0
+    while True:
+        fpath = f'{prefix}{i:03}{suffix}'
+        if not os.path.exists(fpath):
+            return fpath
+        i += 1
 
 
 def gzip(
