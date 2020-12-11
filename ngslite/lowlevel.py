@@ -34,27 +34,6 @@ def check_output(cmd: str) -> Optional[str]:
         return None
 
 
-def _temp(
-        prefix: str = 'temp',
-        suffix: str = '',
-        dstdir: str = '.') -> str:
-    """
-    Returns a temp file name that does not exist in the dstdir, i.e. temp000.txt
-
-    Args:
-        prefix
-
-        suffix:
-            Usually the file extension
-    """
-    i = 0
-    while True:
-        fpath = os.path.join(dstdir, f'{prefix}{i:03}{suffix}')
-        if not os.path.exists(fpath):
-            return fpath
-        i += 1
-
-
 def get_temp_fname(
         prefix: str = 'temp',
         suffix: str = '') -> str:
