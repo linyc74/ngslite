@@ -222,3 +222,40 @@ def get_temp_path(
         if not os.path.exists(fpath):
             return fpath
         i += 1
+
+
+def gzip(
+        file: str,
+        keep: bool = True,
+        output: Optional[str] = None) -> str:
+    """
+    gzip or gunzip files
+
+    Args:
+        file: path-like
+
+        keep:
+            Keep the input file or not
+
+        output: path-like
+    """
+    is_gz = file.endswith('.gz')
+    decompress = '--decompress' if is_gz else ''
+
+    if output is None:
+        if is_gz:
+            output = f'{file[:-3]}'
+        else:
+            output = f'{file}.gz'
+
+    args = [
+        'gzip', decompress, '--stdout', f'"{file}"', ">", f'"{output}"'
+    ]
+
+    cmd = ' '.join(args)
+    call(cmd=cmd)
+
+    if not keep:
+        os.remove(file)
+
+    return output

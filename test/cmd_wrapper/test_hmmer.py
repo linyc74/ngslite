@@ -1,7 +1,7 @@
 import os
 import shutil
 from ngslite.cmd_wrapper.hmmer import hmmsearch, parse_hmmsearch_result
-from ngslite.lowlevel import gzip
+from ngslite import gzip
 from test.setup import setup_dirs, TestCase
 
 

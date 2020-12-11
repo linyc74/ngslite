@@ -1,6 +1,7 @@
 import os
 import random
-from .lowlevel import call, gzip
+from .lowlevel import call
+from .filetools import gzip
 
 
 def _sample_fq(file: str, fraction: float, output: str):

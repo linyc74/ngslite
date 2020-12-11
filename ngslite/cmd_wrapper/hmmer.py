@@ -1,6 +1,7 @@
 import os
 from typing import Optional, Dict, List, Tuple, Any
-from ..lowlevel import call, gzip, printf
+from ..filetools import gzip
+from ..lowlevel import call, printf
 from ..dna import translate, rev_comp
 from ..fasta import FastaParser, FastaWriter, read_fasta
 

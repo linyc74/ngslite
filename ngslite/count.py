@@ -1,7 +1,7 @@
 import os
 import subprocess
-from .lowlevel import gzip, printf
-from .filetools import get_temp_path
+from .lowlevel import printf
+from .filetools import get_temp_path,gzip
 
 
 def _unzip(file: str) -> str:
