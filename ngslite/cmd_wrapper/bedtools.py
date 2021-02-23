@@ -1,58 +1,50 @@
-from typing import Union, List
+from typing import Union, List, Optional
 from ..lowlevel import call
 from ..filetools import get_temp_path
 
 
 def bedtools_coverage(
-        bed: str,
+        bed_or_gff: str,
         bam: str,
-        output: str):
+        output: str,
+        only_counts: bool = True,
+        strand: Optional[str] = None):
     """
-    Wrapper of "bedtools coverage -a genes.bed -b reads.bam > output"
-    Adds a header line to the output file
-
     Args:
-        bed:
-            Don't use other formats (e.g. GFF)
+        bed_or_gff:
+            BED or GFF files for genes
 
         bam:
-            SAM files not accepted
+            BAM file for mapped reads; SAM file not accepted
 
         output:
             Tab-separated file (tsv)
+
+        only_counts:
+            Only output counts, i.e. only one extra column
+
+        strand:
+            'same', 'opposite', or None
     """
 
-    temp = get_temp_path(prefix='bedtools_coverage_')
+    args = ['bedtools', 'coverage']
 
-    args = [
-        'bedtools', 'coverage',
-        '-a', f'"{bed}"',
+    if only_counts:
+        args.append('-counts')
+
+    if strand == 'same':
+        args.append('-s')
+    elif strand == 'opposite':
+        args.append('-S')
+
+    args += [
+        '-a', f'"{bed_or_gff}"',
         '-b', f'"{bam}"',
-        '>', temp,
+        '>', f'"{output}"',
     ]
 
     cmd = ' '.join(args)
     call(cmd=cmd)
-
-    columns = [
-        'chrom',
-        'start',
-        'end',
-        'reads',
-        'covered_bases',
-        'interval_length',
-        'covered_fraction',
-    ]
-
-    with open(output, 'w') as writer:
-        first = '\t'.join(columns) + '\n'
-        writer.write(first)
-
-        with open(temp) as reader:
-            for line in reader:
-                writer.write(line)
-
-    call(f'rm {temp}')
 
 
 def bedtools_multicov(
