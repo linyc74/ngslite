@@ -3,6 +3,58 @@ from ..lowlevel import call
 from ..filetools import get_temp_path
 
 
+def bedtools_coverage(
+        bed: str,
+        bam: str,
+        output: str):
+    """
+    Wrapper of "bedtools coverage -a genes.bed -b reads.bam > output"
+    Adds a header line to the output file
+
+    Args:
+        bed:
+            Don't use other formats (e.g. GFF)
+
+        bam:
+            SAM files not accepted
+
+        output:
+            Tab-separated file (tsv)
+    """
+
+    temp = get_temp_path(prefix='bedtools_coverage_')
+
+    args = [
+        'bedtools', 'coverage',
+        '-a', f'"{bed}"',
+        '-b', f'"{bam}"',
+        '>', temp,
+    ]
+
+    cmd = ' '.join(args)
+    call(cmd=cmd)
+
+    columns = [
+        'chrom',
+        'start',
+        'end',
+        'reads',
+        'covered_bases',
+        'interval_length',
+        'covered_fraction',
+    ]
+
+    with open(output, 'w') as writer:
+        first = '\t'.join(columns) + '\n'
+        writer.write(first)
+
+        with open(temp) as reader:
+            for line in reader:
+                writer.write(line)
+
+    call(f'rm {temp}')
+
+
 def bedtools_multicov(
         bed: str,
         bams: Union[str, List[str]],
