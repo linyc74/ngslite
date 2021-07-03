@@ -67,12 +67,12 @@ def split_features_text(
             '                     /db_xref="GeneID:1258593"
     """
     list_ = []
-    for line in features_text.splitlines()[1:]:  # first line is useless
+    for line in features_text.splitlines()[1:]:  # first line is always 'Location/Qualifiers', so we don't need it.
         if line.strip() == '':  # skip empty line
             continue
-        if line.startswith(' '*21):
+        if line.startswith(' '*21): # not the first line of a new feature
             list_[-1] += line + '\n'
-        else:
+        else: # the first line of a new feature, because it doesn't start with 21 spaces.
             list_.append(line + '\n')
     return list_
 
@@ -166,6 +166,10 @@ def get_feature_location(
     if locstr.startswith('join('):
         # Remove 'join(' and ')'
         locstr = locstr[len('join('):-1]
+
+    if locstr.startswith('order('):
+        # Remove 'join(' and ')'
+        locstr = locstr[len('order('):-1]
 
     # loclist = list of strings
     # e.g. ["complement(2853..2990)", "complement(2458..2802))"]
@@ -382,6 +386,7 @@ def is_valid_first_line_of_feature(line: str) -> bool:
     if not line[21].isdigit() and \
             not line[21:].startswith('complement') and \
             not line[21:].startswith('join') and \
+            not line[21:].startswith('order') and \
             not line[21] == '<':
         return False
 
