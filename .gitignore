@@ -12,8 +12,7 @@ ngslite.egg-info/
 # Data / misc
 data/
 run.py
-todo.txt
+todo
 .coverage
 .coveralls.yml
 htmlcov/
-script.sh

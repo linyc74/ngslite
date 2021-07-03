@@ -1,4 +1,4 @@
-__version__ = '1.2.2'
+__version__ = '1.2.2-beta'
 
 from .cmd_wrapper.prokka import prokka
 from .cmd_wrapper.muscle import muscle
