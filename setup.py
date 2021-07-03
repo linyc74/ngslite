@@ -9,7 +9,6 @@ def get_version() -> str:
 
 
 def main():
-
     setup(
         name='ngslite',
         version=get_version(),

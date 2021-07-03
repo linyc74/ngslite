@@ -1,6 +1,50 @@
-from typing import Union, List
+from typing import Union, List, Optional
 from ..lowlevel import call
 from ..filetools import get_temp_path
+
+
+def bedtools_coverage(
+        bed_or_gff: str,
+        bam: str,
+        output: str,
+        only_counts: bool = True,
+        strand: Optional[str] = None):
+    """
+    Args:
+        bed_or_gff:
+            BED or GFF files for genes
+
+        bam:
+            BAM file for mapped reads; SAM file not accepted
+
+        output:
+            Tab-separated file (tsv)
+
+        only_counts:
+            Only output counts, i.e. only one extra column
+
+        strand:
+            'same', 'opposite', or None
+    """
+
+    args = ['bedtools', 'coverage']
+
+    if only_counts:
+        args.append('-counts')
+
+    if strand == 'same':
+        args.append('-s')
+    elif strand == 'opposite':
+        args.append('-S')
+
+    args += [
+        '-a', f'"{bed_or_gff}"',
+        '-b', f'"{bam}"',
+        '>', f'"{output}"',
+    ]
+
+    cmd = ' '.join(args)
+    call(cmd=cmd)
 
 
 def bedtools_multicov(

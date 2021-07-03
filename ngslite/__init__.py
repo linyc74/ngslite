@@ -1,4 +1,4 @@
-__version__ = '1.2.1'
+__version__ = '1.2.2-beta'
 
 from .cmd_wrapper.prokka import prokka
 from .cmd_wrapper.muscle import muscle
@@ -10,7 +10,7 @@ from .cmd_wrapper.metaspades import metaspades
 from .cmd_wrapper.bowtie2 import bowtie2_mapping
 from .cmd_wrapper.trim_galore import trim_galore
 from .cmd_wrapper.clustalw import simple_phylogeny
-from .cmd_wrapper.bedtools import bedtools_multicov
+from .cmd_wrapper.bedtools import bedtools_coverage, bedtools_multicov
 from .cmd_wrapper.bcftools import bcftools_variant_call, vcf_to_bcf, bcf_to_vcf, sort_bcf, subset_bcf_regions
 from .cmd_wrapper.hmmer import hmmsearch, hmmbuild, parse_hmmsearch_result, validate_hmm_parse_result
 from .cmd_wrapper.samtools import sort_bam, index_bam, sam_to_indexed_bam, subset_bam_regions, remove_unmapped, sam_to_bam, bam_to_sam
