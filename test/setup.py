@@ -1,24 +1,27 @@
 import os
+import shutil
 import unittest
 from typing import Tuple
 
 
-def setup_dirs(fpath: str) -> Tuple[str, str, str]:
-    """
-    Args:
-        fpath: The file path of the script given by __file__
-    """
-    indir = fpath[:-3]
-    workdir = f'{os.path.dirname(indir)}/workdir'
-    outdir = f'{os.path.dirname(indir)}/outdir'
-
-    os.makedirs(workdir, exist_ok=True)
-    os.makedirs(outdir, exist_ok=True)
-
+def get_dirs(py_path: str) -> Tuple[str, str, str]:
+    indir = os.path.relpath(path=py_path[:-3], start=os.getcwd())
+    basedir = os.path.dirname(indir)
+    workdir = os.path.join(basedir, 'workdir')
+    outdir = os.path.join(basedir, 'outdir')
     return indir, workdir, outdir
 
 
 class TestCase(unittest.TestCase):
+
+    def set_up(self, py_path: str):
+        self.indir, self.workdir, self.outdir = get_dirs(py_path=py_path)
+        for d in [self.workdir, self.outdir]:
+            os.makedirs(d, exist_ok=True)
+
+    def tear_down(self):
+        shutil.rmtree(self.workdir)
+        shutil.rmtree(self.outdir)
 
     def assertFileEqual(self, file1: str, file2: str):
         with open(file1) as fh1:

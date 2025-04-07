@@ -1,16 +1,15 @@
 import shutil
 from ngslite.sam import SamParser, SamWriter, decode_flag, encode_flag
-from .setup import setup_dirs, TestCase
+from .setup import TestCase
 
 
 class TestSamParser(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_iteration(self):
         with SamParser(f'{self.indir}/test.sam') as parser:
@@ -26,11 +25,10 @@ class TestSamParser(TestCase):
 class TestSamWriter(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_write(self):
         output = f'{self.outdir}/output.sam'

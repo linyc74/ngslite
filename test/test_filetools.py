@@ -1,16 +1,14 @@
-import shutil
 from ngslite.filetools import get_files, get_dirs, get_temp_path, zip_broadcast
-from .setup import setup_dirs, TestCase
+from .setup import TestCase
 
 
 class TestFiletools(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_get_files(self):
 

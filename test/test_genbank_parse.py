@@ -5,7 +5,7 @@ from ngslite.genbank_parse import get_seqname, get_circular, \
     split_features_text, get_feature_type, get_feature_location, \
     get_feature_attributes, get_sequence, is_valid_first_line_of_feature, \
     construct_chromosome, genbank_to_fasta, genbank_to_gff, read_genbank, GenbankTextParser
-from .setup import setup_dirs, TestCase
+from .setup import TestCase
 
 
 locus_text = '''\
@@ -134,11 +134,10 @@ ORIGIN
 class TestGenbankParse(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_get_seqname(self):
         self.assertEqual('NC_000866', get_seqname(locus_text))

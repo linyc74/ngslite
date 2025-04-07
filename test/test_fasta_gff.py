@@ -1,17 +1,15 @@
-import shutil
 from ngslite.fasta_gff import read_fasta_gff
 from ngslite.dataclass import GenericFeature
-from .setup import setup_dirs, TestCase
+from .setup import TestCase
 
 
 class TestFunctions(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_read_fasta_gff(self):
         test_fna = f'{self.indir}/test.fna'

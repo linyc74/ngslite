@@ -1,16 +1,14 @@
-import shutil
 from ngslite.count import count_reads
-from .setup import setup_dirs, TestCase
+from .setup import TestCase
 
 
 class TestCount(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_count_fq(self):
         file = f'{self.indir}/example.1.fq'

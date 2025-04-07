@@ -1,16 +1,15 @@
 import shutil
 from ngslite.fasta import FastaParser, FastaWriter
-from .setup import setup_dirs, TestCase
+from .setup import TestCase
 
 
 class TestFastaParser(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_iteration(self):
         with FastaParser(f'{self.indir}/test.fa') as parser:
@@ -25,11 +24,10 @@ class TestFastaParser(TestCase):
 class TestFastaWriter(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_write(self):
         header = 'HEADER'

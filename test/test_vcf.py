@@ -1,16 +1,15 @@
 import shutil
 from ngslite.vcf import VcfParser, VcfWriter, unpack_vcf_info
-from .setup import setup_dirs, TestCase
+from .setup import TestCase
 
 
 class TestVcfParser(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_iteration(self):
         parser = VcfParser(f'{self.indir}/example.vcf')
@@ -22,11 +21,10 @@ class TestVcfParser(TestCase):
 class TestVcfWriter(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_write(self):
         header = '''\

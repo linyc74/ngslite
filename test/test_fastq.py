@@ -1,16 +1,15 @@
 import shutil
 from ngslite.fastq import FastqParser, FastqWriter
-from .setup import setup_dirs, TestCase
+from .setup import TestCase
 
 
 class TestFastqParser(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_iteration(self):
         with FastqParser(f'{self.indir}/test.1.fq') as parser:
@@ -37,11 +36,10 @@ class TestFastqParser(TestCase):
 class TestFastqWriter(TestCase):
 
     def setUp(self):
-        self.indir, self.workdir, self.outdir = setup_dirs(__file__)
+        self.set_up(py_path=__file__)
 
     def tearDown(self):
-        shutil.rmtree(self.workdir)
-        shutil.rmtree(self.outdir)
+        self.tear_down()
 
     def test_write(self):
         output = f'{self.outdir}/output.fq'
