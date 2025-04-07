@@ -1,6 +1,6 @@
 from typing import Dict, List, Union
-from .fasta import FastaParser
 from .gff import read_gff
+from .fasta import FastaParser
 from .dataclass import Chromosome, FeatureArray, gff_to_generic_feature
 
 

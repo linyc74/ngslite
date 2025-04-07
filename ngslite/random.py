@@ -1,6 +1,6 @@
 import os
 import random
-from .lowlevel import call
+from .cli import call
 from .filetools import gzip
 
 

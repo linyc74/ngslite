@@ -2,7 +2,7 @@ __version__ = '2.0.0-beta'
 
 from .count import count_reads
 from .random import random_sample
-from .lowlevel import call, check_output
+from .cli import call, check_output
 from .dna import rev_comp, translate, base_content
 from .genbank_write import write_genbank
 # from .genbank_write import make_genbank
