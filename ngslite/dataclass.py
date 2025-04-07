@@ -4,9 +4,6 @@ from collections import namedtuple
 from .dna import rev_comp
 
 
-GtfFeature = namedtuple('GtfFeature', 'seqname source feature start end score strand frame attribute')
-
-
 GffFeature = namedtuple('GffFeature', 'seqid source type start end score strand phase attributes')
 
 
@@ -494,29 +491,6 @@ class Chromosome:
         return deepcopy(self)
 
 
-def gtf_to_generic_feature(gtf_feature: GtfFeature) -> GenericFeature:
-
-    assert type(gtf_feature) is GtfFeature
-
-    f = gtf_feature
-
-    attr_list = []
-    for a in f.attribute.split(';'):
-        key = a.split(' "')[0]
-        val = a[len(key)+2:-1]
-        attr_list.append((key, val))
-
-    return GenericFeature(
-        seqname=f.seqname,
-        type_=f.feature,
-        start=f.start,
-        end=f.end,
-        strand=f.strand,
-        attributes=attr_list,
-        frame=f.frame + 1
-    )
-
-
 def gff_to_generic_feature(gff_feature: GffFeature) -> GenericFeature:
 
     assert type(gff_feature) is GffFeature
@@ -537,39 +511,6 @@ def gff_to_generic_feature(gff_feature: GffFeature) -> GenericFeature:
         strand=f.strand,
         attributes=attr_list,
         frame=1 if f.phase == '.' else f.phase + 1
-    )
-
-
-def generic_to_gtf_feature(generic_feature: GenericFeature) -> GtfFeature:
-    """
-    Covert GenericFeature to GtfFeature (namedtuple)
-
-    Args:
-        generic_feature: GenericFeature object
-    """
-    assert type(generic_feature) is GenericFeature
-
-    f = generic_feature
-
-    # Pack attributes into a single line of str
-    attr_str = ''
-    for key, val in f.attributes:
-        if type(val) is int or type(val) is float:
-            attr_str += f"{key} {val};"
-        else:  # type(val) is str -> Add quote ""
-            val = val.replace(';', '<semicolon>')  # semicolon is not allowed in the GTF attribute field
-            attr_str += f"{key} \"{val}\";"
-
-    return GtfFeature(
-        seqname=f.seqname,
-        source='.',
-        feature=f.type,
-        start=f.start,
-        end=f.end,
-        score='.',
-        strand=f.strand,
-        frame=f.frame - 1,  # GTF frame is 0, 1, 2
-        attribute=attr_str[:-1]  # Remove trailing ';'
     )
 
 
