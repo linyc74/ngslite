@@ -4,8 +4,7 @@ from .count import count_reads
 from .random import random_sample
 from .cli import call, check_output
 from .dna import rev_comp, translate, base_content
-from .genbank_write import write_genbank
-# from .genbank_write import make_genbank
+from .genbank_write import write_genbank, make_genbank
 from .fastq import FastqParser, FastqWriter, interleave
 from .dataclass import GenericFeature, FeatureArray, Chromosome
 from .vcf import VcfParser, VcfWriter, print_vcf, unpack_vcf_info

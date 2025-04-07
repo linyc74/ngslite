@@ -1,3 +1,4 @@
+import shutil
 from setuptools import setup, find_packages
 
 
@@ -15,13 +16,14 @@ def main():
         description='Light-weight functions for next-generation sequencing (NGS) data analysis',
         url='https://github.com/linyc74/ngslite',
         author='Yu-Cheng Lin',
-        author_email='yclin.python@gmail.com',
+        author_email='ylin@nycu.edu.tw',
         license='MIT',
         packages=find_packages(),
         python_requires='>3.6',
         install_requires=['numpy', 'pandas'],
         zip_safe=False
     )
+    shutil.rmtree('./ngslite.egg-info')
 
 
 if __name__ == '__main__':

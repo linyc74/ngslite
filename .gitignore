@@ -5,6 +5,7 @@ __pycache__/
 # Packaging
 ngslite.egg-info/
 .eggs/
+dist/
 
 # PyCharm
 .idea/
