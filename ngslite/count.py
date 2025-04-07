@@ -1,6 +1,5 @@
 import os
 import subprocess
-from .lowlevel import printf
 from .filetools import get_temp_path,gzip
 
 
@@ -49,7 +48,7 @@ def count_reads(file: str, mapped: bool = True) -> int:
             while fh.readline() != '':
                 i += 1
             if i % 4 != 0:
-                printf('Warning: Number of lines in the fastq file is not multiple of 4.')
+                print('Warning: Number of lines in the fastq file is not multiple of 4.', flush=True)
             count = int(i / 4)
 
         # FASTA: Use '>' to count the reads in fasta file

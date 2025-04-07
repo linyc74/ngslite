@@ -31,7 +31,3 @@ def check_output(cmd: str) -> Optional[str]:
     except Exception as inst:
         print(inst, flush=True)
         return None
-
-
-def printf(s: Any):
-    print(s, flush=True)

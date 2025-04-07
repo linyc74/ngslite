@@ -1,5 +1,4 @@
 from typing import List, Optional, Dict, Union
-from .lowlevel import printf
 from .dataclass import GenericFeature, GffFeature, generic_to_gff_feature
 
 
@@ -228,7 +227,7 @@ def print_gff(
 6   7   strand      string ('+', '-')
 7   8   frame       int (0, 1, 2)
 8   9   attribute   string"""
-        printf(text)
+        print(text, flush=True)
 
     else:
         fields = [
@@ -243,4 +242,4 @@ def print_gff(
             'attribute',
         ]
         for i in range(9):
-            printf(f"{i}\t{fields[i]}\t{feature[i]}")
+            print(f'{i}\t{fields[i]}\t{feature[i]}', flush=True)

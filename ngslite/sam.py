@@ -1,5 +1,4 @@
 from typing import List, Union, Optional, Tuple, Dict
-from .lowlevel import printf
 
 
 class SamParser:
@@ -292,7 +291,7 @@ def print_flag(flag: Optional[Union[int, Dict[str, bool]]] = None):
             print encode (dict -> int) flag
     """
     if type(flag) == dict:
-        printf(encode_flag(flag))
+        print(encode_flag(flag), flush=True)
         return
 
     elif flag is None:
@@ -305,7 +304,7 @@ def print_flag(flag: Optional[Union[int, Dict[str, bool]]] = None):
     for key, val in d.items():
         t = t + f"'{key}': {val},\n "
     t = '{' + t[:-3] + '}'
-    printf(t)
+    print(t, flush=True)
 
 
 def print_sam(read: Tuple[Union[str, int]] = None):
@@ -330,13 +329,13 @@ def print_sam(read: Tuple[Union[str, int]] = None):
 8   9   TLEN    Int     observed Template LENgth
 9   10  SEQ     String  segment SEQuence
 10  11  QUAL    String  ASCII of Phred-scaled base QUALity+33"""
-        printf(text)
+        print(text, flush=True)
 
     elif type(read) is tuple or type(read) is list:
         fields = ['QNAME', 'FLAG ', 'RNAME', 'POS  ', 'MAPQ ',
                   'CIGAR', 'RNEXT', 'PNEXT', 'TLEN ', 'SEQ  ', 'QUAL ']
         for i in range(11):
-            printf(f"{i}\t{fields[i]}\t{read[i]}")
+            print(f'{i}\t{fields[i]}\t{read[i]}', flush=True)
         if len(read) > 11:
             for i in range(11, len(read)):
-                printf(f"{i}\t     \t{read[i]}")
+                print(f'{i}\t     \t{read[i]}', flush=True)

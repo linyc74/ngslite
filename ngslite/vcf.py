@@ -1,5 +1,4 @@
 from typing import Optional, List, Tuple, Union, Dict
-from .lowlevel import printf
 
 
 class VcfParser:
@@ -133,16 +132,16 @@ def print_vcf(var: Tuple[Union[str, int]] = None):
 6   7   FILTER  String  A flag indicating which of a given set of filters the variation has passed
 7   8   INFO    String  An extensible list of key-value pairs (fields) describing the variation, for example, NS=2;DP=10;AF=0.333,0.667;AA=T;DB
 8   9                   Optional fields...'''
-        printf(text)
+        print(text, flush=True)
 
     elif type(var) is tuple or type(var) is list:
         fields = ['CHROM ', 'POS   ', 'ID    ', 'REF   ', 'ALT   ',
                   'QUAL  ', 'FILTER', 'INFO  ']
         for i in range(8):
-            printf(f"{i}\t{fields[i]}\t{var[i]}")
+            print(f'{i}\t{fields[i]}\t{var[i]}', flush=True)
         if len(var) > 8:
             for i in range(8, len(var)):
-                printf(f"{i}\t     \t{var[i]}")
+                print(f'{i}\t     \t{var[i]}', flush=True)
 
 
 def unpack_vcf_info(var: Tuple[Union[str, int]]) -> Dict[str, str]:

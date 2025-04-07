@@ -5,7 +5,7 @@ from ngslite.genbank_parse import get_seqname, get_circular, \
     split_features_text, get_feature_type, get_feature_location, \
     get_feature_attributes, get_sequence, is_valid_first_line_of_feature, \
     construct_chromosome, genbank_to_fasta, genbank_to_gff, read_genbank, GenbankTextParser
-from ngslite import genbank_to_gtf
+# from ngslite import genbank_to_gtf
 from .setup import setup_dirs, TestCase
 
 
@@ -286,13 +286,13 @@ MIQNPVYDVVKLPENWKELFEMLMGDNADLRKEWMSQ')
         parser1.close()
         parser2.close()
 
-    def test_genbank_to_gtf(self):
-        fname = 'NC_000866'
-        genbank_to_gtf(
-            file=f'{self.indir}/{fname}.gbk',
-            output=f'{self.outdir}/{fname}.gtf',
-            skip_types=''
-        )
+    # def test_genbank_to_gtf(self):
+    #     fname = 'NC_000866'
+    #     genbank_to_gtf(
+    #         file=f'{self.indir}/{fname}.gbk',
+    #         output=f'{self.outdir}/{fname}.gtf',
+    #         skip_types=''
+    #     )
 
     def test_genbank_to_gff(self):
         fname = 'NC_000866'

@@ -1,6 +1,6 @@
 from typing import List, Union, Dict
 from datetime import date
-from ngslite.legacy.fasta_gtf import read_fasta_gtf
+# from ngslite.legacy.fasta_gtf import read_fasta_gtf
 from .genbank_parse import GenbankText
 from .dna import translate, rev_comp
 from .dataclass import GenericFeature, Chromosome
@@ -414,67 +414,67 @@ def write_genbank(
             )
 
 
-def make_genbank(
-        fasta: str,
-        gtf: str,
-        output: str,
-        shape: str = 'linear',
-        DEFINITION: str = '.',
-        KEYWORDS: str = '.',
-        SOURCE: str = '.',
-        ORGANISM: str = '.',
-        genbank_division: str = 'ENV'):
-    """
-    Merge a fasta file and a GTF file into a genbank file, in which
-        the fasta file provides the genome sequence and
-        the GTF file provides annotation (e.g. CDS).
-
-    The fasta file can contain more than one sequence. Headers in the fasta file
-        is used as the LOCUS name (i.e. ACCESSION) in the genbank file.
-
-    GFF and GTF formats are both supported.
-
-    Args:
-        fasta: path-like
-            The input fasta file
-
-        gtf: path-like
-            The input GTF (or GFF) file
-
-        output: path-like
-            The output genbank file
-
-        shape:
-            The shape of DNA or RNA, either 'linear' or 'circular'
-
-        DEFINITION:
-            The "DEFINITION" field in the genbank file
-
-        KEYWORDS:
-            The "KEYWORDS" field in the genbank file
-
-        SOURCE:
-            The "SOURCE" field in the genbank file
-
-        ORGANISM:
-            The "ORGANISM" field in the genbank file
-
-        genbank_division:
-            The three-letter tag for one of the 18 divisions in the GenBank database.
-            Default 'ENV' for environmental sampling sequences
-    """
-    data = read_fasta_gtf(
-        fasta=fasta,
-        gtf=gtf,
-        circular=(shape == 'circular')
-    )
-
-    write_genbank(
-        data=data,
-        file=output,
-        DEFINITION=DEFINITION,
-        KEYWORDS=KEYWORDS,
-        SOURCE=SOURCE,
-        ORGANISM=ORGANISM,
-        genbank_division=genbank_division
-    )
+# def make_genbank(
+#         fasta: str,
+#         gtf: str,
+#         output: str,
+#         shape: str = 'linear',
+#         DEFINITION: str = '.',
+#         KEYWORDS: str = '.',
+#         SOURCE: str = '.',
+#         ORGANISM: str = '.',
+#         genbank_division: str = 'ENV'):
+#     """
+#     Merge a fasta file and a GTF file into a genbank file, in which
+#         the fasta file provides the genome sequence and
+#         the GTF file provides annotation (e.g. CDS).
+#
+#     The fasta file can contain more than one sequence. Headers in the fasta file
+#         is used as the LOCUS name (i.e. ACCESSION) in the genbank file.
+#
+#     GFF and GTF formats are both supported.
+#
+#     Args:
+#         fasta: path-like
+#             The input fasta file
+#
+#         gtf: path-like
+#             The input GTF (or GFF) file
+#
+#         output: path-like
+#             The output genbank file
+#
+#         shape:
+#             The shape of DNA or RNA, either 'linear' or 'circular'
+#
+#         DEFINITION:
+#             The "DEFINITION" field in the genbank file
+#
+#         KEYWORDS:
+#             The "KEYWORDS" field in the genbank file
+#
+#         SOURCE:
+#             The "SOURCE" field in the genbank file
+#
+#         ORGANISM:
+#             The "ORGANISM" field in the genbank file
+#
+#         genbank_division:
+#             The three-letter tag for one of the 18 divisions in the GenBank database.
+#             Default 'ENV' for environmental sampling sequences
+#     """
+#     data = read_fasta_gtf(
+#         fasta=fasta,
+#         gtf=gtf,
+#         circular=(shape == 'circular')
+#     )
+#
+#     write_genbank(
+#         data=data,
+#         file=output,
+#         DEFINITION=DEFINITION,
+#         KEYWORDS=KEYWORDS,
+#         SOURCE=SOURCE,
+#         ORGANISM=ORGANISM,
+#         genbank_division=genbank_division
+#     )
